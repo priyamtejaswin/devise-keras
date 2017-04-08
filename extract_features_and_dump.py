@@ -11,10 +11,10 @@ from keras.layers import GlobalMaxPooling2D
 from keras.layers import GlobalAveragePooling2D
 from keras.preprocessing import image
 from keras.applications.imagenet_utils import preprocess_input 
-import keras.backend as K 
-
-
-import os, sys, ipdb
+import keras.backend as K
+import h5py
+import argparse 
+import os, sys
 
 def define_model(path):
 
@@ -68,17 +68,33 @@ def create_indices(total_length, batch_size):
 
 
 def main():
-	weights_path 	= sys.argv[1]
-	folder_path 	= sys.argv[2]
-	dump_path   	= sys.argv[3] 
+	
+	parser = argparse.ArgumentParser()
+	parser.add_argument("-weights_path", help="weights file path")
+	parser.add_argument("-folder_path", help="folder where images are located")
+	parser.add_argument("-dump_path", help="folder where features will be dumped")
+	args = parser.parse_args()
+
+	weights_path 	= args.weights_path
+	folder_path 	= args.folder_path
+	dump_path   	= args.dump_path
 
 	assert os.path.isdir(folder_path), "---path is not a folder--"
 	assert os.path.isdir(dump_path), "---path is not a folder--"
 	
 	model = define_model(weights_path)
+	
+	dir_fnames = []
+	for dirpath, dirnames, filenames in os.walk(folder_path):
+		if filenames != []:
+			dir_fnames += [os.path.join(dirpath, fn) for fn in filenames]
+	list_of_files = dir_fnames
 
-	dir_fnames = list(os.listdir(folder_path))
-	list_of_files = [os.path.join(folder_path, fname) for fname in dir_fnames]
+	# h5py 
+	hf = h5py.File(os.path.join(dump_path,"features.h5"),"w")
+	data = hf.create_group("data")
+	x_h5 = data.create_dataset("features",(0,4096), maxshape=(None,4096))
+	fnames_h5 = data.create_dataset("fnames",(0,1),"S10", maxshape=(None,1))
 
 	for i,j in create_indices(len(list_of_files), 2):
 		loaded_images = []
