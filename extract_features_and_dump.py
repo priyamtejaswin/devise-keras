@@ -16,6 +16,28 @@ import h5py
 import argparse 
 import os, sys
 
+
+def dump_to_h5(names, scores ,hf):
+	''' Dump the list of names and the numpy array of scores 
+		to given h5 file '''
+	
+	assert int(len(scores)) == len(names), "Number of output scores == number of file names to dump"
+	
+	x_h5 = hf["data/features"]
+	fnames_h5 = hf["data/fnames"]
+
+	cur_rows = int(x_h5.shape[0]) 
+	new_rows = cur_rows + len(names) 
+
+	x_h5.resize((new_rows,4096))
+	fnames_h5.resize((new_rows,1))
+
+	for i in range(len(names)): 
+		x_h5[cur_rows+i] = scores[i]
+		fnames_h5[cur_rows+i] = names[i]
+
+
+
 def define_model(path):
 
 	input_shape = (3,224,224)
@@ -71,37 +93,44 @@ def main():
 	
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-weights_path", help="weights file path")
-	parser.add_argument("-folder_path", help="folder where images are located")
+	parser.add_argument("-images_path", help="folder where images are located")
 	parser.add_argument("-dump_path", help="folder where features will be dumped")
 	args = parser.parse_args()
 
 	weights_path 	= args.weights_path
-	folder_path 	= args.folder_path
+	images_path 	= args.images_path
 	dump_path   	= args.dump_path
 
-	assert os.path.isdir(folder_path), "---path is not a folder--"
+	assert os.path.isdir(images_path), "---path is not a folder--"
 	assert os.path.isdir(dump_path), "---path is not a folder--"
 	
-	model = define_model(weights_path)
+	# model = define_model(weights_path)
 	
 	dir_fnames = []
-	for dirpath, dirnames, filenames in os.walk(folder_path):
+	for dirpath, dirnames, filenames in os.walk(images_path):
 		if filenames != []:
 			dir_fnames += [os.path.join(dirpath, fn) for fn in filenames]
 	list_of_files = dir_fnames
 
+	print "Total files:", len(list_of_files)
+	
 	# h5py 
 	hf = h5py.File(os.path.join(dump_path,"features.h5"),"w")
 	data = hf.create_group("data")
 	x_h5 = data.create_dataset("features",(0,4096), maxshape=(None,4096))
-	fnames_h5 = data.create_dataset("fnames",(0,1),"S10", maxshape=(None,1))
+	dt   = h5py.special_dtype(vlen=str)
+	fnames_h5 = data.create_dataset("fnames",(0,1),dtype=dt, maxshape=(None,1))
 
-	for i,j in create_indices(len(list_of_files), 2):
+	for i,j in create_indices(len(list_of_files), batch_size=2):
+		
+		j = min(j, len(list_of_files))
+
 		loaded_images = []
-		dump_name = "processed_files"
+		dump_names = []
 
 		for k in range(i,j,1):
-			dump_name += "_"+dir_fnames[k]
+			
+			dump_names.append(list_of_files[k])
 
 			img = image.load_img(list_of_files[k], target_size=(224, 224))
 			img = image.img_to_array(img)
@@ -110,10 +139,10 @@ def main():
 		loaded_images = np.array(loaded_images)
 		batch = preprocess_input(loaded_images)
 		
-		scores = model.predict(batch)
+		scores = np.random.randn(len(loaded_images), 4096)
 
-		np.save(os.path.join(dump_path, dump_name), scores)
-		ipdb.set_trace()
+		dump_to_h5(names=dump_names, scores=scores, hf=hf)
+
 
 if __name__=="__main__":
 	main()
