@@ -77,6 +77,7 @@ def define_model(path):
 	x = Dense(4096, activation='relu', name='fc1')(x)
 	x = Dense(4096, activation='relu', name='fc2')(x)
 
+	import ipdb; ipdb.set_trace()  # breakpoint e49aadf4 //
 	model = Model(inputs=img_input, outputs=x, name="vgg16")
 
 
@@ -104,7 +105,7 @@ def main():
 	assert os.path.isdir(images_path), "---path is not a folder--"
 	assert os.path.isdir(dump_path), "---path is not a folder--"
 	
-	# model = define_model(weights_path)
+	model = define_model(weights_path)
 	
 	dir_fnames = []
 	for dirpath, dirnames, filenames in os.walk(images_path):
