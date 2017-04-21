@@ -138,7 +138,8 @@ def main():
 		loaded_images = np.array(loaded_images)
 		batch = preprocess_input(loaded_images)
 		
-		scores = np.random.randn(len(loaded_images), 4096)
+		scores = model.predict(batch)
+		#scores = np.random.randn(len(loaded_images), 4096)
 
 		dump_to_h5(names=dump_names, scores=scores, hf=hf)
 
