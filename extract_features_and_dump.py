@@ -77,9 +77,7 @@ def define_model(path):
 	x = Dense(4096, activation='relu', name='fc1')(x)
 	x = Dense(4096, activation='relu', name='fc2')(x)
 
-	import ipdb; ipdb.set_trace()  # breakpoint e49aadf4 //
 	model = Model(inputs=img_input, outputs=x, name="vgg16")
-
 
 	# load wts
 	model.load_weights(path, by_name=True)
