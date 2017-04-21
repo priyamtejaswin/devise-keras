@@ -82,7 +82,7 @@ def define_model(path):
 
 
 	# load wts
-	# model.load_weights(path, by_name=True)
+	model.load_weights(path, by_name=True)
 
 	return model  
 
