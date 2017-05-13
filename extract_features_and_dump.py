@@ -16,6 +16,8 @@ import h5py
 import argparse 
 import os, sys
 
+IMAGE_DIM = 4096
+WORD_DIM = 50
 
 def dump_to_h5(names, scores ,hf):
 	''' Dump the list of names and the numpy array of scores 
@@ -29,14 +31,28 @@ def dump_to_h5(names, scores ,hf):
 	cur_rows = int(x_h5.shape[0]) 
 	new_rows = cur_rows + len(names) 
 
-	x_h5.resize((new_rows,4096))
+	x_h5.resize((new_rows,IMAGE_DIM))
 	fnames_h5.resize((new_rows,1))
 
 	for i in range(len(names)): 
 		x_h5[cur_rows+i] = scores[i]
 		fnames_h5[cur_rows+i] = names[i]
 
+def dump_wv_to_h5(words, vectors, hf):
+	assert int(len(vectors)) == len(words), "Number of words == number of vectors"
 
+	v_h5 = hf["data/word_embeddings"]
+	w_h5 = hf["data/word_names"]
+
+	cur_rows = int(v_h5.shape[0]) 
+	new_rows = cur_rows + len(words)
+
+	v_h5.resize((new_rows, WORD_DIM))
+	w_h5.resize((new_rows, 1))
+
+	for i in range(len(words)):
+		v_h5[cur_rows+i] = vectors[i]
+		w_h5[cur_rows+i] = words[i]
 
 def define_model(path):
 
@@ -74,8 +90,8 @@ def define_model(path):
 	x = MaxPooling2D((2, 2), strides=(2, 2), name='block5_pool')(x)
 
 	x = Flatten(name='flatten')(x)
-	x = Dense(4096, activation='relu', name='fc1')(x)
-	x = Dense(4096, activation='relu', name='fc2')(x)
+	x = Dense(IMAGE_DIM, activation='relu', name='fc1')(x)
+	x = Dense(IMAGE_DIM, activation='relu', name='fc2')(x)
 
 	model = Model(inputs=img_input, outputs=x, name="vgg16")
 
@@ -93,12 +109,14 @@ def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-weights_path", help="weights file path")
 	parser.add_argument("-images_path", help="folder where images are located")
+	parser.add_argument("-embeddings_path", help="binary where word embeddings are saved")
 	parser.add_argument("-dump_path", help="folder where features will be dumped")
 	args = parser.parse_args()
 
 	weights_path 	= args.weights_path
 	images_path 	= args.images_path
 	dump_path   	= args.dump_path
+	embeddings_path = args.embeddings_path
 
 	assert os.path.isdir(images_path), "---path is not a folder--"
 	assert os.path.isdir(dump_path), "---path is not a folder--"
@@ -114,12 +132,13 @@ def main():
 	print "Total files:", len(list_of_files)
 	
 	# h5py 
-	# hf = h5py.File(os.path.join(dump_path,"features.h5"),"w")
-	# data = hf.create_group("data")
-	# x_h5 = data.create_dataset("features",(0,4096), maxshape=(None,4096))
-	# dt   = h5py.special_dtype(vlen=str)
-	# fnames_h5 = data.create_dataset("fnames",(0,1),dtype=dt, maxshape=(None,1))
+	hf = h5py.File(os.path.join(dump_path,"features.h5"),"w")
+	data = hf.create_group("data")
+	x_h5 = data.create_dataset("features",(0,IMAGE_DIM), maxshape=(None,IMAGE_DIM))
+	dt   = h5py.special_dtype(vlen=str)
+	fnames_h5 = data.create_dataset("fnames",(0,1),dtype=dt, maxshape=(None,1))
 
+	# extract and dump image features
 	for i,j in create_indices(len(list_of_files), batch_size=2):
 		
 		j = min(j, len(list_of_files))
@@ -139,10 +158,35 @@ def main():
 		batch = preprocess_input(loaded_images)
 		
 		scores = model.predict(batch)
-		#scores = np.random.randn(len(loaded_images), 4096)
+		#scores = np.random.randn(len(loaded_images), IMAGE_DIM)
 
 		#dump_to_h5(names=dump_names, scores=scores, hf=hf)
 
+	# extract and dump word vectors
+	_ = data.create_dataset("word_embeddings", (0, WORD_DIM), maxshape=(None, WORD_DIM))
+	_ = data.create_dataset("word_names", (0, 1), dtype=dt, maxshape=(None, 1))
+
+	embeddings_index = {}
+	f = open(embeddings_path)
+	word_batch, vector_batch, _c = [], [], 1
+
+	for line in f:
+	    values = line.split()
+	    word = values[0]
+	    coefs = np.asarray(values[1:], dtype='float32')
+	    embeddings_index[word] = coefs
+	    word_batch.append(word)
+	    vector_batch.append(coefs)
+	    
+	    if _c%5==0:
+	    	dump_wv_to_h5(word_batch, vector_batch, hf)
+	    	word_batch, vector_batch = [], []
+	    _c+=1
+
+	dump_wv_to_h5(word_batch, vector_batch, hf)
+
+	f.close()
+	print 'Found %s word vectors.' % len(embeddings_index)
 
 if __name__=="__main__":
 	main()
