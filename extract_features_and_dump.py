@@ -15,9 +15,49 @@ import keras.backend as K
 import h5py
 import argparse 
 import os, sys
+import cPickle as pickle
 
 IMAGE_DIM = 4096
 WORD_DIM = 50
+
+def get_class_ranges(fnames):
+	class_ranges = {} 
+
+	for idx,fname in enumerate(fnames):
+		class_name = fname.split("/")[-2]
+		if class_name not in class_ranges.keys():
+			class_ranges[class_name] = [idx,idx]
+		else:
+			class_ranges[class_name][1] = idx
+
+	return class_ranges
+
+def data_generator(image_fnames, class_ranges, batch_size):
+
+	F 			 = h5py.File("processed_features/features.h5", "r")
+	vgg_feats 	 = F["data/features"]
+	embeddings   = F["data/word_embeddings"]
+	DATASET_SIZE = len(image_fnames)
+
+	for i in range(DATASET_SIZE):
+
+		X = np.zeros((1+batch_size, 4096))
+		y = np.zeros((1+batch_size, 50))
+
+		# correct one - first one 
+		X[0] = vgg_feats[i]
+		y[0] = embeddings[i]
+
+		# others - remaining
+		class_of_first 	= image_fnames[i].split("/")[-2]
+		start,end 		= class_ranges[class_of_first]
+		range_of_nums 	= range(0,start) + range(end+1,DATASET_SIZE)
+		selected_indices= np.random.choice(range_of_nums, size=batch_size)
+		X[1:]   		= vgg_feats[selected_indices]
+		y[1:]			= embeddings[selected_indices]
+
+		yield X,y 
+
 
 def dump_to_h5(names, scores ,hf):
 	''' Dump the list of names and the numpy array of scores 
@@ -160,7 +200,7 @@ def main():
 		scores = model.predict(batch)
 		#scores = np.random.randn(len(loaded_images), IMAGE_DIM)
 
-		#dump_to_h5(names=dump_names, scores=scores, hf=hf)
+		dump_to_h5(names=dump_names, scores=scores, hf=hf)
 
 	# extract and dump word vectors
 	_ = data.create_dataset("word_embeddings", (0, WORD_DIM), maxshape=(None, WORD_DIM))
@@ -187,6 +227,13 @@ def main():
 
 	f.close()
 	print 'Found %s word vectors.' % len(embeddings_index)
+
+	# extract and dump class ranges 
+	class_ranges = get_class_ranges(fnames_h5[:])
+	with open("image_class_ranges.pkl","w") as f:
+		pickle.dump(class_ranges, f)
+		print "...saved to pickle image_class_ranges.pkl"
+
 
 if __name__=="__main__":
 	main()
