@@ -160,7 +160,7 @@ def main():
 		scores = model.predict(batch)
 		#scores = np.random.randn(len(loaded_images), IMAGE_DIM)
 
-		dump_to_h5(names=dump_names, scores=scores, hf=hf)
+		#dump_to_h5(names=dump_names, scores=scores, hf=hf)
 
 	# extract and dump word vectors
 	_ = data.create_dataset("word_embeddings", (0, WORD_DIM), maxshape=(None, WORD_DIM))
