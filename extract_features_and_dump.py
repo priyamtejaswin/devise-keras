@@ -114,11 +114,11 @@ def main():
 	print "Total files:", len(list_of_files)
 	
 	# h5py 
-	hf = h5py.File(os.path.join(dump_path,"features.h5"),"w")
-	data = hf.create_group("data")
-	x_h5 = data.create_dataset("features",(0,4096), maxshape=(None,4096))
-	dt   = h5py.special_dtype(vlen=str)
-	fnames_h5 = data.create_dataset("fnames",(0,1),dtype=dt, maxshape=(None,1))
+	# hf = h5py.File(os.path.join(dump_path,"features.h5"),"w")
+	# data = hf.create_group("data")
+	# x_h5 = data.create_dataset("features",(0,4096), maxshape=(None,4096))
+	# dt   = h5py.special_dtype(vlen=str)
+	# fnames_h5 = data.create_dataset("fnames",(0,1),dtype=dt, maxshape=(None,1))
 
 	for i,j in create_indices(len(list_of_files), batch_size=2):
 		
@@ -141,7 +141,7 @@ def main():
 		scores = model.predict(batch)
 		#scores = np.random.randn(len(loaded_images), 4096)
 
-		dump_to_h5(names=dump_names, scores=scores, hf=hf)
+		#dump_to_h5(names=dump_names, scores=scores, hf=hf)
 
 
 if __name__=="__main__":
