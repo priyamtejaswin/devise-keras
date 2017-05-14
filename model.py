@@ -66,14 +66,6 @@ def main():
 	image_features = Input(shape=(4096,))
 	model = build_model(image_features)
 
-	# load all image fnames
-	with h5py.File(path_to_h5py, "r") as fp:
-		image_fnames = reduce(lambda x,y:x+y, fp["data/fnames"][:]) ## convert to list of strings - NOT list of lists.
-
-	# load pickle which contains class ranges
-	with open("image_class_ranges.pkl", "r") as fp:
-		class_ranges = pickle.load(fp)
-
-	for epoch in range(2):
-		for raw_image_vectors, word_vectors in data_generator(image_fnames, class_ranges, batch_size):
+	for epoch in range(5):
+		for raw_image_vectors, word_vectors in data_generator(batch_size = 2):
 			model.train_on_batch(raw_image_vectors, word_vectors)
