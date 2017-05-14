@@ -14,8 +14,10 @@ from keras.applications.imagenet_utils import preprocess_input
 import keras.backend as K
 import h5py
 import argparse 
-import os, sys
+import os, sys, ipdb
 import cPickle as pickle
+
+np.random.seed(123)
 
 IMAGE_DIM = 4096
 WORD_DIM = 50
@@ -32,9 +34,16 @@ def get_class_ranges(fnames):
 
 	return class_ranges
 
-def data_generator(image_fnames, class_ranges, batch_size):
+def data_generator(path_to_h5py="processed_features/features.h5", batch_size=2):
+	# load all image fnames
+	with h5py.File(path_to_h5py, "r") as fp:
+		image_fnames = map(lambda a:a[0], fp["data/fnames"][:]) #fnames is list of single lists!
 
-	F 			 = h5py.File("processed_features/features.h5", "r")
+	# load pickle which contains class ranges
+	with open("image_class_ranges.pkl", "r") as fp:
+		class_ranges = pickle.load(fp)
+
+	F 			 = h5py.File(path_to_h5py, "r")
 	vgg_feats 	 = F["data/features"]
 	embeddings   = F["data/word_embeddings"]
 	DATASET_SIZE = len(image_fnames)
@@ -52,7 +61,11 @@ def data_generator(image_fnames, class_ranges, batch_size):
 		class_of_first 	= image_fnames[i].split("/")[-2]
 		start,end 		= class_ranges[class_of_first]
 		range_of_nums 	= range(0,start) + range(end+1,DATASET_SIZE)
-		selected_indices= np.random.choice(range_of_nums, size=batch_size)
+		selected_indices= np.random.choice(range_of_nums, size=batch_size).tolist() # missed this!
+		selected_indices= sorted(selected_indices) # unordered indexing is not supported?
+
+		print vgg_feats[selected_indices].shape, embeddings[selected_indices].shape, selected_indices
+		# ipdb.set_trace()
 		X[1:]   		= vgg_feats[selected_indices]
 		y[1:]			= embeddings[selected_indices]
 
@@ -202,6 +215,12 @@ def main():
 
 		dump_to_h5(names=dump_names, scores=scores, hf=hf)
 
+	# extract and dump class ranges
+	class_ranges = get_class_ranges(map(lambda a:a[0], fnames_h5[:])) # fnames is list of single lists!
+	with open("image_class_ranges.pkl","w") as f:
+		pickle.dump(class_ranges, f)
+		print "...saved to pickle image_class_ranges.pkl"
+
 	# extract and dump word vectors
 	_ = data.create_dataset("word_embeddings", (0, WORD_DIM), maxshape=(None, WORD_DIM))
 	_ = data.create_dataset("word_names", (0, 1), dtype=dt, maxshape=(None, 1))
@@ -223,17 +242,9 @@ def main():
 	    	word_batch, vector_batch = [], []
 	    _c+=1
 
-	dump_wv_to_h5(word_batch, vector_batch, hf)
-
+	dump_wv_to_h5(word_batch, vector_batch, hf) # to catch the trailing vectors
 	f.close()
 	print 'Found %s word vectors.' % len(embeddings_index)
-
-	# extract and dump class ranges 
-	class_ranges = get_class_ranges(fnames_h5[:])
-	with open("image_class_ranges.pkl","w") as f:
-		pickle.dump(class_ranges, f)
-		print "...saved to pickle image_class_ranges.pkl"
-
 
 if __name__=="__main__":
 	main()
