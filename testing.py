@@ -2,7 +2,8 @@
 
 import numpy as np
 import h5py
-import cPickle as pickle 
+import cPickle as pickle
+import keras.backend as K
 
 PATH_h5 = "processed_features/features.h5"
 IMAGE_DIM = 4096
@@ -27,5 +28,22 @@ def TEST_datagen():
 		assert x.shape[1] == IMAGE_DIM
 		assert y.shape[1] == WORD_DIM
 
+def TEST_lossfun():
+	''' Test the hinge-rank loss function in model.py '''
+
+	# data 
+	# 1 correct word , 2 wrong ones
+	image_vectors = np.random.rand(3, WORD_DIM)
+	word_vectors  = np.random.rand(3, WORD_DIM)
+	image_vectors = K.variable(image_vectors)
+	word_vectors  = K.variable(word_vectors)
+
+	# import module 
+	from model import myloss
+	
+	# test
+	out = K.eval(myloss(word_vectors, image_vectors))
+	print out
+
 if __name__=="__main__":
-	TEST_datagen()
+	TEST_lossfun()
