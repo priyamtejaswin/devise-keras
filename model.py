@@ -1,30 +1,33 @@
 from keras.layers import * 
+from keras.models import Model
 import keras.backend as K 
 import h5py
 import sys
 from extract_features_and_dump import data_generator
 
+PATH_h5 = "processed_features/features.h5"
+
 def linear_transformation(x):
-	''' Takes a 4096-dim vector and applies 
-	    a linear transformation to get 500-dim vector '''
-	x = Dense(500, name='transform')(x)
-	return x
+    ''' Takes a 4096-dim vector and applies 
+        a linear transformation to get 500-dim vector '''
+    x = Dense(500, name='transform')(x)
+    return x
 
 def myloss(image_vectors, word_vectors):
-	"""write your loss function here, e.g mse"""
+    """write your loss function here, e.g mse"""
 
-	slice_first = lambda x: x[0, :]
-	slice_but_first = lambda x: x[1:, :]
+    slice_first = lambda x: x[0, :]
+    slice_but_first = lambda x: x[1:, :]
 
-	# separate correct/wrong images
-	correct_image = Lambda(slice_first)(image_vectors)
-	wrong_images = Lambda(slice_but_first)(image_vectors)
+    # separate correct/wrong images
+    correct_image = Lambda(slice_first)(image_vectors)
+    wrong_images = Lambda(slice_but_first)(image_vectors)
 
-	# separate correct/wrong words
-	correct_word = Lambda(slice_first)(word_vectors)
-	wrong_words = Lambda(slice_but_first)(word_vectors)
+    # separate correct/wrong words
+    correct_word = Lambda(slice_first)(word_vectors)
+    wrong_words = Lambda(slice_but_first)(word_vectors)
 
-	# l2 norm
+    # l2 norm
     l2 = lambda x: K.sqrt(K.sum(K.square(x)))
     l2norm = lambda x: x/l2(x)
 
@@ -40,32 +43,36 @@ def myloss(image_vectors, word_vectors):
 
     # correct_image VS incorrect_words | Note the singular/plurals
     cost_images = K.maximum(
-    	MARGIN - K.sum(correct_images * correct_words, 1) + K.sum(correct_images * wrong_words) , 
-    	0.0)
+        MARGIN - K.sum(correct_images * correct_words, 1) + K.sum(correct_images * wrong_words) , 
+        0.0)
     # correct_word VS incorrect_images | Note the singular/plurals
     cost_words = K.maximum(
-    	MARGIN - K.sum(correct_words * correct_images, 1) + K.sum(correct_words * wrong_images) , 
-    	0.0)
+        MARGIN - K.sum(correct_words * correct_images, 1) + K.sum(correct_words * wrong_images) , 
+        0.0)
 
     return cost_images + cost_words
     
 
 def build_model(image_features, word_features=None):
-	image_vector = linear_transformation(ip)
+    image_vector = linear_transformation(image_features)
 
-	mymodel = Model(inputs=ip_image, output=image_vector, loss=myloss, optimizer='sgd')
-	return mymodel
-	# load word vectors from disk as numpy 
-	# word_vectors_from_disk = load from numpy 
+    mymodel = Model(inputs=image_features, output=image_vector)
+    mymodel.compile(optimizer="adam", loss=myloss)
+    return mymodel
+    # load word vectors from disk as numpy 
+    # word_vectors_from_disk = load from numpy 
 
-	# model.train(ip_image, word_vectors_from_disk)
+    # model.train(ip_image, word_vectors_from_disk)
 
 def main():
-	path_to_h5py 
 
-	image_features = Input(shape=(4096,))
-	model = build_model(image_features)
+    image_features = Input(shape=(4096,))
+    model = build_model(image_features)
 
-	for epoch in range(5):
-		for raw_image_vectors, word_vectors in data_generator(batch_size = 2):
-			model.train_on_batch(raw_image_vectors, word_vectors)
+    for epoch in range(5):
+        for raw_image_vectors, word_vectors in data_generator(batch_size = 2):
+            loss = model.train_on_batch(raw_image_vectors, word_vectors)
+            print loss
+
+if __name__=="__main__":
+    main()
