@@ -11,40 +11,44 @@ def linear_transformation(x):
 	return x
 
 def myloss(image_vectors, word_vectors):
-	# write your loss function here, e.g mse  
+	"""write your loss function here, e.g mse"""
+
 	slice_first = lambda x: x[0, :]
 	slice_but_first = lambda x: x[1:, :]
 
+	# separate correct/wrong images
 	correct_image = Lambda(slice_first)(image_vectors)
 	wrong_images = Lambda(slice_but_first)(image_vectors)
 
+	# separate correct/wrong words
 	correct_word = Lambda(slice_first)(word_vectors)
 	wrong_words = Lambda(slice_but_first)(word_vectors)
 
+	# l2 norm
     l2 = lambda x: K.sqrt(K.sum(K.square(x)))
     l2norm = lambda x: x/l2(x)
 
-    word = K.squeeze(correct_word)
-    con_word = K.squeeze(K.concat(0, py_s[1:]))
+    # tiling to replicate correct_word and correct_image
+    correct_words = K.tile(correct_word, K.shape(wrong_words)[0])
+    correct_images = K.tile(correct_image, K.shape(wrong_images)[0])
 
-    cap = tf.tile(cap, (num_con, 1))
-    image = tf.tile(image, (num_con, 1))
+    # converting to unit vectors
+    correct_words = l2norm(correct_words)
+    wrong_words = l2norm(wrong_words)
+    correct_images = l2norm(correct_images)
+    wrong_images = l2norm(wrong_images)
 
-    image = l2norm(image)
-    con_image = l2norm(con_image)
-    cap = l2norm(cap)
-    con_cap = l2norm(con_cap)
+    # correct_image VS incorrect_words | Note the singular/plurals
+    cost_images = K.maximum(
+    	MARGIN - K.sum(correct_images * correct_words, 1) + K.sum(correct_images * wrong_words) , 
+    	0.0)
+    # correct_word VS incorrect_images | Note the singular/plurals
+    cost_words = K.maximum(
+    	MARGIN - K.sum(correct_words * correct_images, 1) + K.sum(correct_words * wrong_images) , 
+    	0.0)
 
-    cost_im = margin - tf.reduce_sum((image * cap), 1) + tf.reduce_sum((image * con_cap), 1)
-    cost_im = cost_im * tf.maximum(cost_im, 0.0)
-    cost_im = tf.reduce_sum(cost_im, 0)
-
-    cost_s  = margin - tf.reduce_sum((cap * image), 1) + tf.reduce_sum((cap * con_image), 1)
-    cost_s  = cost_s  * tf.maximum(cost_s, 0.0)
-    cost_s  = tf.reduce_sum(cost_s,  0)
-
-    loss = cost_im + cost_s
-    return loss
+    return cost_images + cost_words
+    
 
 def build_model(image_features, word_features=None):
 	image_vector = linear_transformation(ip)
@@ -64,7 +68,7 @@ def main():
 
 	# load all image fnames
 	with h5py.File(path_to_h5py, "r") as fp:
-		image_fnames = fp["data/fnames"][:] ## convert to list of strings - NOT list of lists.
+		image_fnames = reduce(lambda x,y:x+y, fp["data/fnames"][:]) ## convert to list of strings - NOT list of lists.
 
 	# load pickle which contains class ranges
 	with open("image_class_ranges.pkl", "r") as fp:
