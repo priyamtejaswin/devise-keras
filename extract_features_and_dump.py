@@ -61,14 +61,15 @@ def data_generator(path_to_h5py="processed_features/features.h5", batch_size=2):
 		class_of_first 	= image_fnames[i].split("/")[-2]
 		start,end 		= class_ranges[class_of_first]
 		range_of_nums 	= range(0,start) + range(end+1,DATASET_SIZE)
-		selected_indices= np.random.choice(range_of_nums, size=batch_size).tolist() # missed this!
+		selected_indices= np.random.choice(range_of_nums, size=batch_size, replace=False).tolist() # missed this! select without replacement! to avoid [1,1] error
 		selected_indices= sorted(selected_indices) # unordered indexing is not supported?
 
-		print vgg_feats[selected_indices].shape, embeddings[selected_indices].shape, selected_indices
+		# print vgg_feats[selected_indices].shape, embeddings[selected_indices].shape, selected_indices
 		# ipdb.set_trace()
+		# print i, start, end, class_of_first, selected_indices
 		X[1:]   		= vgg_feats[selected_indices]
 		y[1:]			= embeddings[selected_indices]
-
+		
 		yield X,y 
 
 
