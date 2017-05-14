@@ -9,7 +9,7 @@ from extract_features_and_dump import data_generator
 
 PATH_h5 = "processed_features/features.h5"
 MARGIN = 0.1
-INCORRECT_BATCH = 3
+INCORRECT_BATCH = 2
 BATCH = INCORRECT_BATCH + 1
 
 def linear_transformation(x):
@@ -71,7 +71,7 @@ def build_model(image_features, word_features=None):
 
 def main():
 
-    image_features = Input(shape=(4096,))
+    image_features = Input(shape=(None, 4096))
     model = build_model(image_features)
 
     for epoch in range(5):
