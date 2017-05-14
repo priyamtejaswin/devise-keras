@@ -70,7 +70,7 @@ def data_generator(path_to_h5py="processed_features/features.h5", batch_size=2):
 		X[1:]   		= vgg_feats[selected_indices]
 		y[1:]			= embeddings[selected_indices]
 		
-		yield X,y 
+		yield np.expand_dims(X, 0), np.expand_dims(y, 0)
 
 
 def dump_to_h5(names, scores ,hf):
