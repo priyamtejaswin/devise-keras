@@ -1,11 +1,16 @@
-from keras.layers import * 
 from keras.models import Model
+from keras.layers import Input
+from keras.layers import Dense
+from keras.layers import Lambda
 import keras.backend as K 
 import h5py
 import sys
 from extract_features_and_dump import data_generator
 
 PATH_h5 = "processed_features/features.h5"
+MARGIN = 0.1
+INCORRECT_BATCH = 3
+BATCH = INCORRECT_BATCH + 1
 
 def linear_transformation(x):
     ''' Takes a 4096-dim vector and applies 
@@ -20,20 +25,20 @@ def myloss(image_vectors, word_vectors):
     slice_but_first = lambda x: x[1:, :]
 
     # separate correct/wrong images
-    correct_image = Lambda(slice_first)(image_vectors)
-    wrong_images = Lambda(slice_but_first)(image_vectors)
+    correct_image = Lambda(slice_first, output_shape=(1, None))(image_vectors)
+    wrong_images = Lambda(slice_but_first, output_shape=(INCORRECT_BATCH, None))(image_vectors)
 
     # separate correct/wrong words
-    correct_word = Lambda(slice_first)(word_vectors)
-    wrong_words = Lambda(slice_but_first)(word_vectors)
+    correct_word = Lambda(slice_first, output_shape=(1, None))(word_vectors)
+    wrong_words = Lambda(slice_but_first, output_shape=(INCORRECT_BATCH, None))(word_vectors)
 
     # l2 norm
     l2 = lambda x: K.sqrt(K.sum(K.square(x)))
     l2norm = lambda x: x/l2(x)
 
     # tiling to replicate correct_word and correct_image
-    correct_words = K.tile(correct_word, K.shape(wrong_words)[0])
-    correct_images = K.tile(correct_image, K.shape(wrong_images)[0])
+    correct_words = K.tile(correct_word, INCORRECT_BATCH)
+    correct_images = K.tile(correct_image, INCORRECT_BATCH)
 
     # converting to unit vectors
     correct_words = l2norm(correct_words)
@@ -56,7 +61,7 @@ def myloss(image_vectors, word_vectors):
 def build_model(image_features, word_features=None):
     image_vector = linear_transformation(image_features)
 
-    mymodel = Model(inputs=image_features, output=image_vector)
+    mymodel = Model(inputs=image_features, outputs=image_vector)
     mymodel.compile(optimizer="adam", loss=myloss)
     return mymodel
     # load word vectors from disk as numpy 
@@ -70,7 +75,7 @@ def main():
     model = build_model(image_features)
 
     for epoch in range(5):
-        for raw_image_vectors, word_vectors in data_generator(batch_size = 2):
+        for raw_image_vectors, word_vectors in data_generator(batch_size = INCORRECT_BATCH):
             loss = model.train_on_batch(raw_image_vectors, word_vectors)
             print loss
 
