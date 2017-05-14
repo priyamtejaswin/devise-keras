@@ -4,7 +4,7 @@ from keras.layers import Dense
 from keras.layers import Lambda
 import keras.backend as K 
 import h5py
-import sys
+import sys, ipdb
 from extract_features_and_dump import data_generator
 import numpy as np
 
@@ -21,9 +21,8 @@ def linear_transformation(a):
     b = Dense(WORD_DIM, name='transform')(a)
     return b
 
-def myloss(word_vectors, image_vectors):
+def myloss(word_vectors, image_vectors, TESTING=False):
     """write your loss function here, e.g mse"""
-
     slice_first = lambda x: x[0:1 , :]
     slice_but_first = lambda x: x[1:, :]
 
@@ -48,7 +47,7 @@ def myloss(word_vectors, image_vectors):
     wrong_words = l2norm(wrong_words)
     correct_images = l2norm(correct_images)
     wrong_images = l2norm(wrong_images)
-    
+
     # correct_image VS incorrect_words | Note the singular/plurals
     cost_images = MARGIN - K.sum(correct_images * correct_words, 1) + K.sum(correct_images * wrong_words, 1) 
     cost_images = K.maximum(cost_images, 0.0)
@@ -60,6 +59,16 @@ def myloss(word_vectors, image_vectors):
     # currently cost_words and cost_images are vectors - need to convert to scalar
     cost_images = K.sum(cost_images, axis=-1)
     cost_words  = K.sum(cost_words, axis=-1)
+
+    if TESTING:
+    	# ipdb.set_trace()
+    	assert K.eval(wrong_words).shape[0] == INCORRECT_BATCH
+    	assert K.eval(correct_words).shape[0] == INCORRECT_BATCH
+    	assert K.eval(wrong_images).shape[0] == INCORRECT_BATCH
+    	assert K.eval(correct_images).shape[0] == INCORRECT_BATCH
+    	assert K.eval(correct_words).shape==K.eval(correct_images).shape
+    	assert K.eval(wrong_words).shape==K.eval(wrong_images).shape
+    	assert K.eval(correct_words).shape==K.eval(wrong_images).shape
     
     return cost_words + cost_images
     
@@ -70,11 +79,7 @@ def build_model(image_features, word_features=None):
     mymodel = Model(inputs=image_features, outputs=image_vector)
     mymodel.compile(optimizer="adam", loss=myloss)
     return mymodel
-    # load word vectors from disk as numpy 
-    # word_vectors_from_disk = load from numpy 
-
-    # model.train(ip_image, word_vectors_from_disk)
-
+    
 def main():
 
     image_features = Input(shape=(4096,))

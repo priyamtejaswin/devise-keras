@@ -42,8 +42,9 @@ def TEST_lossfun():
 	from model import myloss
 	
 	# test
-	out = K.eval(myloss(word_vectors, image_vectors))
+	out = K.eval(myloss(word_vectors, image_vectors, TESTING=True))
 	print out
 
 if __name__=="__main__":
+	TEST_datagen()
 	TEST_lossfun()
