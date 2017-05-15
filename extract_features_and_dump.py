@@ -34,7 +34,8 @@ def get_class_ranges(fnames):
 
 	return class_ranges
 
-def data_generator(path_to_h5py="processed_features/features.h5", batch_size=2):
+def data_generator(path_to_h5py="processed_features/features.h5", batch_size=2, epochs=2):
+	print "\nloading data for training..."
 	# load all image fnames
 	with h5py.File(path_to_h5py, "r") as fp:
 		image_fnames = map(lambda a:a[0], fp["data/fnames"][:]) #fnames is list of single lists!
@@ -46,32 +47,37 @@ def data_generator(path_to_h5py="processed_features/features.h5", batch_size=2):
 	F 			 = h5py.File(path_to_h5py, "r")
 	vgg_feats 	 = F["data/features"]
 	embeddings   = F["data/word_embeddings"]
+	word_mapping = {l[0]:i for i,l in enumerate(F["data/word_names"])}
 	DATASET_SIZE = len(image_fnames)
-	# assert len(vgg_feats) == len(embeddings), "should be same"
+	print "done\n"
 
-	for i in range(DATASET_SIZE):
+	for epoch in range(epochs):
+		for i in range(DATASET_SIZE):
+			X = np.zeros((1+batch_size, 4096))
+			y = np.zeros((1+batch_size, 50))
 
-		X = np.zeros((1+batch_size, 4096))
-		y = np.zeros((1+batch_size, 50))
+			# correct one - first one 
+			X[0] = vgg_feats[i]
+			y[0] = embeddings[word_mapping[image_fnames[i].split("/")[-2]]][np.newaxis, :]
 
-		# correct one - first one 
-		X[0] = vgg_feats[i]
-		y[0] = embeddings[i]
+			# others - remaining
+			class_of_first 	= image_fnames[i].split("/")[-2]
+			start,end 		= class_ranges[class_of_first]
+			range_of_nums 	= range(0,start) + range(end+1,DATASET_SIZE)
+			selected_indices= np.random.choice(range_of_nums, size=batch_size, replace=False).tolist() # missed this! select without replacement! to avoid [1,1] error
+			selected_indices= sorted(selected_indices) # unordered indexing is not supported?
 
-		# others - remaining
-		class_of_first 	= image_fnames[i].split("/")[-2]
-		start,end 		= class_ranges[class_of_first]
-		range_of_nums 	= range(0,start) + range(end+1,DATASET_SIZE)
-		selected_indices= np.random.choice(range_of_nums, size=batch_size, replace=False).tolist() # missed this! select without replacement! to avoid [1,1] error
-		selected_indices= sorted(selected_indices) # unordered indexing is not supported?
+			# print i, start, end, class_of_first, selected_indices
+			X[1:]   		= vgg_feats[selected_indices]
 
-		# print vgg_feats[selected_indices].shape, embeddings[selected_indices].shape, selected_indices
-		# ipdb.set_trace()
-		# print i, start, end, class_of_first, selected_indices
-		X[1:]   		= vgg_feats[selected_indices]
-		y[1:]			= embeddings[selected_indices]
-		
-		yield X, y
+			selected_words  = map(lambda a:image_fnames[a].split("/")[-2], selected_indices)
+			selected_embeds = np.concatenate(
+								map(lambda w:embeddings[word_mapping[w]][np.newaxis, :], selected_words), 
+								0)
+			y[1:]			= selected_embeds
+			
+			print epoch, i
+			yield X, y
 
 
 def dump_to_h5(names, scores ,hf):
