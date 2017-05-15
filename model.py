@@ -4,7 +4,7 @@ from keras.layers import Dense
 from keras.layers import Lambda
 import keras.backend as K 
 import h5py
-import sys
+import sys, ipdb
 from extract_features_and_dump import data_generator
 import numpy as np
 
@@ -16,14 +16,18 @@ IMAGE_DIM = 4096
 WORD_DIM = 50
 
 def linear_transformation(a):
-    ''' Takes a 4096-dim vector and applies 
-        a linear transformation to get 500-dim vector '''
+    """ 
+    Takes a 4096-dim vector, applies linear transformation to get WORD_DIM vector.
+    """
     b = Dense(WORD_DIM, name='transform')(a)
     return b
 
-def myloss(word_vectors, image_vectors):
-    """write your loss function here, e.g mse"""
-
+def hinge_rank_loss(word_vectors, image_vectors, TESTING=False):
+    """
+    Custom hinge loss per (image, label) example - Page4.
+    word_vectors is y_true
+    image_vectors is y_pred
+    """
     slice_first = lambda x: x[0:1 , :]
     slice_but_first = lambda x: x[1:, :]
 
@@ -48,7 +52,7 @@ def myloss(word_vectors, image_vectors):
     wrong_words = l2norm(wrong_words)
     correct_images = l2norm(correct_images)
     wrong_images = l2norm(wrong_images)
-    
+
     # correct_image VS incorrect_words | Note the singular/plurals
     cost_images = MARGIN - K.sum(correct_images * correct_words, 1) + K.sum(correct_images * wrong_words, 1) 
     cost_images = K.maximum(cost_images, 0.0)
@@ -60,6 +64,16 @@ def myloss(word_vectors, image_vectors):
     # currently cost_words and cost_images are vectors - need to convert to scalar
     cost_images = K.sum(cost_images, axis=-1)
     cost_words  = K.sum(cost_words, axis=-1)
+
+    if TESTING:
+    	# ipdb.set_trace()
+    	assert K.eval(wrong_words).shape[0] == INCORRECT_BATCH
+    	assert K.eval(correct_words).shape[0] == INCORRECT_BATCH
+    	assert K.eval(wrong_images).shape[0] == INCORRECT_BATCH
+    	assert K.eval(correct_images).shape[0] == INCORRECT_BATCH
+    	assert K.eval(correct_words).shape==K.eval(correct_images).shape
+    	assert K.eval(wrong_words).shape==K.eval(wrong_images).shape
+    	assert K.eval(correct_words).shape==K.eval(wrong_images).shape
     
     return cost_words + cost_images
     
@@ -68,12 +82,8 @@ def build_model(image_features, word_features=None):
     image_vector = linear_transformation(image_features)
 
     mymodel = Model(inputs=image_features, outputs=image_vector)
-    mymodel.compile(optimizer="adam", loss=myloss)
+    mymodel.compile(optimizer="adagrad", loss=hinge_rank_loss)
     return mymodel
-    # load word vectors from disk as numpy 
-    # word_vectors_from_disk = load from numpy 
-
-    # model.train(ip_image, word_vectors_from_disk)
 
 def main():
 
@@ -81,10 +91,9 @@ def main():
     model = build_model(image_features)
     print model.summary()
 
-    for epoch in range(5):
-        for raw_image_vectors, word_vectors in data_generator(batch_size = INCORRECT_BATCH):
-            loss = model.train_on_batch(raw_image_vectors, word_vectors)
-            print "loss:",loss
+    for raw_image_vectors, word_vectors in data_generator(batch_size = INCORRECT_BATCH, epochs=50):
+        loss = model.train_on_batch(raw_image_vectors, word_vectors)
+        print "loss:",loss
 
 if __name__=="__main__":
     main()
