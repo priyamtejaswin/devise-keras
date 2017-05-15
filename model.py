@@ -16,13 +16,18 @@ IMAGE_DIM = 4096
 WORD_DIM = 50
 
 def linear_transformation(a):
-    ''' Takes a 4096-dim vector and applies 
-        a linear transformation to get 500-dim vector '''
+    """ 
+    Takes a 4096-dim vector, applies linear transformation to get WORD_DIM vector.
+    """
     b = Dense(WORD_DIM, name='transform')(a)
     return b
 
-def myloss(word_vectors, image_vectors, TESTING=False):
-    """write your loss function here, e.g mse"""
+def hinge_rank_loss(word_vectors, image_vectors, TESTING=False):
+    """
+    Custom hinge loss per (image, label) example - Page4.
+    word_vectors is y_true
+    image_vectors is y_pred
+    """
     slice_first = lambda x: x[0:1 , :]
     slice_but_first = lambda x: x[1:, :]
 
@@ -77,19 +82,18 @@ def build_model(image_features, word_features=None):
     image_vector = linear_transformation(image_features)
 
     mymodel = Model(inputs=image_features, outputs=image_vector)
-    mymodel.compile(optimizer="adam", loss=myloss)
+    mymodel.compile(optimizer="adagrad", loss=hinge_rank_loss)
     return mymodel
-    
+
 def main():
 
     image_features = Input(shape=(4096,))
     model = build_model(image_features)
     print model.summary()
 
-    for epoch in range(5):
-        for raw_image_vectors, word_vectors in data_generator(batch_size = INCORRECT_BATCH):
-            loss = model.train_on_batch(raw_image_vectors, word_vectors)
-            print "loss:",loss
+    for raw_image_vectors, word_vectors in data_generator(batch_size = INCORRECT_BATCH, epochs=50):
+        loss = model.train_on_batch(raw_image_vectors, word_vectors)
+        print "loss:",loss
 
 if __name__=="__main__":
     main()
