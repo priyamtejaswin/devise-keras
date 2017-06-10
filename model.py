@@ -2,14 +2,16 @@ from keras.models import Model
 from keras.layers import Input
 from keras.layers import Dense
 from keras.layers import Lambda
+from keras.callbacks import RemoteMonitor
 import keras
-import time
+from time import time, sleep
 import keras.backend as K 
 import h5py
 import sys, ipdb
 import math, os, sys
 from extract_features_and_dump import data_generator
 import numpy as np
+from keras.callbacks import TensorBoard
 
 PATH_h5 = "processed_features/features.h5"
 MARGIN = 0.1
@@ -17,6 +19,24 @@ INCORRECT_BATCH = 2
 BATCH = INCORRECT_BATCH + 1
 IMAGE_DIM = 4096
 WORD_DIM = 50
+
+class DelayCallback(keras.callbacks.Callback):
+	def on_train_begin(self, logs={}):
+		pass
+
+	def on_batch_end(self, batch, logs={}):
+		sleep(0.1)
+
+class EpochCheckpoint(keras.callbacks.Callback):
+	def __init__(self, folder):
+		super(EpochCheckpoint, self).__init__()
+		assert folder is not None, "Err. Please specify a folder where models will be saved"
+		self.folder = folder
+		print "[LOG] EpochCheckpoint: folder to save models: "+self.folder
+
+	def on_epoch_end(self, epoch, logs={}):
+		print "Saving model..."
+		self.model.save(os.path.join(self.folder,"epoch_"+str(epoch)+".hdf5"))
 
 def get_num_train_images():
 	'''
@@ -110,13 +130,24 @@ def main():
 	# number of training images 
 	_num_train = get_num_train_images()
 
+	# Callbacks 
+	# remote_cb = RemoteMonitor(root='http://localhost:9000')
+	tensorboard = TensorBoard(log_dir="logs/{}".format(time()))
+	epoch_cb    = EpochCheckpoint(folder="./snapshots/")
+	# delay_cb 	= DelayCallback()
+
 	# fit generator
 	train_datagen = data_generator(batch_size=INCORRECT_BATCH)
 	history = model.fit_generator(
 			train_datagen,
 			steps_per_epoch=3,
-			epochs=100
+			epochs=100,
+			callbacks=[epoch_cb, tensorboard]
 		)
+	K.clear_session()
+	print history.history.keys()
+
+
 
 
 if __name__=="__main__":
