@@ -4,3 +4,6 @@ glove.*
 /processed_features/features.h5
 *.pkl
 *.pyc
+logs/*
+VOC*
+snapshots/*
