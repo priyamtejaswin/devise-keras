@@ -1,7 +1,10 @@
 # devise-keras
 tensorflow 1.1.0
+
 keras 2.0.2
+
 tensorboard 1.0.0a6
+
 # ------------
 
 bash SETUP.sh
