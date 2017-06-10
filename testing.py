@@ -22,7 +22,9 @@ def TEST_datagen():
 	from extract_features_and_dump import data_generator
 
 	# Run module
-	for x,y in data_generator(PATH_h5, batch_size=2, epochs=2):
+	dgen = data_generator(PATH_h5, batch_size=2)
+	for i in range(3):
+		x,y = dgen.next() 
 		print x.shape, y.shape
 		assert x.shape[0] == y.shape[0], "batch size should be same"
 		assert x.shape[1] == IMAGE_DIM

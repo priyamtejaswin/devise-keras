@@ -34,8 +34,11 @@ def get_class_ranges(fnames):
 
 	return class_ranges
 
-def data_generator(path_to_h5py="processed_features/features.h5", batch_size=2, epochs=2):
-	print "\nloading data for training..."
+def data_generator(path_to_h5py="processed_features/features.h5", batch_size=2):
+	
+	#print "\nloading data for training...\n"
+	
+	
 	# load all image fnames
 	with h5py.File(path_to_h5py, "r") as fp:
 		image_fnames = map(lambda a:a[0], fp["data/fnames"][:]) #fnames is list of single lists!
@@ -49,9 +52,9 @@ def data_generator(path_to_h5py="processed_features/features.h5", batch_size=2, 
 	embeddings   = F["data/word_embeddings"]
 	word_mapping = {l[0]:i for i,l in enumerate(F["data/word_names"])}
 	DATASET_SIZE = len(image_fnames)
-	print "done\n"
+	#print "done\n"
 
-	for epoch in range(epochs):
+	while 1:
 		for i in range(DATASET_SIZE):
 			X = np.zeros((1+batch_size, 4096))
 			y = np.zeros((1+batch_size, 50))
@@ -76,7 +79,7 @@ def data_generator(path_to_h5py="processed_features/features.h5", batch_size=2, 
 								0)
 			y[1:]			= selected_embeds
 			
-			print epoch, i
+			# print epoch, i
 			yield X, y
 
 
