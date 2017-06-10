@@ -25,4 +25,13 @@ else
 fi
 echo
 
+featsDir="processed_features"
+if [ -d "$featsDir" ];
+	then
+	echo -e "$featsDir exists.\n"
+else
+	mkdir $featsDir
+	echo -e "Created $featsDir\n"
+fi
+
 echo -e "DONE\n"
