@@ -23,7 +23,8 @@ glove_index = {w[0]:i for i,w in enumerate(F["data/word_names"])}
 UNK_ix = glove_index["<unk>"]
 
 if os.path.exists(UIUC_ROOT):
-	raw_input("\nUIUC_PASCAL_DATA detected. The program has stopped here. Press ENTER to continue downloading all data. Press CTRL+C to exit program now.\n")
+	print "\nUIUC_PASCAL_DATA detected. The program has stopped here. Press ENTER to continue downloading all data. Press CTRL+C to exit program now.\n"
+	# raw_input()
 else:
 	os.makedirs(UIUC_ROOT)
 
@@ -70,9 +71,6 @@ with open(file_path, 'r') as fp:
 
 		match_caption = caption_re.search(clean)
 		if match_caption:
-			caption_count+=1
-
-			image_TO_captions[image_count].append(caption_count)
 			caption_text = match_caption.group(1).strip().lower()
 
 			tokens = []
@@ -86,7 +84,10 @@ with open(file_path, 'r') as fp:
 			if with_spaces[-1] in ".!":
 				with_spaces = with_spaces[:-1]
 
-			if len(with_spaces.split())>=5:
+			if len(with_spaces.split())>=5: # Ultimate check for including a caption.
+				caption_count+=1
+				image_TO_captions[image_count].append(caption_count)
+
 				new_list = []
 				for word in with_spaces.split():
 					if word in glove_index:
@@ -96,11 +97,12 @@ with open(file_path, 'r') as fp:
 
 				captions_list.append(" ".join(new_list))
 
-			print caption_text
+				print caption_text
 
 		print image_count, caption_count
 		if image_count==151:
 			print "Downloaded", image_count 
+			# ipdb.set_trace()
 			break
 
 _counts = [len(c.strip().split()) for c in captions_list]
@@ -134,6 +136,11 @@ for word,ix in word_index.items():
 print "Saving embedding and word_index to disk..."
 pickle.dump(embedding_layer, open("KERAS_embedding_layer.pkl", "w"))
 pickle.dump(word_index, open("DICT_word_index.pkl", "w"))
+pickle.dump(data, open("ARRAY_caption_data.pkl", "w"))
+
+pickle.dump(id_TO_class, open("DICT_id_TO_class.pkl", "w"))
+pickle.dump(class_TO_images, open("DICT_class_TO_images.pkl", "w"))
+pickle.dump(image_TO_captions, open("DICT_image_TO_captions.pkl", "w"))
 
 print "DONE"
 # ipdb.set_trace()
