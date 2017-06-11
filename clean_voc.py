@@ -7,6 +7,7 @@ from tqdm import *
 import shutil
 import re
 import time
+import cv2 
 
 TRAINVAL_FOLDER 	= "./VOCdevkit/VOC2012/ImageSets/Main/"
 IMAGE_FOLDER		= "./VOCdevkit/VOC2012/JPEGImages/"
@@ -22,11 +23,12 @@ def get_classes_files():
 	fnames_train = [f for f in filenames if f.endswith("_train.txt")]
 
 	validation = {}
+
 	for txtfile in fnames_valid:
 		f = open(os.path.join(TRAINVAL_FOLDER,txtfile),'r')
 		data = f.readlines()
 		data = [k.strip() for k in data]
-		data = [k.split(" ")[0] for k in data]
+		data = [k.split(" ")[0] for k in data if k.split(" ")[-1] == "1"]
 		data = [k+".jpg" for k in data]
 		data = [os.path.join(IMAGE_FOLDER,k) for k in data]
 		f.close()
@@ -39,7 +41,7 @@ def get_classes_files():
 		f = open(os.path.join(TRAINVAL_FOLDER,txtfile),'r')
 		data = f.readlines()
 		data = [k.strip() for k in data]
-		data = [k.split(" ")[0] for k in data]
+		data = [k.split(" ")[0] for k in data if k.split(" ")[-1] == "1"]
 		data = [k+".jpg" for k in data]
 		data = [os.path.join(IMAGE_FOLDER,k) for k in data]
 		f.close()
@@ -60,12 +62,16 @@ def main():
 	for c in classes:
 		os.mkdir(OUTPUT_FOLDER+c)
 
-	# copy training files to voc_images folder 
-	for c in classes:
+	# resize + copy training files to voc_images folder 
+	for c in classes[0:2]:
 		print "Copying images of class - ",c
 		time.sleep(5)
 		for file_location in tqdm(training_files[c]):
-			shutil.copy(file_location, OUTPUT_FOLDER+c+"/")
+			img = cv2.imread(file_location)
+			img = cv2.resize(img, (224,224))
+			filename = file_location.split("/")[-1]
+			cv2.imwrite(OUTPUT_FOLDER+c+"/"+filename, img)
+			
 
 
 
