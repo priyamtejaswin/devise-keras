@@ -7,3 +7,5 @@ glove.*
 logs/*
 VOC*
 snapshots/*
+*.txt
+UIUC_PASCAL_DATA/*

@@ -237,21 +237,26 @@ def main():
 	_ = data.create_dataset("word_names", (0, 1), dtype=dt, maxshape=(None, 1))
 
 	embeddings_index = {}
-	f = open(embeddings_path)
+	
 	word_batch, vector_batch, _c = [], [], 1
 
-	for line in f:
-	    values = line.split()
-	    word = values[0]
-	    coefs = np.asarray(values[1:], dtype='float32')
-	    embeddings_index[word] = coefs
-	    word_batch.append(word)
-	    vector_batch.append(coefs)
-	    
-	    if _c%5==0:
-	    	dump_wv_to_h5(word_batch, vector_batch, hf)
-	    	word_batch, vector_batch = [], []
-	    _c+=1
+	word_batch.append("<pad>")
+	vector_batch.append(np.zeros(WORD_DIM))
+	embeddings_index[word_batch[0]] = vector_batch[0]
+	
+	with open(embeddings_path) as f:
+		for line in f.readlines():
+		    values = line.split()
+		    word = values[0]
+		    coefs = np.asarray(values[1:], dtype='float32')
+		    embeddings_index[word] = coefs
+		    word_batch.append(word)
+		    vector_batch.append(coefs)
+		    
+		    if _c%50==0:
+		    	dump_wv_to_h5(word_batch, vector_batch, hf)
+		    	word_batch, vector_batch = [], []
+		    _c+=1
 
 	dump_wv_to_h5(word_batch, vector_batch, hf) # to catch the trailing vectors
 	f.close()
