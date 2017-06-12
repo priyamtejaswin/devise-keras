@@ -12,10 +12,11 @@ import math, os, sys
 from extract_features_and_dump import data_generator
 import numpy as np
 from keras.callbacks import TensorBoard
+import cv2
 
 PATH_h5 = "processed_features/features.h5"
-MARGIN = 0.1
-INCORRECT_BATCH = 2
+MARGIN = 0.5
+INCORRECT_BATCH = 4
 BATCH = INCORRECT_BATCH + 1
 IMAGE_DIM = 4096
 WORD_DIM = 50
@@ -25,7 +26,7 @@ class DelayCallback(keras.callbacks.Callback):
 		pass
 
 	def on_batch_end(self, batch, logs={}):
-		sleep(0.1)
+		sleep(0.01)
 
 class EpochCheckpoint(keras.callbacks.Callback):
 	def __init__(self, folder):
@@ -123,27 +124,79 @@ def build_model(image_features, word_features=None):
 
 def main():
 
-	image_features = Input(shape=(4096,))
-	model = build_model(image_features)
-	print model.summary()
+	RUN_TIME = "TRAIN"
 
-	# number of training images 
-	_num_train = get_num_train_images()
 
-	# Callbacks 
-	# remote_cb = RemoteMonitor(root='http://localhost:9000')
-	tensorboard = TensorBoard(log_dir="logs/{}".format(time()))
-	epoch_cb    = EpochCheckpoint(folder="./snapshots/")
-	# delay_cb 	= DelayCallback()
+	if RUN_TIME == "TRAIN":
+		image_features = Input(shape=(4096,))
+		model = build_model(image_features)
+		print model.summary()
 
-	# fit generator
-	train_datagen = data_generator(batch_size=INCORRECT_BATCH)
-	history = model.fit_generator(
-			train_datagen,
-			steps_per_epoch=3,
-			epochs=100,
-			callbacks=[epoch_cb, tensorboard]
-		)
+		# number of training images 
+		_num_train = get_num_train_images()
+
+		# Callbacks 
+		# remote_cb = RemoteMonitor(root='http://localhost:9000')
+		tensorboard = TensorBoard(log_dir="logs/{}".format(time()))
+		epoch_cb    = EpochCheckpoint(folder="./snapshots/")
+		delay_cb 	= DelayCallback()
+
+		# fit generator
+		steps_per_epoch = math.ceil(_num_train/float(BATCH))
+		print "Steps per epoch i.e number of iterations: ",steps_per_epoch
+		train_datagen = data_generator(batch_size=INCORRECT_BATCH)
+		history = model.fit_generator(
+				train_datagen,
+				steps_per_epoch=steps_per_epoch,
+				epochs=50,
+				callbacks=[tensorboard, delay_cb, epoch_cb]
+			)
+
+	elif RUN_TIME == "PREDICT":
+		from keras.models import load_model 
+		model = load_model("snapshots/epoch_49.hdf5", custom_objects={"hinge_rank_loss":hinge_rank_loss})
+
+	# predict on some sample images
+	from extract_features_and_dump import define_model
+	vgg16 = define_model(path="./vgg16_weights_th_dim_ordering_th_kernels.h5")
+
+	# load word embeddings and word names 
+	hf = h5py.File("processed_features/features.h5","r")
+	v_h5 = hf["data/word_embeddings"]
+	w_h5 = hf["data/word_names"]
+	v_h5 = v_h5[:,:]
+	v_h5 = v_h5 / np.linalg.norm(v_h5, axis=1, keepdims=True)
+	w_h5 = w_h5[:,:]
+
+	list_ims = ["./UIUC_PASCAL_DATA_clean/aeroplane/2008_000716.jpg",
+	        	"./UIUC_PASCAL_DATA_clean/bicycle/2008_000725.jpg",
+	        	"./UIUC_PASCAL_DATA_clean/bird/2008_008490.jpg"]
+
+	
+	for imname in list_ims:
+		
+		print "Running for image type: ",imname.split("/")[-2]
+
+		img = cv2.imread(imname)
+		# cv2.imshow("input",img); cv2.waitKey(0)
+		img = np.rollaxis(img, 2)
+		img = np.expand_dims(img, 0)
+		img_feats = vgg16.predict(img)
+		image_vec = model.predict(img_feats)
+		# print image_vec.shape
+		image_vec = image_vec / np.linalg.norm(image_vec)
+
+		diff = v_h5 - image_vec
+		diff = np.linalg.norm(diff, axis=1)
+		
+		bicycle_idx 	= np.where(w_h5==["bicycle"])[0]
+		aeroplane_idx 	= np.where(w_h5==["aeroplane"])[0]
+		bird_idx 		= np.where(w_h5==["bird"])[0]
+
+		print "bicycle: ", diff[bicycle_idx]
+		print "aeroplane: ", diff[aeroplane_idx]
+		print "bird: ", diff[bird_idx]
+
 	K.clear_session()
 	print history.history.keys()
 

@@ -16,6 +16,7 @@ import h5py
 import argparse 
 import os, sys, ipdb
 import cPickle as pickle
+from tqdm import *
 
 np.random.seed(123)
 
@@ -52,6 +53,7 @@ def data_generator(path_to_h5py="processed_features/features.h5", batch_size=2):
 	embeddings   = F["data/word_embeddings"]
 	word_mapping = {l[0]:i for i,l in enumerate(F["data/word_names"])}
 	DATASET_SIZE = len(image_fnames)
+	
 	#print "done\n"
 
 	while 1:
@@ -161,6 +163,11 @@ def define_model(path):
 
 	# load wts
 	model.load_weights(path, by_name=True)
+	
+	# These are theano weights, but we are running on tensorflow backend, so convert 
+	# theano kernels to tensorflow kernels . (channels_first, tf kernels)
+	from keras.utils import convert_all_kernels_in_model
+	convert_all_kernels_in_model(model)
 
 	return model  
 
@@ -185,6 +192,7 @@ def main():
 	assert os.path.isdir(images_path), "---path is not a folder--"
 	assert os.path.isdir(dump_path), "---path is not a folder--"
 	
+	print "defining model.."
 	model = define_model(weights_path)
 	
 	dir_fnames = []
@@ -195,6 +203,7 @@ def main():
 
 	print "Total files:", len(list_of_files)
 	
+	print "creating h5py files features.h5.."
 	# h5py 
 	hf = h5py.File(os.path.join(dump_path,"features.h5"),"w")
 	data = hf.create_group("data")
@@ -203,7 +212,8 @@ def main():
 	fnames_h5 = data.create_dataset("fnames",(0,1),dtype=dt, maxshape=(None,1))
 
 	# extract and dump image features
-	for i,j in create_indices(len(list_of_files), batch_size=2):
+	print "Dumping image features.."
+	for i,j in tqdm(create_indices(len(list_of_files), batch_size=2)):
 		
 		j = min(j, len(list_of_files))
 
@@ -233,6 +243,7 @@ def main():
 		print "...saved to pickle image_class_ranges.pkl"
 
 	# extract and dump word vectors
+	print "Dumping word embeddings..."
 	_ = data.create_dataset("word_embeddings", (0, WORD_DIM), maxshape=(None, WORD_DIM))
 	_ = data.create_dataset("word_names", (0, 1), dtype=dt, maxshape=(None, 1))
 
