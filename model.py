@@ -124,7 +124,7 @@ def build_model(image_features, word_features=None):
 
 def main():
 
-	RUN_TIME = "PREDICT"
+	RUN_TIME = "TRAIN"
 
 
 	if RUN_TIME == "TRAIN":
@@ -159,8 +159,6 @@ def main():
 	# predict on some sample images
 	from extract_features_and_dump import define_model
 	vgg16 = define_model(path="./vgg16_weights_th_dim_ordering_th_kernels.h5")
-	from keras.utils import convert_all_kernels_in_model
-	convert_all_kernels_in_model(vgg16)
 
 	# load word embeddings and word names 
 	hf = h5py.File("processed_features/features.h5","r")
