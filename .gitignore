@@ -7,5 +7,6 @@ glove.*
 logs/*
 VOC*
 snapshots/*
-voc_images/*
-UIUC*
+UIUC_PASCAL_DATA/*
+*.txt
+wget-log
