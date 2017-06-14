@@ -205,11 +205,19 @@ def main():
 	
 	print "creating h5py files features.h5.."
 	# h5py 
-	hf = h5py.File(os.path.join(dump_path,"features.h5"),"w")
-	data = hf.create_group("data")
-	x_h5 = data.create_dataset("features",(0,IMAGE_DIM), maxshape=(None,IMAGE_DIM))
+	hf = h5py.File(os.path.join(dump_path,"features.h5"),"r+")
+	data = hf["data"]
+
+	if data.get("features") is None:
+		x_h5 = data.create_dataset("features",(0,IMAGE_DIM), maxshape=(None,IMAGE_DIM))
+	else:
+		x_h5 = data["features"]
+
 	dt   = h5py.special_dtype(vlen=str)
-	fnames_h5 = data.create_dataset("fnames",(0,1),dtype=dt, maxshape=(None,1))
+	if data.get("fnames") is None:
+		fnames_h5 = data.create_dataset("fnames",(0,1),dtype=dt, maxshape=(None,1))
+	else:
+		fnames_h5 = data["fnames"]
 
 	# extract and dump image features
 	print "Dumping image features.."
@@ -242,31 +250,7 @@ def main():
 		pickle.dump(class_ranges, f)
 		print "...saved to pickle image_class_ranges.pkl"
 
-	# extract and dump word vectors
-	print "Dumping word embeddings..."
-	_ = data.create_dataset("word_embeddings", (0, WORD_DIM), maxshape=(None, WORD_DIM))
-	_ = data.create_dataset("word_names", (0, 1), dtype=dt, maxshape=(None, 1))
-
-	embeddings_index = {}
-	f = open(embeddings_path)
-	word_batch, vector_batch, _c = [], [], 1
-
-	for line in f:
-	    values = line.split()
-	    word = values[0]
-	    coefs = np.asarray(values[1:], dtype='float32')
-	    embeddings_index[word] = coefs
-	    word_batch.append(word)
-	    vector_batch.append(coefs)
-	    
-	    if _c%5==0:
-	    	dump_wv_to_h5(word_batch, vector_batch, hf)
-	    	word_batch, vector_batch = [], []
-	    _c+=1
-
-	dump_wv_to_h5(word_batch, vector_batch, hf) # to catch the trailing vectors
-	f.close()
-	print 'Found %s word vectors.' % len(embeddings_index)
+	K.clear_session()
 
 if __name__=="__main__":
 	main()
