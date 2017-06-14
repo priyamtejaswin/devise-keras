@@ -21,7 +21,7 @@ else
 	echo -e "$gloveFile not found. Downloading...\n"
 	wget http://nlp.stanford.edu/data/glove.6B.zip
 	echo -e "Extracting...\n"
-	tar -xvzf glove.6B.zip
+	unzip glove.6B.zip
 fi
 echo
 
