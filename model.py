@@ -123,8 +123,7 @@ def build_model(image_features, word_features=None):
 	return mymodel
 
 def main():
-
-	RUN_TIME = "TRAIN"
+	RUN_TIME = sys.argv[1]
 
 
 	if RUN_TIME == "TRAIN":
@@ -145,16 +144,17 @@ def main():
 		steps_per_epoch = math.ceil(_num_train/float(BATCH))
 		print "Steps per epoch i.e number of iterations: ",steps_per_epoch
 		
-        train_datagen = data_generator(batch_size=INCORRECT_BATCH)
+		train_datagen = data_generator(batch_size=INCORRECT_BATCH)
 		history = model.fit_generator(
 				train_datagen,
 				steps_per_epoch=steps_per_epoch,
 				epochs=50,
 				callbacks=[tensorboard, delay_cb, epoch_cb]
 			)
-        print history.history.keys()
+		print history.history.keys()
 
-	elif RUN_TIME == "PREDICT":
+
+	elif RUN_TIME == "TEST":
 		from keras.models import load_model 
 		model = load_model("snapshots/epoch_49.hdf5", custom_objects={"hinge_rank_loss":hinge_rank_loss})
 
@@ -171,8 +171,8 @@ def main():
 	w_h5 = w_h5[:,:]
 
 	list_ims = ["./UIUC_PASCAL_DATA_clean/aeroplane/2008_000716.jpg",
-	        	"./UIUC_PASCAL_DATA_clean/bicycle/2008_000725.jpg",
-	        	"./UIUC_PASCAL_DATA_clean/bird/2008_008490.jpg"]
+				"./UIUC_PASCAL_DATA_clean/bicycle/2008_000725.jpg",
+				"./UIUC_PASCAL_DATA_clean/bird/2008_008490.jpg"]
 
 	
 	for imname in list_ims:
@@ -200,8 +200,6 @@ def main():
 		print "bird: ", diff[bird_idx]
 
 	K.clear_session()
-
-
 
 if __name__=="__main__":
 	main()
