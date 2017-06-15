@@ -133,7 +133,8 @@ with open(file_path, 'r') as fp:
 
 		print image_count, caption_count
 		if image_count==151:
-			_response = raw_input("Downloaded", image_count, "Download more?<y/n>:")
+			print "Downloaded", image_count
+			_response = raw_input("Download more?<y/n>:")
 			if _response=="n":
 				break
 			

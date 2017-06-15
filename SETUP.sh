@@ -34,4 +34,12 @@ else
 	echo -e "Created $featsDir\n"
 fi
 
+snapsDir="snapshots"
+if [ -d "$snapsDir" ];
+	then
+	echo -e "$snapsDir exists.\n"
+else
+	mkdir $snapsDir
+	echo -e "Created $snapsDir\n"
+
 echo -e "DONE\n"

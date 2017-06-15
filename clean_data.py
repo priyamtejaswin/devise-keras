@@ -15,6 +15,9 @@ from tqdm import *
 INPUT_PATH = "./UIUC_PASCAL_DATA/"
 OUTPUT_PATH = "./UIUC_PASCAL_DATA_clean/"
 
+if not os.path.exists(OUTPUT_PATH):
+	os.mkdir(OUTPUT_PATH)
+
 # files + path
 list_files = []
 for root, dirs, files in os.walk(INPUT_PATH, topdown=False):
