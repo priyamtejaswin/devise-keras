@@ -52,7 +52,7 @@ dump_wv_to_h5(word_batch, vector_batch, F) # to catch the trailing vectors
 f.close()
 print 'Found %s word vectors.' % len(glove_index)
 
-UNK_ix = glove_index["<unk>"]
+# UNK_ix = glove_index["<unk>"]
 
 if os.path.exists(UIUC_ROOT):
 	print "\nUIUC_PASCAL_DATA detected. The program has stopped here. Press ENTER to continue downloading all data. Press CTRL+C to exit program now.\n"
@@ -125,7 +125,9 @@ with open(file_path, 'r') as fp:
 					if word in glove_index:
 						new_list.append(word)
 					else:
-						new_list.append("<unk>")
+						## current strategy is to skip unknown words!
+						# new_list.append("<unk>")
+						pass
 
 				captions_list.append(" ".join(new_list))
 
