@@ -16,6 +16,7 @@ import h5py
 import argparse 
 import os, sys, ipdb
 import cPickle as pickle
+from tqdm import *
 
 np.random.seed(123)
 
@@ -52,6 +53,7 @@ def data_generator(path_to_h5py="processed_features/features.h5", batch_size=2):
 	embeddings   = F["data/word_embeddings"]
 	word_mapping = {l[0]:i for i,l in enumerate(F["data/word_names"])}
 	DATASET_SIZE = len(image_fnames)
+	
 	#print "done\n"
 
 	while 1:
@@ -161,6 +163,11 @@ def define_model(path):
 
 	# load wts
 	model.load_weights(path, by_name=True)
+	
+	# These are theano weights, but we are running on tensorflow backend, so convert 
+	# theano kernels to tensorflow kernels . (channels_first, tf kernels)
+	from keras.utils import convert_all_kernels_in_model
+	convert_all_kernels_in_model(model)
 
 	return model  
 
@@ -185,6 +192,7 @@ def main():
 	assert os.path.isdir(images_path), "---path is not a folder--"
 	assert os.path.isdir(dump_path), "---path is not a folder--"
 	
+	print "defining model.."
 	model = define_model(weights_path)
 	
 	dir_fnames = []
@@ -195,15 +203,25 @@ def main():
 
 	print "Total files:", len(list_of_files)
 	
+	print "creating h5py files features.h5.."
 	# h5py 
-	hf = h5py.File(os.path.join(dump_path,"features.h5"),"w")
-	data = hf.create_group("data")
-	x_h5 = data.create_dataset("features",(0,IMAGE_DIM), maxshape=(None,IMAGE_DIM))
+	hf = h5py.File(os.path.join(dump_path,"features.h5"),"r+")
+	data = hf["data"]
+
+	if data.get("features") is None:
+		x_h5 = data.create_dataset("features",(0,IMAGE_DIM), maxshape=(None,IMAGE_DIM))
+	else:
+		x_h5 = data["features"]
+
 	dt   = h5py.special_dtype(vlen=str)
-	fnames_h5 = data.create_dataset("fnames",(0,1),dtype=dt, maxshape=(None,1))
+	if data.get("fnames") is None:
+		fnames_h5 = data.create_dataset("fnames",(0,1),dtype=dt, maxshape=(None,1))
+	else:
+		fnames_h5 = data["fnames"]
 
 	# extract and dump image features
-	for i,j in create_indices(len(list_of_files), batch_size=2):
+	print "Dumping image features.."
+	for i,j in tqdm(create_indices(len(list_of_files), batch_size=2)):
 		
 		j = min(j, len(list_of_files))
 
@@ -232,35 +250,7 @@ def main():
 		pickle.dump(class_ranges, f)
 		print "...saved to pickle image_class_ranges.pkl"
 
-	# extract and dump word vectors
-	_ = data.create_dataset("word_embeddings", (0, WORD_DIM), maxshape=(None, WORD_DIM))
-	_ = data.create_dataset("word_names", (0, 1), dtype=dt, maxshape=(None, 1))
-
-	embeddings_index = {}
-	
-	word_batch, vector_batch, _c = [], [], 1
-
-	word_batch.append("<pad>")
-	vector_batch.append(np.zeros(WORD_DIM))
-	embeddings_index[word_batch[0]] = vector_batch[0]
-	
-	with open(embeddings_path) as f:
-		for line in f.readlines():
-		    values = line.split()
-		    word = values[0]
-		    coefs = np.asarray(values[1:], dtype='float32')
-		    embeddings_index[word] = coefs
-		    word_batch.append(word)
-		    vector_batch.append(coefs)
-		    
-		    if _c%50==0:
-		    	dump_wv_to_h5(word_batch, vector_batch, hf)
-		    	word_batch, vector_batch = [], []
-		    _c+=1
-
-	dump_wv_to_h5(word_batch, vector_batch, hf) # to catch the trailing vectors
-	f.close()
-	print 'Found %s word vectors.' % len(embeddings_index)
+	K.clear_session()
 
 if __name__=="__main__":
 	main()
