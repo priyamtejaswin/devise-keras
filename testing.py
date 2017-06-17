@@ -57,6 +57,6 @@ if __name__=="__main__":
 	data_gen = data_generator()
 
 	for i in range(5):
-		vis_x, rnn_x = data_gen.next()
+		(vis_x, rnn_x), _ = data_gen.next()
 		print vis_x.shape, rnn_x.shape
 		

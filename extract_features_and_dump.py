@@ -96,7 +96,7 @@ def data_generator(path_to_h5py="processed_features/features.h5", batch_size=2):
 
 		X_captions = caption_data[[true_cap_ix] + false_cap_ixs]
 
-		yield (X_images, X_captions), (0, 0)
+		yield [X_images, X_captions], np.zeros(1+batch_size) ## This is bogus!!!!
 
 		# print "true_class", true_class, id_TO_class[true_class]
 		# print "true_image_ix", true_image_ix
