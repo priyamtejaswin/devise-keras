@@ -52,6 +52,9 @@ def data_generator(path_to_h5py="processed_features/features.h5", batch_size=2):
 	FP = h5py.File(path_to_h5py, 'r')
 	VGGfeats = FP["data/features"]
 
+	image_ix = [0, 5, 60, 65, 110, 115]
+	not_image_ix = [set(image_ix)-set([0, 5]), set(image_ix)-set([60, 65]), set(image_ix)-set([110,115])]
+
 	#print "done\n"
 	i = 0
 	while 1:
@@ -81,22 +84,27 @@ def data_generator(path_to_h5py="processed_features/features.h5", batch_size=2):
 			
 		# 	# print epoch, i
 		# 	yield X, y
+		for ix,not_ix in zip(image_ix, not_image_ix):
+			# true_class = random.choice(id_TO_class.keys())
+			# true_image_ix = random.choice(class_TO_images[true_class])
+			true_image_ix = ix
+			# false_image_ixs = random.sample(all_images-set(class_TO_images[true_class]), batch_size)
+			false_image_ixs = random.sample(list(not_ix), batch_size)
 
-		true_class = random.choice(id_TO_class.keys())
-		true_image_ix = random.choice(class_TO_images[true_class])
-		false_image_ixs = random.sample(all_images-set(class_TO_images[true_class]), batch_size)
+			true_cap_ix = random.choice(image_TO_captions[true_image_ix])
+			false_cap_ixs = [random.choice(image_TO_captions[ix]) for ix in false_image_ixs]
 
-		true_cap_ix = random.choice(image_TO_captions[true_image_ix])
-		false_cap_ixs = [random.choice(image_TO_captions[ix]) for ix in false_image_ixs]
+			X_images = np.zeros((batch_size+1, IMAGE_DIM))
+			X_images[0] = VGGfeats[true_image_ix]
 
-		X_images = np.zeros((batch_size+1, IMAGE_DIM))
-		X_images[0] = VGGfeats[true_image_ix]
-		for i,j in enumerate(false_image_ixs):
-			X_images[i] = VGGfeats[j]
+			# ipdb.set_trace()
 
-		X_captions = caption_data[[true_cap_ix] + false_cap_ixs]
+			for i,j in enumerate(false_image_ixs):
+				X_images[i+1] = VGGfeats[j]
 
-		yield [X_images, X_captions], np.zeros(1+batch_size) ## This is bogus!!!!
+			X_captions = caption_data[[true_cap_ix] + false_cap_ixs]
+
+			yield [X_images, X_captions], np.zeros(1+batch_size) ## This is bogus!!!!
 
 		# print "true_class", true_class, id_TO_class[true_class]
 		# print "true_image_ix", true_image_ix
