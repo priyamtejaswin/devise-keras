@@ -17,6 +17,7 @@ import argparse
 import os, sys, ipdb
 import cPickle as pickle
 from tqdm import *
+import random
 
 np.random.seed(123)
 
@@ -39,50 +40,77 @@ def data_generator(path_to_h5py="processed_features/features.h5", batch_size=2):
 	
 	#print "\nloading data for training...\n"
 	
-	
-	# load all image fnames
-	with h5py.File(path_to_h5py, "r") as fp:
-		image_fnames = map(lambda a:a[0], fp["data/fnames"][:]) #fnames is list of single lists!
+	caption_data = pickle.load(open("ARRAY_caption_data.pkl"))
+	id_TO_class = pickle.load(open("DICT_id_TO_class.pkl"))
+	class_TO_images = pickle.load(open("DICT_class_TO_images.pkl"))
+	image_TO_captions = pickle.load(open("DICT_image_TO_captions.pkl"))
+	word_index = pickle.load(open("DICT_word_index.pkl"))
+	index_word = ['<pad>'] + map(lambda x:x[0], sorted(word_index.items(), key=lambda x:x[1]))
 
-	# load pickle which contains class ranges
-	with open("image_class_ranges.pkl", "r") as fp:
-		class_ranges = pickle.load(fp)
+	all_images = set(reduce(lambda a,b:a+b, class_TO_images.values()))
 
-	F 			 = h5py.File(path_to_h5py, "r")
-	vgg_feats 	 = F["data/features"]
-	embeddings   = F["data/word_embeddings"]
-	word_mapping = {l[0]:i for i,l in enumerate(F["data/word_names"])}
-	DATASET_SIZE = len(image_fnames)
-	
+	FP = h5py.File(path_to_h5py, 'r')
+	VGGfeats = FP["data/features"]
+
 	#print "done\n"
-
+	i = 0
 	while 1:
-		for i in range(DATASET_SIZE):
-			X = np.zeros((1+batch_size, 4096))
-			y = np.zeros((1+batch_size, 50))
+		# for i in range(DATASET_SIZE):
+		# 	X = np.zeros((1+batch_size, 4096))
+		# 	y = np.zeros((1+batch_size, 50))
 
-			# correct one - first one 
-			X[0] = vgg_feats[i]
-			y[0] = embeddings[word_mapping[image_fnames[i].split("/")[-2]]][np.newaxis, :]
+		# 	# correct one - first one 
+		# 	X[0] = vgg_feats[i]
+		# 	y[0] = embeddings[word_mapping[image_fnames[i].split("/")[-2]]][np.newaxis, :]
 
-			# others - remaining
-			class_of_first 	= image_fnames[i].split("/")[-2]
-			start,end 		= class_ranges[class_of_first]
-			range_of_nums 	= range(0,start) + range(end+1,DATASET_SIZE)
-			selected_indices= np.random.choice(range_of_nums, size=batch_size, replace=False).tolist() # missed this! select without replacement! to avoid [1,1] error
-			selected_indices= sorted(selected_indices) # unordered indexing is not supported?
+		# 	# others - remaining
+		# 	class_of_first 	= image_fnames[i].split("/")[-2]
+		# 	start,end 		= class_ranges[class_of_first]
+		# 	range_of_nums 	= range(0,start) + range(end+1,DATASET_SIZE)
+		# 	selected_indices= np.random.choice(range_of_nums, size=batch_size, replace=False).tolist() # missed this! select without replacement! to avoid [1,1] error
+		# 	selected_indices= sorted(selected_indices) # unordered indexing is not supported?
 
-			# print i, start, end, class_of_first, selected_indices
-			X[1:]   		= vgg_feats[selected_indices]
+		# 	# print i, start, end, class_of_first, selected_indices
+		# 	X[1:]   		= vgg_feats[selected_indices]
 
-			selected_words  = map(lambda a:image_fnames[a].split("/")[-2], selected_indices)
-			selected_embeds = np.concatenate(
-								map(lambda w:embeddings[word_mapping[w]][np.newaxis, :], selected_words), 
-								0)
-			y[1:]			= selected_embeds
+		# 	selected_words  = map(lambda a:image_fnames[a].split("/")[-2], selected_indices)
+		# 	selected_embeds = np.concatenate(
+		# 						map(lambda w:embeddings[word_mapping[w]][np.newaxis, :], selected_words), 
+		# 						0)
+		# 	y[1:]			= selected_embeds
 			
-			# print epoch, i
-			yield X, y
+		# 	# print epoch, i
+		# 	yield X, y
+
+		true_class = random.choice(id_TO_class.keys())
+		true_image_ix = random.choice(class_TO_images[true_class])
+		false_image_ixs = random.sample(all_images-set(class_TO_images[true_class]), batch_size)
+
+		true_cap_ix = random.choice(image_TO_captions[true_image_ix])
+		false_cap_ixs = [random.choice(image_TO_captions[ix]) for ix in false_image_ixs]
+
+		X_images = np.zeros((batch_size+1, IMAGE_DIM))
+		X_images[0] = VGGfeats[true_image_ix]
+		for i,j in enumerate(false_image_ixs):
+			X_images[i] = VGGfeats[j]
+
+		X_captions = caption_data[[true_cap_ix] + false_cap_ixs]
+
+		yield (X_images, X_captions), (0, 0)
+
+		# print "true_class", true_class, id_TO_class[true_class]
+		# print "true_image_ix", true_image_ix
+		# print "false_image_ixs", false_image_ixs
+		# print
+		# print "true_cap_ix", true_cap_ix, caption_data[true_cap_ix]
+		# print map(lambda x:index_word[x], caption_data[true_cap_ix])
+		# print
+		# print "false_cap_ixs", false_cap_ixs, "\n", caption_data[false_cap_ixs]
+		# for row in caption_data[false_cap_ixs]:
+		# 	print row
+		# 	print map(lambda x:index_word[x], row)
+
+		# print "--------------", i
 
 
 def dump_to_h5(names, scores ,hf):
