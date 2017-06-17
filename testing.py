@@ -54,7 +54,7 @@ if __name__=="__main__":
 	# TEST_datagen()
 	# TEST_lossfun()
 	from extract_features_and_dump import data_generator
-	data_gen = data_generator()
+	data_gen = data_generator(batch_size=2)
 
 	for i in range(5):
 		(vis_x, rnn_x), _ = data_gen.next()

@@ -21,10 +21,10 @@ import numpy as np
 
 PATH_h5 = "processed_features/features.h5"
 MARGIN = 0.2
-INCORRECT_BATCH = 9
+INCORRECT_BATCH = 2
 BATCH = INCORRECT_BATCH + 1
 IMAGE_DIM = 4096
-WORD_DIM = 300
+WORD_DIM = 50
 MAX_SEQUENCE_LENGTH = 20
 
 class DelayCallback(keras.callbacks.Callback):
@@ -139,17 +139,17 @@ def build_model(image_features, caption_features):
 		output_dim=50,
 		weights=[embedding_matrix],
 		input_length=MAX_SEQUENCE_LENGTH,
-		trainable=True,
+		trainable=False,
 		name="caption_embedding"
 		)(caption_features)
 
-	lstm_out = LSTM(300)(cap_embed)
+	lstm_out = LSTM(50)(cap_embed)
 	caption_output = Dense(WORD_DIM, name="lstm_dense")(lstm_out)
 
 	concated = concatenate([image_output, caption_output], axis=0)
 
 	mymodel = Model(inputs=[image_features, caption_features], outputs=concated)
-	mymodel.compile(optimizer="adagrad", loss=hinge_rank_loss)
+	mymodel.compile(optimizer="rmsprop", loss=hinge_rank_loss)
 	return mymodel
 
 def main():
@@ -164,7 +164,8 @@ def main():
 		print model.summary()
 
 		# number of training images 
-		_num_train = get_num_train_images()
+		# _num_train = get_num_train_images()
+		_num_train = 6
 
 		# Callbacks 
 		# remote_cb = RemoteMonitor(root='http://localhost:9000')
@@ -179,7 +180,7 @@ def main():
 		history = model.fit_generator(
 				train_datagen,
 				steps_per_epoch=steps_per_epoch,
-				epochs=300,
+				epochs=100,
 				callbacks=[tensorboard, epoch_cb]
 			)
 		print history.history.keys()
