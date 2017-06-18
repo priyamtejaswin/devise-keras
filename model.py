@@ -77,7 +77,7 @@ def hinge_rank_loss(word_vectors, image_vectors, TESTING=False):
 	wrong_words = Lambda(slice_but_first, output_shape=(INCORRECT_BATCH, WORD_DIM))(word_vectors)
 
 	# l2 norm
-	l2 = lambda x: K.sqrt(K.sum(K.square(x), axis=1))
+	l2 = lambda x: K.sqrt(K.sum(K.square(x), axis=1, keepdims=True))
 	l2norm = lambda x: x/l2(x)
 
 	# tiling to replicate correct_word and correct_image
