@@ -20,8 +20,8 @@ import pickle
 import numpy as np
 
 PATH_h5 = "processed_features/features.h5"
-MARGIN = 0.2
-INCORRECT_BATCH = 2
+MARGIN = 0.1
+INCORRECT_BATCH = 32
 BATCH = INCORRECT_BATCH + 1
 IMAGE_DIM = 4096
 WORD_DIM = 50
@@ -139,7 +139,7 @@ def build_model(image_features, caption_features):
 		output_dim=50,
 		weights=[embedding_matrix],
 		input_length=MAX_SEQUENCE_LENGTH,
-		trainable=False,
+		trainable=True,
 		name="caption_embedding"
 		)(caption_features)
 
@@ -164,8 +164,8 @@ def main():
 		print model.summary()
 
 		# number of training images 
-		# _num_train = get_num_train_images()
-		_num_train = 6
+		_num_train = get_num_train_images()
+		# _num_train = 6
 
 		# Callbacks 
 		# remote_cb = RemoteMonitor(root='http://localhost:9000')
@@ -180,7 +180,7 @@ def main():
 		history = model.fit_generator(
 				train_datagen,
 				steps_per_epoch=steps_per_epoch,
-				epochs=90,
+				epochs=750,
 				callbacks=[tensorboard, epoch_cb]
 			)
 		print history.history.keys()
@@ -188,7 +188,7 @@ def main():
 
 	elif RUN_TIME == "TEST":
 		from keras.models import load_model 
-		model = load_model("snapshots/epoch_89.hdf5", custom_objects={"hinge_rank_loss":hinge_rank_loss})
+		model = load_model("snapshots/epoch_149.hdf5", custom_objects={"hinge_rank_loss":hinge_rank_loss})
 
 	# # predict on some sample images
 	# from extract_features_and_dump import define_model
@@ -231,28 +231,31 @@ def main():
 	# 	print "aeroplane: ", diff[aeroplane_idx]
 	# 	print "bird: ", diff[bird_idx]
 
-	im_samples = hf["data/features"][[0, 55, 105]]
+	im_samples = hf["data/features"][:, :]
 	word_index = pickle.load(open("DICT_word_index.pkl"))
 
-	string = "a plane in the sky"
+	string = "plane is taking off"
 	cap_sample = [word_index[x] for x in string.strip().split()]
 	cap_sample = np.array([ cap_sample + [0 for i in range(MAX_SEQUENCE_LENGTH-len(cap_sample))] ])
-	cap_sample = np.tile(cap_sample, (3, 1))
+	cap_sample = np.tile(cap_sample, (im_samples.shape[0], 1))
 
 	ipdb.set_trace()
 	## TESTING
 	test_out = model.predict([im_samples, cap_sample], batch_size=5) ## Cannot do this because Keras expects a single output to be returned for a single input; while my ugly hack concats and returns two!
-	im_outs = test_out[:3, :]
-	cap_out = test_out[-1, :]
+	im_outs = test_out[:, :WORD_DIM]
+	cap_out = test_out[:, WORD_DIM:]
+
+	print im_outs.shape
+	print cap_out.shape
 
 	im_outs = im_outs / np.linalg.norm(im_outs, axis=1, keepdims=True)
-	cap_out = cap_out / np.linalg.norm(cap_out)
+	cap_out = cap_out / np.linalg.norm(cap_out, axis=1, keepdims=True)
 
 	ipdb.set_trace()
 
 	diff = im_outs - cap_out
 	diff = np.linalg.norm(diff, axis=1)
-	print diff
+	print np.argsort(diff)[:25]
 
 	K.clear_session()
 
