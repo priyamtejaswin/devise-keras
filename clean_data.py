@@ -1,4 +1,6 @@
-''' 
+'''
+USAGE: python clean_data.py path/to/folder
+
 Clean up images in /images/ folder 
 1. resize to square shape 
 2. resize to (224,224,3)
@@ -11,9 +13,14 @@ import cv2
 import os, sys
 from tqdm import *
 
+_path = sys.argv[1]
+
 # globals
-INPUT_PATH = "./UIUC_PASCAL_DATA/"
-OUTPUT_PATH = "./UIUC_PASCAL_DATA_clean/"
+INPUT_PATH = _path.strip()
+if _path[-1]=='/':
+	OUTPUT_PATH = _path.replace('/', "_clean/")
+else:
+	OUTPUT_PATH = INPUT_PATH + "_clean/"
 
 if not os.path.exists(OUTPUT_PATH):
 	os.mkdir(OUTPUT_PATH)
