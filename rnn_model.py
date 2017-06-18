@@ -20,7 +20,7 @@ import pickle
 import numpy as np
 
 PATH_h5 = "processed_features/features.h5"
-MARGIN = 0.1
+MARGIN = 0.2
 INCORRECT_BATCH = 32
 BATCH = INCORRECT_BATCH + 1
 IMAGE_DIM = 4096
@@ -139,7 +139,7 @@ def build_model(image_features, caption_features):
 		output_dim=50,
 		weights=[embedding_matrix],
 		input_length=MAX_SEQUENCE_LENGTH,
-		trainable=True,
+		trainable=False,
 		name="caption_embedding"
 		)(caption_features)
 
@@ -188,7 +188,7 @@ def main():
 
 	elif RUN_TIME == "TEST":
 		from keras.models import load_model 
-		model = load_model("snapshots/epoch_149.hdf5", custom_objects={"hinge_rank_loss":hinge_rank_loss})
+		model = load_model("snapshots/epoch_749.hdf5", custom_objects={"hinge_rank_loss":hinge_rank_loss})
 
 	# # predict on some sample images
 	# from extract_features_and_dump import define_model
@@ -234,12 +234,11 @@ def main():
 	im_samples = hf["data/features"][:, :]
 	word_index = pickle.load(open("DICT_word_index.pkl"))
 
-	string = "plane is taking off"
+	string = "man riding a bike"
 	cap_sample = [word_index[x] for x in string.strip().split()]
 	cap_sample = np.array([ cap_sample + [0 for i in range(MAX_SEQUENCE_LENGTH-len(cap_sample))] ])
 	cap_sample = np.tile(cap_sample, (im_samples.shape[0], 1))
 
-	ipdb.set_trace()
 	## TESTING
 	test_out = model.predict([im_samples, cap_sample], batch_size=5) ## Cannot do this because Keras expects a single output to be returned for a single input; while my ugly hack concats and returns two!
 	im_outs = test_out[:, :WORD_DIM]
@@ -251,11 +250,12 @@ def main():
 	im_outs = im_outs / np.linalg.norm(im_outs, axis=1, keepdims=True)
 	cap_out = cap_out / np.linalg.norm(cap_out, axis=1, keepdims=True)
 
-	ipdb.set_trace()
-
 	diff = im_outs - cap_out
 	diff = np.linalg.norm(diff, axis=1)
 	print np.argsort(diff)[:25]
+	print np.sort(diff)[:25]
+
+	ipdb.set_trace()
 
 	K.clear_session()
 
