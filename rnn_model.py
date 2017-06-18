@@ -42,7 +42,7 @@ class EpochCheckpoint(keras.callbacks.Callback):
 		print "[LOG] EpochCheckpoint: folder to save models: "+self.folder
 
 	def on_epoch_end(self, epoch, logs={}):
-		print "Saving model..."
+		print " Saving model..."
 		self.model.save(os.path.join(self.folder,"epoch_"+str(epoch)+".hdf5"))
 
 def get_num_train_images():
@@ -72,8 +72,8 @@ def hinge_rank_loss(y_true, y_pred, TESTING=False):
 	image_vectors is y_pred
 	"""
 	## y_true will be zeros
-	select_images = lambda x: x[0:BATCH, :]
-	select_words = lambda x: x[BATCH:, :]
+	select_images = lambda x: x[:, :WORD_DIM]
+	select_words = lambda x: x[:, WORD_DIM:]
 
 	slice_first = lambda x: x[0:1 , :]
 	slice_but_first = lambda x: x[1:, :]
@@ -146,7 +146,7 @@ def build_model(image_features, caption_features):
 	lstm_out = LSTM(50)(cap_embed)
 	caption_output = Dense(WORD_DIM, name="lstm_dense")(lstm_out)
 
-	concated = concatenate([image_output, caption_output], axis=0)
+	concated = concatenate([image_output, caption_output], axis=-1)
 
 	mymodel = Model(inputs=[image_features, caption_features], outputs=concated)
 	mymodel.compile(optimizer="rmsprop", loss=hinge_rank_loss)
@@ -180,7 +180,7 @@ def main():
 		history = model.fit_generator(
 				train_datagen,
 				steps_per_epoch=steps_per_epoch,
-				epochs=100,
+				epochs=90,
 				callbacks=[tensorboard, epoch_cb]
 			)
 		print history.history.keys()
@@ -188,7 +188,7 @@ def main():
 
 	elif RUN_TIME == "TEST":
 		from keras.models import load_model 
-		model = load_model("snapshots/epoch_99.hdf5", custom_objects={"hinge_rank_loss":hinge_rank_loss})
+		model = load_model("snapshots/epoch_89.hdf5", custom_objects={"hinge_rank_loss":hinge_rank_loss})
 
 	# # predict on some sample images
 	# from extract_features_and_dump import define_model
@@ -222,7 +222,7 @@ def main():
 
 	# 	diff = v_h5 - image_vec
 	# 	diff = np.linalg.norm(diff, axis=1)
-		
+
 	# 	bicycle_idx 	= np.where(w_h5==["bicycle"])[0]
 	# 	aeroplane_idx 	= np.where(w_h5==["aeroplane"])[0]
 	# 	bird_idx 		= np.where(w_h5==["bird"])[0]
@@ -239,8 +239,8 @@ def main():
 	cap_sample = np.array([ cap_sample + [0 for i in range(MAX_SEQUENCE_LENGTH-len(cap_sample))] ])
 	cap_sample = np.tile(cap_sample, (3, 1))
 
-	# ipdb.set_trace()
-
+	ipdb.set_trace()
+	## TESTING
 	test_out = model.predict([im_samples, cap_sample], batch_size=5) ## Cannot do this because Keras expects a single output to be returned for a single input; while my ugly hack concats and returns two!
 	im_outs = test_out[:3, :]
 	cap_out = test_out[-1, :]
