@@ -15,8 +15,8 @@ from keras.callbacks import TensorBoard
 import cv2
 
 PATH_h5 = "processed_features/features.h5"
-MARGIN = 0.5
-INCORRECT_BATCH = 4
+MARGIN = 0.2
+INCORRECT_BATCH = 25
 BATCH = INCORRECT_BATCH + 1
 IMAGE_DIM = 4096
 WORD_DIM = 50
@@ -77,7 +77,7 @@ def hinge_rank_loss(word_vectors, image_vectors, TESTING=False):
 	wrong_words = Lambda(slice_but_first, output_shape=(INCORRECT_BATCH, WORD_DIM))(word_vectors)
 
 	# l2 norm
-	l2 = lambda x: K.sqrt(K.sum(K.square(x)))
+	l2 = lambda x: K.sqrt(K.sum(K.square(x), axis=1))
 	l2norm = lambda x: x/l2(x)
 
 	# tiling to replicate correct_word and correct_image
@@ -91,15 +91,15 @@ def hinge_rank_loss(word_vectors, image_vectors, TESTING=False):
 	wrong_images = l2norm(wrong_images)
 
 	# correct_image VS incorrect_words | Note the singular/plurals
-	cost_images = MARGIN - K.sum(correct_images * correct_words, 1) + K.sum(correct_images * wrong_words, 1) 
-	cost_images = K.maximum(cost_images, 0.0)
+	# cost_images = MARGIN - K.sum(correct_images * correct_words, 1) + K.sum(correct_images * wrong_words, 1) 
+	# cost_images = K.maximum(cost_images, 0.0)
 	
 	# correct_word VS incorrect_images | Note the singular/plurals
-	cost_words = MARGIN - K.sum(correct_words * correct_images, 1) + K.sum(correct_words * wrong_images, 1) 
+	cost_words = MARGIN - K.sum(correct_words * correct_images, axis=1) + K.sum(correct_words * wrong_images, axis=1) 
 	cost_words = K.maximum(cost_words, 0.0)
 
 	# currently cost_words and cost_images are vectors - need to convert to scalar
-	cost_images = K.sum(cost_images, axis=-1)
+	# cost_images = K.sum(cost_images, axis=-1)
 	cost_words  = K.sum(cost_words, axis=-1)
 
 	if TESTING:
@@ -112,7 +112,8 @@ def hinge_rank_loss(word_vectors, image_vectors, TESTING=False):
 		assert K.eval(wrong_words).shape==K.eval(wrong_images).shape
 		assert K.eval(correct_words).shape==K.eval(wrong_images).shape
 	
-	return cost_words + cost_images
+	# return cost_words + cost_images
+	return cost_words/INCORRECT_BATCH
 	
 
 def build_model(image_features, word_features=None):
