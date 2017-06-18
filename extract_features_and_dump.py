@@ -84,12 +84,13 @@ def data_generator(path_to_h5py="processed_features/features.h5", batch_size=2):
 			
 		# 	# print epoch, i
 		# 	yield X, y
-		for ix,not_ix in zip(image_ix, not_image_ix):
-			# true_class = random.choice(id_TO_class.keys())
-			# true_image_ix = random.choice(class_TO_images[true_class])
-			true_image_ix = ix
-			# false_image_ixs = random.sample(all_images-set(class_TO_images[true_class]), batch_size)
-			false_image_ixs = random.sample(list(not_ix), batch_size)
+
+		# for ix,not_ix in zip(image_ix, not_image_ix): ## REMOVE INDENT WHEN REQUIRED
+			true_class = random.choice(id_TO_class.keys())
+			true_image_ix = random.choice(class_TO_images[true_class])
+			# true_image_ix = ix
+			false_image_ixs = random.sample(all_images-set(class_TO_images[true_class]), batch_size)
+			# false_image_ixs = random.sample(list(not_ix), batch_size)
 
 			true_cap_ix = random.choice(image_TO_captions[true_image_ix])
 			false_cap_ixs = [random.choice(image_TO_captions[ix]) for ix in false_image_ixs]
