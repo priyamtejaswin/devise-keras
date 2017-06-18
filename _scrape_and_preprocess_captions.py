@@ -62,7 +62,7 @@ else:
 
 print "\nParsing and downloading html source...\n"
 
-_c = 1
+_c = 0
 captions_list = []
 id_TO_class = {}
 class_TO_images = defaultdict(list)
@@ -103,6 +103,8 @@ with open(file_path, 'r') as fp:
 
 		match_caption = caption_re.search(clean)
 		if match_caption:
+			_c+=1
+			
 			caption_text = match_caption.group(1).strip().lower()
 
 			tokens = []
@@ -134,8 +136,8 @@ with open(file_path, 'r') as fp:
 				print caption_text
 
 		print image_count, caption_count
-		if image_count==151:
-			print "Downloaded", image_count
+		if _c==3*50*5:
+			print "Downloaded and processed %d images, %d captions"%(image_count+1, caption_count+1)
 			_response = raw_input("Download more?<y/n>:")
 			if _response=="n":
 				break
