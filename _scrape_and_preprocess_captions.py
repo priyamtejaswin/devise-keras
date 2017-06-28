@@ -1,3 +1,8 @@
+"""
+Creates two folders: _data & _validation.
+Validation contains every nth image from the main set.
+"""
+
 import os
 import re
 import sys
@@ -16,7 +21,9 @@ file_path, embeddings_path = sys.argv[1], sys.argv[2]
 image_re = re.compile('<td><img src="(.*)\/(.*)"><\/td>')
 caption_re = re.compile('<tr><td>(.*)<\/td><\/tr>')
 
+VAL_NUM = 10
 UIUC_ROOT = "UIUC_PASCAL_DATA"
+UIUC_VAL = "UIUC_PASCAL_VAL"
 UIUC_URL = "http://vision.cs.uiuc.edu/pascal-sentences"
 WHITELIST = string.letters + string.digits
 WORD_DIM = 50
@@ -56,9 +63,12 @@ print 'Found %s word vectors.' % len(glove_index)
 
 if os.path.exists(UIUC_ROOT):
 	print "\nUIUC_PASCAL_DATA detected. The program has stopped here. Press ENTER to continue downloading all data. Press CTRL+C to exit program now.\n"
-	# raw_input()
 else:
 	os.makedirs(UIUC_ROOT)
+if os.path.exists(UIUC_VAL):
+	print "\nUIUC_PASCAL_VAL detected. The program has stopped here. Press ENTER to continue downloading all data. Press CTRL+C to exit program now.\n"
+else:
+	os.makedirs(UIUC_VAL)
 
 print "\nParsing and downloading html source...\n"
 
@@ -84,6 +94,8 @@ with open(file_path, 'r') as fp:
 			image_name = match_image.group(2)
 
 			uniq_class.add(class_name)
+
+
 
 			dir_name = os.path.join(UIUC_ROOT, class_name)
 			if not os.path.exists(dir_name):
