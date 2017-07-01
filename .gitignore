@@ -11,3 +11,4 @@ UIUC_PASCAL_DATA/*
 *.txt
 wget-log
 UIUC_PASCAL_DATA_clean/*
+UIUC_PASCAL_*/*
