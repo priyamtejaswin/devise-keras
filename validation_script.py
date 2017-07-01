@@ -10,8 +10,12 @@ class ValidCallBack(keras.callbacks.Callback):
 		# h5py file containing validation features and validation word embeddings
 		F 			= h5py.File("./processed_features/validation.h5", "r")
 		val_features= F["data/features"]
-		val_embed	= F["data/word_embeddings"][:,:] 
-		word_names  = F["data/word_names"]
+
+		wordF = h5py.File("./processed_features/embeddings.h5", 'r')
+		val_embed	= wordF["data/word_embeddings"][:,:] 
+		word_names  = wordF["data/word_names"]
+		wordF.close()
+
 		image_fnames = map(lambda a:a[0], F["data/fnames"][:])
 
 		print "val_feats: {} -- val_embed: {} -- word_names: {} -- image_fnames: {}".format(

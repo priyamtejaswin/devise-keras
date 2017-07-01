@@ -154,54 +154,9 @@ def main():
 			)
 		print history.history.keys()
 
-
 	elif RUN_TIME == "TEST":
 		from keras.models import load_model 
 		model = load_model("snapshots/epoch_49.hdf5", custom_objects={"hinge_rank_loss":hinge_rank_loss})
-
-	# predict on some sample images
-	from extract_features_and_dump import define_model
-	vgg16 = define_model(path="./vgg16_weights_th_dim_ordering_th_kernels.h5")
-
-	# load word embeddings and word names 
-	hf = h5py.File("processed_features/features.h5","r")
-	v_h5 = hf["data/word_embeddings"]
-	w_h5 = hf["data/word_names"]
-	v_h5 = v_h5[:,:]
-	v_h5 = v_h5 / np.linalg.norm(v_h5, axis=1, keepdims=True)
-	w_h5 = w_h5[:,:]
-
-	list_ims = ["./UIUC_PASCAL_DATA_clean/aeroplane/2008_000716.jpg",
-				"./UIUC_PASCAL_DATA_clean/bicycle/2008_000725.jpg",
-				"./UIUC_PASCAL_DATA_clean/bird/2008_008490.jpg"]
-
-	
-	for imname in list_ims:
 		
-		print "Running for image type: ",imname.split("/")[-2]
-
-		img = cv2.imread(imname)
-		# cv2.imshow("input",img); cv2.waitKey(0)
-		img = np.rollaxis(img, 2)
-		img = np.expand_dims(img, 0)
-		img_feats = vgg16.predict(img)
-		image_vec = model.predict(img_feats)
-		# print image_vec.shape
-		image_vec = image_vec / np.linalg.norm(image_vec)
-
-		diff = v_h5 - image_vec
-		diff = np.linalg.norm(diff, axis=1)
-		
-		bicycle_idx 	= np.where(w_h5==["bicycle"])[0]
-		aeroplane_idx 	= np.where(w_h5==["aeroplane"])[0]
-		bird_idx 		= np.where(w_h5==["bird"])[0]
-
-		print "bicycle: ", diff[bicycle_idx]
-		print "aeroplane: ", diff[aeroplane_idx]
-		print "bird: ", diff[bird_idx]
-
-	K.clear_session()
-	hf.close()
-
 if __name__=="__main__":
 	main()
