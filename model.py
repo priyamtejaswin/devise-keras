@@ -13,10 +13,11 @@ from extract_features_and_dump import data_generator
 import numpy as np
 from keras.callbacks import TensorBoard
 import cv2
+from validation_script import ValidCallBack
 
 PATH_h5 = "processed_features/features.h5"
 MARGIN = 0.2
-INCORRECT_BATCH = 25
+INCORRECT_BATCH = 2
 BATCH = INCORRECT_BATCH + 1
 IMAGE_DIM = 4096
 WORD_DIM = 50
@@ -26,7 +27,7 @@ class DelayCallback(keras.callbacks.Callback):
 		pass
 
 	def on_batch_end(self, batch, logs={}):
-		sleep(0.01)
+		sleep(0.05)
 
 class EpochCheckpoint(keras.callbacks.Callback):
 	def __init__(self, folder):
@@ -140,6 +141,7 @@ def main():
 		tensorboard = TensorBoard(log_dir="logs/{}".format(time()))
 		epoch_cb    = EpochCheckpoint(folder="./snapshots/")
 		delay_cb 	= DelayCallback()
+		valid_cb	= ValidCallBack()
 
 		# fit generator
 		steps_per_epoch = math.ceil(_num_train/float(BATCH))
@@ -149,10 +151,11 @@ def main():
 		history = model.fit_generator(
 				train_datagen,
 				steps_per_epoch=steps_per_epoch,
-				epochs=50,
-				callbacks=[tensorboard, delay_cb, epoch_cb]
+				epochs=100,
+				callbacks=[tensorboard, delay_cb, valid_cb]
 			)
 		print history.history.keys()
+
 
 
 	elif RUN_TIME == "TEST":
@@ -160,45 +163,45 @@ def main():
 		model = load_model("snapshots/epoch_49.hdf5", custom_objects={"hinge_rank_loss":hinge_rank_loss})
 
 	# predict on some sample images
-	from extract_features_and_dump import define_model
-	vgg16 = define_model(path="./vgg16_weights_th_dim_ordering_th_kernels.h5")
+	# from extract_features_and_dump import define_model
+	# vgg16 = define_model(path="./vgg16_weights_th_dim_ordering_th_kernels.h5")
 
-	# load word embeddings and word names 
-	hf = h5py.File("processed_features/features.h5","r")
-	v_h5 = hf["data/word_embeddings"]
-	w_h5 = hf["data/word_names"]
-	v_h5 = v_h5[:,:]
-	v_h5 = v_h5 / np.linalg.norm(v_h5, axis=1, keepdims=True)
-	w_h5 = w_h5[:,:]
+	# # load word embeddings and word names 
+	# hf = h5py.File("processed_features/features.h5","r")
+	# v_h5 = hf["data/word_embeddings"]
+	# w_h5 = hf["data/word_names"]
+	# v_h5 = v_h5[:,:]
+	# v_h5 = v_h5 / np.linalg.norm(v_h5, axis=1, keepdims=True)
+	# w_h5 = w_h5[:,:]
 
-	list_ims = ["./UIUC_PASCAL_DATA_clean/aeroplane/2008_000716.jpg",
-				"./UIUC_PASCAL_DATA_clean/bicycle/2008_000725.jpg",
-				"./UIUC_PASCAL_DATA_clean/bird/2008_008490.jpg"]
+	# list_ims = ["./UIUC_PASCAL_DATA_clean/aeroplane/2008_000716.jpg",
+	# 			"./UIUC_PASCAL_DATA_clean/bicycle/2008_000725.jpg",
+	# 			"./UIUC_PASCAL_DATA_clean/bird/2008_008490.jpg"]
 
 	
-	for imname in list_ims:
+	# for imname in list_ims:
 		
-		print "Running for image type: ",imname.split("/")[-2]
+	# 	print "Running for image type: ",imname.split("/")[-2]
 
-		img = cv2.imread(imname)
-		# cv2.imshow("input",img); cv2.waitKey(0)
-		img = np.rollaxis(img, 2)
-		img = np.expand_dims(img, 0)
-		img_feats = vgg16.predict(img)
-		image_vec = model.predict(img_feats)
-		# print image_vec.shape
-		image_vec = image_vec / np.linalg.norm(image_vec)
+	# 	img = cv2.imread(imname)
+	# 	# cv2.imshow("input",img); cv2.waitKey(0)
+	# 	img = np.rollaxis(img, 2)
+	# 	img = np.expand_dims(img, 0)
+	# 	img_feats = vgg16.predict(img)
+	# 	image_vec = model.predict(img_feats)
+	# 	# print image_vec.shape
+	# 	image_vec = image_vec / np.linalg.norm(image_vec)
 
-		diff = v_h5 - image_vec
-		diff = np.linalg.norm(diff, axis=1)
+	# 	diff = v_h5 - image_vec
+	# 	diff = np.linalg.norm(diff, axis=1)
 		
-		bicycle_idx 	= np.where(w_h5==["bicycle"])[0]
-		aeroplane_idx 	= np.where(w_h5==["aeroplane"])[0]
-		bird_idx 		= np.where(w_h5==["bird"])[0]
+	# 	bicycle_idx 	= np.where(w_h5==["bicycle"])[0]
+	# 	aeroplane_idx 	= np.where(w_h5==["aeroplane"])[0]
+	# 	bird_idx 		= np.where(w_h5==["bird"])[0]
 
-		print "bicycle: ", diff[bicycle_idx]
-		print "aeroplane: ", diff[aeroplane_idx]
-		print "bird: ", diff[bird_idx]
+	# 	print "bicycle: ", diff[bicycle_idx]
+	# 	print "aeroplane: ", diff[aeroplane_idx]
+	# 	print "bird: ", diff[bird_idx]
 
 	K.clear_session()
 
