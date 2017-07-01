@@ -24,6 +24,7 @@ tempF.create_group("data")
 tempF.close()
 
 file_path = sys.argv[1]
+ENV = sys.argv[2]
 
 image_re = re.compile('<td><img src="(.*)\/(.*)"><\/td>')
 
@@ -65,6 +66,14 @@ with open(file_path, 'r') as fp:
 			image_count+=1
 
 			class_name = match_image.group(1)
+			## Some hardcoding here.
+			if class_name=="diningtable":
+				class_name = "table"
+			if class_name=="pottedplant":
+				class_name = "plant"
+			if class_name=="tvmonitor":
+				class_name = "tv"
+
 			image_name = match_image.group(2)
 
 			uniq_class.add(class_name)
@@ -85,11 +94,12 @@ with open(file_path, 'r') as fp:
 			
 
 		print image_count
-		if ((image_count+1)%(3*50)==0) and (image_count>0):
-			print "Downloaded and processed %d images"%(image_count+1)
-			_response = raw_input("Download more?<y/n>:")
-			if _response=="n":
-				break
+		if ENV != "PROD":
+			if ((image_count+1)%(3*50)==0) and (image_count>0):
+				print "Downloaded and processed %d images"%(image_count+1)
+				_response = raw_input("Download more?<y/n>:")
+				if _response=="n":
+					break
 
 pickle.dump(id_TO_class, open("DICT_id_TO_class.pkl", "w"))
 pickle.dump(class_TO_images, open("DICT_class_TO_images.pkl", "w"))
