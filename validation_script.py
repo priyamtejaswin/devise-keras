@@ -55,10 +55,10 @@ class ValidCallBack(keras.callbacks.Callback):
 			min_idx = np.argsort(diff)
 			min_idx = min_idx[0:3]
 
-			print "current image of class {} | is closest to embedding of words:".format(trueclass)
+			# print "current image of class {} | is closest to embedding of words:".format(trueclass)
 			closest_words = []
 			for i in min_idx:
-				print self.unique_classes[i]
+				# print self.unique_classes[i]
 				closest_words.append(self.unique_classes[i])
 
 			# save closest words to accuracy_list 
