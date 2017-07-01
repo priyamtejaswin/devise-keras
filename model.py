@@ -17,7 +17,7 @@ from validation_script import ValidCallBack
 
 PATH_h5 = "processed_features/features.h5"
 MARGIN = 0.2
-INCORRECT_BATCH = 2
+INCORRECT_BATCH = 32
 BATCH = INCORRECT_BATCH + 1
 IMAGE_DIM = 4096
 WORD_DIM = 50
@@ -121,7 +121,7 @@ def build_model(image_features, word_features=None):
 	image_vector = linear_transformation(image_features)
 
 	mymodel = Model(inputs=image_features, outputs=image_vector)
-	mymodel.compile(optimizer="adagrad", loss=hinge_rank_loss)
+	mymodel.compile(optimizer="adam", loss=hinge_rank_loss)
 	return mymodel
 
 def main():
@@ -151,8 +151,8 @@ def main():
 		history = model.fit_generator(
 				train_datagen,
 				steps_per_epoch=steps_per_epoch,
-				epochs=100,
-				callbacks=[tensorboard, delay_cb, valid_cb]
+				epochs=250,
+				callbacks=[tensorboard, valid_cb]
 			)
 		print history.history.keys()
 
@@ -162,7 +162,6 @@ def main():
 		model = load_model("snapshots/epoch_49.hdf5", custom_objects={"hinge_rank_loss":hinge_rank_loss})
 
 	K.clear_session()
-	hf.close()
 
 if __name__=="__main__":
 	main()
