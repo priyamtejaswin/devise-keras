@@ -13,6 +13,7 @@ import string
 import pickle
 import matplotlib.pyplot as plt
 import numpy as np
+import shutil
 
 from extract_features_and_dump import dump_wv_to_h5
 
@@ -57,7 +58,16 @@ for line in f.readlines():
 
 dump_wv_to_h5(word_batch, vector_batch, F) # to catch the trailing vectors
 f.close()
+F.close()
 print 'Found %s word vectors.' % len(glove_index)
+
+# Copying features.h5 to validation_features.h5
+shutil.copy2("processed_features/features.h5", "processed_features/validation_features.h5")
+print "Copied features.h5 to validation_features.h5"
+
+answer = raw_input("DO you want to continue with downloading UIUC_PASCAL stuff?")
+if answer == "n":
+	sys.exit(0)
 
 # UNK_ix = glove_index["<unk>"]
 
