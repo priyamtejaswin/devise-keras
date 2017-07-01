@@ -54,11 +54,11 @@ def data_generator(path_to_h5py="processed_features/features.h5", batch_size=2, 
 	wordF 		 = h5py.File("processed_features/embeddings.h5", 'r')
 	embeddings   = wordF["data/word_embeddings"]
 	word_mapping = {l[0]:i for i,l in enumerate(wordF["data/word_names"])}
-	wordF.close()
-	
+
 	DATASET_SIZE = len(image_fnames)
 	
 	#print "done\n"
+	# ipdb.set_trace()
 
 	while 1:
 		for i in range(DATASET_SIZE):
@@ -87,6 +87,10 @@ def data_generator(path_to_h5py="processed_features/features.h5", batch_size=2, 
 			
 			# print epoch, i
 			yield X, y
+
+	print "\t\t\--is this the end???\n\n"
+	F.close()
+	wordF.close()
 
 
 def dump_to_h5(names, scores ,hf):
@@ -176,6 +180,8 @@ def define_model(path):
 	return model  
 
 def create_indices(total_length, batch_size):
+	if batch_size>=total_length:
+		batch_size=total_length-1
 	return izip(xrange(0, total_length, batch_size), xrange(batch_size, total_length+batch_size, batch_size))
 
 
@@ -227,7 +233,7 @@ def main():
 
 	# extract and dump image features
 	print "Dumping image features.."
-	for i,j in tqdm(create_indices(len(list_of_files), batch_size=2)):
+	for i,j in tqdm(create_indices(len(list_of_files), batch_size=5)):
 		
 		j = min(j, len(list_of_files))
 
