@@ -145,7 +145,7 @@ def main():
 		steps_per_epoch = math.ceil(_num_train/float(BATCH))
 		print "Steps per epoch i.e number of iterations: ",steps_per_epoch
 		
-		train_datagen = data_generator(batch_size=INCORRECT_BATCH)
+		train_datagen = data_generator(batch_size=INCORRECT_BATCH, image_class_ranges="training_ranges.pkl")
 		history = model.fit_generator(
 				train_datagen,
 				steps_per_epoch=steps_per_epoch,
