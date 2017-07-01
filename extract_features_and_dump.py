@@ -35,7 +35,7 @@ def get_class_ranges(fnames):
 
 	return class_ranges
 
-def data_generator(path_to_h5py="processed_features/features.h5", batch_size=2):
+def data_generator(path_to_h5py="processed_features/features.h5", batch_size=2,  image_class_ranges=None):
 	
 	#print "\nloading data for training...\n"
 	
@@ -45,7 +45,7 @@ def data_generator(path_to_h5py="processed_features/features.h5", batch_size=2):
 		image_fnames = map(lambda a:a[0], fp["data/fnames"][:]) #fnames is list of single lists!
 
 	# load pickle which contains class ranges
-	with open("image_class_ranges.pkl", "r") as fp:
+	with open(image_class_ranges, "r") as fp:
 		class_ranges = pickle.load(fp)
 
 	F 			 = h5py.File(path_to_h5py, "r")
@@ -182,15 +182,17 @@ def main():
 	parser.add_argument("-images_path", help="folder where images are located")
 	parser.add_argument("-embeddings_path", help="binary where word embeddings are saved")
 	parser.add_argument("-dump_path", help="folder where features will be dumped")
+	parser.add_argument("-image_class_ranges", help="index to class ranges")
 	args = parser.parse_args()
 
 	weights_path 	= args.weights_path
 	images_path 	= args.images_path
 	dump_path   	= args.dump_path
 	embeddings_path = args.embeddings_path
+	image_class_ranges = args.image_class_ranges
 
 	assert os.path.isdir(images_path), "---path is not a folder--"
-	assert os.path.isdir(dump_path), "---path is not a folder--"
+	assert os.path.isfile(dump_path), "---path is not a file--"
 	
 	print "defining model.."
 	model = define_model(weights_path)
@@ -203,9 +205,9 @@ def main():
 
 	print "Total files:", len(list_of_files)
 	
-	print "creating h5py files features.h5.."
+	print "Appending to h5py files ",dump_path
 	# h5py 
-	hf = h5py.File(os.path.join(dump_path,"features.h5"),"r+")
+	hf = h5py.File(dump_path,"r+")
 	data = hf["data"]
 
 	if data.get("features") is None:
@@ -246,11 +248,12 @@ def main():
 
 	# extract and dump class ranges
 	class_ranges = get_class_ranges(map(lambda a:a[0], fnames_h5[:])) # fnames is list of single lists!
-	with open("image_class_ranges.pkl","w") as f:
+	with open(image_class_ranges,"w") as f:
 		pickle.dump(class_ranges, f)
-		print "...saved to pickle image_class_ranges.pkl"
+		print "...saved to pickle ",image_class_ranges
 
 	K.clear_session()
+	hf.close()
 
 if __name__=="__main__":
 	main()
