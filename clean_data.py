@@ -22,6 +22,15 @@ if _path[-1]=='/':
 else:
 	OUTPUT_PATH = INPUT_PATH + "_clean/"
 
+# output and input folder name 
+INPUT_FOLDER_NAME  = INPUT_PATH.rstrip("/") 
+INPUT_FOLDER_NAME  = INPUT_FOLDER_NAME.split("/")[-1]
+OUTPUT_FOLDER_NAME = INPUT_FOLDER_NAME + "_clean" 
+
+print "INPUT_PATH: {} | OUTPUT_PATH: {}".format(INPUT_PATH, OUTPUT_PATH)
+print "INPUT_FODLER_NAME: {} | OUTPUT_FODLER_NAME: {}".format(INPUT_FOLDER_NAME, OUTPUT_FOLDER_NAME)
+
+
 if not os.path.exists(OUTPUT_PATH):
 	os.mkdir(OUTPUT_PATH)
 
@@ -42,15 +51,14 @@ for c in classes:
 # dump as resized .png files
 print "Dumping resized (224x224) images to disk.."
 for fname in tqdm(list_files):
-	if not fname.endswith(".jpg"):
+	if not (fname.endswith(".jpg") or fname.endswith(".png")):
 		continue
 	img = cv2.imread(fname)
 	img = cv2.resize(img, (img.shape[0], img.shape[0]))
 	img = cv2.resize(img, (224,224))
 	assert img.shape == (224,224,3), "--- Image is must be 224x224x3---"
-
 	
-	new_fname = fname.replace("UIUC_PASCAL_DATA","UIUC_PASCAL_DATA_clean",1) 
+	new_fname = fname.replace(INPUT_FOLDER_NAME,OUTPUT_FOLDER_NAME,1) 
 	
 	cv2.imwrite(new_fname, img)
 
