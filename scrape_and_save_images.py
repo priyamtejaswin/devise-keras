@@ -15,6 +15,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 import shutil
 
+print "\n\n\t\tCreating features.h5 and validation_features.h5 in processed_features\n\n"
+tempF = h5py.File("processed_features/features.h5", "w")
+tempF.create_group("data")
+tempF.close()
+tempF = h5py.File("processed_features/validation_features.h5", "w")
+tempF.create_group("data")
+tempF.close()
+
 file_path = sys.argv[1]
 
 image_re = re.compile('<td><img src="(.*)\/(.*)"><\/td>')
