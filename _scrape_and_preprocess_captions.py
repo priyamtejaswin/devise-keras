@@ -1,3 +1,8 @@
+"""
+Creates two folders: _data & _validation.
+Validation contains every nth image from the main set.
+"""
+
 import os
 import re
 import sys
@@ -16,7 +21,9 @@ file_path, embeddings_path = sys.argv[1], sys.argv[2]
 image_re = re.compile('<td><img src="(.*)\/(.*)"><\/td>')
 caption_re = re.compile('<tr><td>(.*)<\/td><\/tr>')
 
+VAL_NUM = 10
 UIUC_ROOT = "UIUC_PASCAL_DATA"
+UIUC_VAL = "UIUC_PASCAL_VAL"
 UIUC_URL = "http://vision.cs.uiuc.edu/pascal-sentences"
 WHITELIST = string.letters + string.digits
 WORD_DIM = 50
@@ -56,9 +63,12 @@ print 'Found %s word vectors.' % len(glove_index)
 
 if os.path.exists(UIUC_ROOT):
 	print "\nUIUC_PASCAL_DATA detected. The program has stopped here. Press ENTER to continue downloading all data. Press CTRL+C to exit program now.\n"
-	# raw_input()
 else:
 	os.makedirs(UIUC_ROOT)
+if os.path.exists(UIUC_VAL):
+	print "\nUIUC_PASCAL_VAL detected. The program has stopped here. Press ENTER to continue downloading all data. Press CTRL+C to exit program now.\n"
+else:
+	os.makedirs(UIUC_VAL)
 
 print "\nParsing and downloading html source...\n"
 
@@ -85,6 +95,8 @@ with open(file_path, 'r') as fp:
 
 			uniq_class.add(class_name)
 
+
+
 			dir_name = os.path.join(UIUC_ROOT, class_name)
 			if not os.path.exists(dir_name):
 				os.makedirs(dir_name)
@@ -103,8 +115,8 @@ with open(file_path, 'r') as fp:
 
 		match_caption = caption_re.search(clean)
 		if match_caption:
-			_c+=1 # tracking number of captions which have been covered
-
+			_c+=1
+			
 			caption_text = match_caption.group(1).strip().lower()
 
 			tokens = []
@@ -137,7 +149,7 @@ with open(file_path, 'r') as fp:
 
 		print image_count, caption_count
 		if _c==3*50*5:
-			print "Downloaded and processed %d images, %d captions"%(image_count+1, caption_count+1) 
+			print "Downloaded and processed %d images, %d captions"%(image_count+1, caption_count+1)
 			_response = raw_input("Download more?<y/n>:")
 			if _response=="n":
 				break
