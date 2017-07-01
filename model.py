@@ -204,6 +204,7 @@ def main():
 	# 	print "bird: ", diff[bird_idx]
 
 	K.clear_session()
+	hf.close()
 
 if __name__=="__main__":
 	main()
