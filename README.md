@@ -11,7 +11,7 @@ The project uses the following python packages over the conda python stack:
 ````
 bash SETUP.sh
 
-python scrape_and_save_images.py SOURCE_PASCAL_SENTENCES_vision.cs.uiuc.edu.html
+python scrape_and_save_images.py SOURCE_PASCAL_SENTENCES_vision.cs.uiuc.edu.html LOCAL ## Switch to PROD on server.
 
 python extract_word_embeddings.py glove.6B.50d.txt processed_features/embeddings.h5
 
