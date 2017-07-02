@@ -4,6 +4,8 @@ import h5py
 import keras.backend as K
 from keras import metrics
 
+from tensorboard_logging import Logger
+
 class ValidCallBack(keras.callbacks.Callback):
 
 	def __init__(self):
@@ -37,6 +39,7 @@ class ValidCallBack(keras.callbacks.Callback):
 		self.unique_classes_embed = np.array(self.unique_classes_embed)
 		self.unique_classes_embed = self.unique_classes_embed / np.linalg.norm(self.unique_classes_embed, axis=1, keepdims=True)
 
+		self.mylogger = Logger("logs")
 
 
 	def on_epoch_end(self, epoch, logs={}):
@@ -74,8 +77,15 @@ class ValidCallBack(keras.callbacks.Callback):
 				top_3_acc += 1
 				if accuracy_data[1] == accuracy_data[2][0]: # --- Top 3 Accuracy ---
 					top_1_acc += 1
-		print "top 1: {} | top 3: {} ".format(top_1_acc/len(accuracy_list), top_3_acc/len(accuracy_list))
 
+		top_1_acc = round(top_1_acc/len(accuracy_list), 3)
+		top_3_acc = round(top_3_acc/len(accuracy_list), 3)
+
+		print "top 1: {} | top 3: {} ".format(top_1_acc, top_3_acc)
+
+		print epoch
+		self.mylogger.log_scalar("top1", float(top_1_acc), epoch)
+		self.mylogger.log_scalar("top3", float(top_3_acc), epoch)
 	
 	def custom_for_keras(self, ALL_word_embeds):
 		## only the top 20 rows from word_vectors is legit!
@@ -134,8 +144,7 @@ class LoadValidationData():
 		assert len(self.image_GT) 			== len(self.val_features)
 
 	def get_data(self):
-
-		return self.val_features, self.image_GT_indices
+		return self.val_features, np.array(self.image_GT_indices)[:, np.newaxis]
 
 
 

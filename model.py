@@ -2,7 +2,6 @@ from keras.models import Model
 from keras.layers import Input
 from keras.layers import Dense
 from keras.layers import Lambda
-from keras.layers.normalization import BatchNormalization
 from keras.callbacks import RemoteMonitor
 import keras
 from time import time, sleep
@@ -59,8 +58,7 @@ def linear_transformation(a):
 	Takes a 4096-dim vector, applies linear transformation to get WORD_DIM vector.
 	"""
 	b = Dense(WORD_DIM, name='transform')(a)
-	c = BatchNormalization()(b)
-	return c
+	return b
 
 def hinge_rank_loss(word_vectors, image_vectors, TESTING=False):
 	"""
