@@ -14,24 +14,36 @@ import pickle
 import matplotlib.pyplot as plt
 import numpy as np
 import shutil
+import ConfigParser
+
+config = ConfigParser.RawConfigParser()
+config.read('local.cfg')
+h5_training 	= config.get("h5", "h5_training")
+h5_validation 	= config.get("h5", "h5_validation")
+UIUC_ROOT 		= config.get("data location", "TRAINING_DATA_FOLDER")
+UIUC_VAL 		= config.get("data location", "VALIDATION_DATA_FOLDER")
+UIUC_URL		= config.get("data fetch", "UIUC_URL")
+file_path		= config.get("data fetch", "SCRAPE_SOURCE_HTML")
+WORD_DIM		= config.getint("training", "WORD_DIM")
+ENV 			= config.get("env", "ENV")
 
 print "\n\n\t\tCreating features.h5 and validation_features.h5 in processed_features\n\n"
-tempF = h5py.File("processed_features/features.h5", "w")
+tempF = h5py.File(h5_training, "w")
 tempF.create_group("data")
 tempF.close()
-tempF = h5py.File("processed_features/validation_features.h5", "w")
+tempF = h5py.File(h5_validation, "w")
 tempF.create_group("data")
 tempF.close()
 
-file_path = sys.argv[1]
-ENV = sys.argv[2]
+# file_path = sys.argv[1]
+# ENV = sys.argv[2]
 
 image_re = re.compile('<td><img src="(.*)\/(.*)"><\/td>')
 
-UIUC_ROOT = "UIUC_PASCAL_DATA"
-UIUC_VAL = "UIUC_PASCAL_VAL"
-UIUC_URL = "http://vision.cs.uiuc.edu/pascal-sentences"
-WORD_DIM = 50
+# UIUC_ROOT = "UIUC_PASCAL_DATA"
+# UIUC_VAL = "UIUC_PASCAL_VAL"
+# UIUC_URL = "http://vision.cs.uiuc.edu/pascal-sentences"
+# WORD_DIM = 50
 
 answer = raw_input("DO you want to continue with downloading UIUC_PASCAL stuff?<y/n>")
 if answer == "n":

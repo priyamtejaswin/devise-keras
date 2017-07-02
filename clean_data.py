@@ -12,20 +12,32 @@ import numpy as np
 import cv2 
 import os, sys
 from tqdm import *
+import ConfigParser
 
-_path = sys.argv[1]
+config = ConfigParser.RawConfigParser()
+config.read('local.cfg')
+
+train_val = sys.argv[1]
+if train_val 	== "TRAIN":
+	INPUT_PATH 	 = config.get("data location", "TRAINING_DATA_FOLDER")
+	OUTPUT_PATH  = config.get("data location", "TRAINING_DATA_FOLDER_CLEAN")
+elif train_val 	== "VALID":
+	INPUT_PATH 	 = config.get("data location", "VALIDATION_DATA_FOLDER")
+	OUTPUT_PATH  = config.get("data location", "VALIDATION_DATA_FOLDER_CLEAN")
+else:
+	raise ValueError("Argument must be either VALID/TRAIN")
+
 
 # globals
-INPUT_PATH = _path.strip()
-if _path[-1]=='/':
-	OUTPUT_PATH = _path.replace('/', "_clean/")
-else:
-	OUTPUT_PATH = INPUT_PATH + "_clean/"
+# INPUT_PATH = _path.strip()
+# if _path[-1]=='/':
+# 	OUTPUT_PATH = _path.replace('/', "_clean/")
+# else:
+# 	OUTPUT_PATH = INPUT_PATH + "_clean/"
 
 # output and input folder name 
 INPUT_FOLDER_NAME  = INPUT_PATH.rstrip("/") 
-INPUT_FOLDER_NAME  = INPUT_FOLDER_NAME.split("/")[-1]
-OUTPUT_FOLDER_NAME = INPUT_FOLDER_NAME + "_clean" 
+OUTPUT_FOLDER_NAME = OUTPUT_FOLDER_NAME.rstrip("/") 
 
 print "INPUT_PATH: {} | OUTPUT_PATH: {}".format(INPUT_PATH, OUTPUT_PATH)
 print "INPUT_FODLER_NAME: {} | OUTPUT_FODLER_NAME: {}".format(INPUT_FOLDER_NAME, OUTPUT_FOLDER_NAME)

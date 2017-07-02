@@ -20,8 +20,40 @@ from tqdm import *
 
 np.random.seed(123)
 
-IMAGE_DIM = 4096
-WORD_DIM = 50
+def load_configs(run_type="TRAIN"):
+
+	import ConfigParser
+
+	config = ConfigParser.RawConfigParser()
+	config.read('local.cfg')
+
+	global IMAGE_DIM, WORD_DIM, h5_training, h5_validation, embeddings_path, weights_path, VGG_BATCH, \
+	images_path, dump_path, image_class_ranges
+  		
+	IMAGE_DIM 		= config.getint("training", "IMAGE_DIM")
+	WORD_DIM 		= config.getint("training", "WORD_DIM")
+	h5_training 	= config.get("h5", "h5_training")
+	h5_validation 	= config.get("h5", "h5_validation")
+	embeddings_path	= config.get("h5", "h5_embeddings")
+	weights_path 	= config.get("other", "WEIGHTS_PATH")
+	VGG_BATCH 	   	= config.getint("training", "VGG_BATCH")
+
+	if run_type == "TRAIN":
+		images_path = config.get("data location", "TRAINING_DATA_FOLDER_CLEAN")
+		dump_path	= h5_training
+		image_class_ranges= config.get("other", "TRAINING_CLASS_RANGES")
+
+	elif run_type == "VALID":
+		images_path = config.get("data location", "VALIDATION_DATA_FOLDER_CLEAN")
+		dump_path   = h5_validation
+		image_class_ranges= config.get("other", "VALIDATION_CLASS_RANGES")
+
+	else:
+		raise ValueError("Argument Must be TRAIN/VALID")
+
+########### LOADING CONFIGRATION FILES (W/ DEFAULT ARGUMENTS) #################
+load_configs()
+########################################################
 
 def get_class_ranges(fnames):
 	class_ranges = {} 
@@ -35,23 +67,23 @@ def get_class_ranges(fnames):
 
 	return class_ranges
 
-def data_generator(path_to_h5py="processed_features/features.h5", batch_size=2,  image_class_ranges=None):
+def data_generator(batch_size, image_class_ranges):
 	
 	#print "\nloading data for training...\n"
 	
 	
 	# load all image fnames
-	with h5py.File(path_to_h5py, "r") as fp:
+	with h5py.File(h5_training, "r") as fp:
 		image_fnames = map(lambda a:a[0], fp["data/fnames"][:]) #fnames is list of single lists!
 
 	# load pickle which contains class ranges
 	with open(image_class_ranges, "r") as fp:
 		class_ranges = pickle.load(fp)
 
-	F 			 = h5py.File(path_to_h5py, "r")
+	F 			 = h5py.File(h5_training, "r")
 	vgg_feats 	 = F["data/features"]
 
-	wordF 		 = h5py.File("processed_features/embeddings.h5", 'r')
+	wordF 		 = h5py.File(embeddings_path, 'r')
 	embeddings   = wordF["data/word_embeddings"]
 	word_mapping = {l[0]:i for i,l in enumerate(wordF["data/word_names"])}
 
@@ -187,19 +219,23 @@ def create_indices(total_length, batch_size):
 
 def main():
 	
-	parser = argparse.ArgumentParser()
-	parser.add_argument("-weights_path", help="weights file path")
-	parser.add_argument("-images_path", help="folder where images are located")
-	parser.add_argument("-embeddings_path", help="binary where word embeddings are saved")
-	parser.add_argument("-dump_path", help="folder where features will be dumped")
-	parser.add_argument("-image_class_ranges", help="index to class ranges")
-	args = parser.parse_args()
+	# parser = argparse.ArgumentParser()
+	# parser.add_argument("-weights_path", help="weights file path")
+	# parser.add_argument("-images_path", help="folder where images are located")
+	# parser.add_argument("-embeddings_path", help="binary where word embeddings are saved")
+	# parser.add_argument("-dump_path", help="folder where features will be dumped")
+	# parser.add_argument("-image_class_ranges", help="index to class ranges")
+	# args = parser.parse_args()
 
-	weights_path 	= args.weights_path
-	images_path 	= args.images_path
-	dump_path   	= args.dump_path
-	embeddings_path = args.embeddings_path
-	image_class_ranges = args.image_class_ranges
+	# weights_path 	= args.weights_path
+	# images_path 	= args.images_path
+	# dump_path   	= args.dump_path
+	# embeddings_path = args.embeddings_path
+	# image_class_ranges = args.image_class_ranges
+
+	########### LOADING CONFIGRATION FILES #################
+	load_configs(sys.argv[1])
+	########################################################
 
 	assert os.path.isdir(images_path), "---path is not a folder--"
 	assert os.path.isfile(dump_path), "---path is not a file--"
@@ -233,7 +269,7 @@ def main():
 
 	# extract and dump image features
 	print "Dumping image features.."
-	for i,j in tqdm(create_indices(len(list_of_files), batch_size=5)):
+	for i,j in tqdm(create_indices(len(list_of_files), batch_size=VGG_BATCH)):
 		
 		j = min(j, len(list_of_files))
 

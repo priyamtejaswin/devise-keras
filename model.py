@@ -15,13 +15,18 @@ import numpy as np
 from keras.callbacks import TensorBoard
 import cv2
 from validation_script import ValidCallBack
+import ConfigParser
 
-PATH_h5 = "processed_features/features.h5"
-MARGIN = 0.2
-INCORRECT_BATCH = 32
-BATCH = INCORRECT_BATCH + 1
-IMAGE_DIM = 4096
-WORD_DIM = 50
+config = ConfigParser.RawConfigParser()
+config.read('local.cfg')
+
+PATH_h5 		= config.get("h5", "h5_training")
+MARGIN 			= config.getfloat("training", "MARGIN")
+INCORRECT_BATCH = config.getint("training", "INCORRECT_BATCH")
+BATCH 			= INCORRECT_BATCH + 1
+IMAGE_DIM 		= config.getint("training", "IMAGE_DIM")
+WORD_DIM 		= config.getint("training", "WORD_DIM")
+TRAINING_CLASS_RANGES = config.get("other", "TRAINING_CLASS_RANGES")
 
 class DelayCallback(keras.callbacks.Callback):
 	def on_train_begin(self, logs={}):
@@ -148,7 +153,7 @@ def main():
 		steps_per_epoch = math.ceil(_num_train/float(BATCH))
 		print "Steps per epoch i.e number of iterations: ",steps_per_epoch
 		
-		train_datagen = data_generator(batch_size=INCORRECT_BATCH, image_class_ranges="training_ranges.pkl")
+		train_datagen = data_generator(batch_size=INCORRECT_BATCH, image_class_ranges=TRAINING_CLASS_RANGES)
 		history = model.fit_generator(
 				train_datagen,
 				steps_per_epoch=steps_per_epoch,
