@@ -66,6 +66,7 @@ with open(file_path, 'r') as fp:
 			image_count+=1
 
 			class_name = match_image.group(1)
+			class_name_orig = class_name
 			## Some hardcoding here.
 			if class_name=="diningtable":
 				class_name = "table"
@@ -83,7 +84,7 @@ with open(file_path, 'r') as fp:
 				os.makedirs(dir_name)
 
 			img_name = os.path.join(dir_name, image_name)
-			img_url = os.path.join(UIUC_URL, class_name, image_name)
+			img_url = os.path.join(UIUC_URL, class_name_orig, image_name)
 			system_string = "wget %s -O %s"%(img_url, img_name)
 
 			if not os.path.exists(img_name):
