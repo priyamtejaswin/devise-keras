@@ -61,8 +61,20 @@ def get_num_train_images():
 def hinge_rank_loss(y_true, y_pred, TESTING=False):
 	"""
 	Custom hinge loss per (image, label) example - Page4.
-	word_vectors is y_true
-	image_vectors is y_pred
+	
+	Keras mandates the function signature to follow (y_true, y_pred)
+	In devise:master model.py, this function accepts:
+	- y_true as word_vectors
+	- y_pred as image_vectors
+
+	For the rnn_model, the image_vectors and the caption_vectors are concatenated.
+	This is due to checks that Keras has enforced on (input,target) sizes 
+	and the inability to handle multiple outputs in a single loss function.
+
+	These are the actual inputs to this function:
+	- y_true is just a dummy placeholder of zeros (matching size check)
+	- y_pred is concatenate([image_output, caption_output], axis=-1)
+	The image, caption features are first separated and then used.
 	"""
 	## y_true will be zeros
 	select_images = lambda x: x[:, :WORD_DIM]
@@ -84,7 +96,7 @@ def hinge_rank_loss(y_true, y_pred, TESTING=False):
 	wrong_words = Lambda(slice_but_first, output_shape=(INCORRECT_BATCH, WORD_DIM))(word_vectors)
 
 	# l2 norm
-	l2 = lambda x: K.sqrt(K.sum(K.square(x)))
+	l2 = lambda x: K.sqrt(K.sum(K.square(x), axis=1, keepdims=True))
 	l2norm = lambda x: x/l2(x)
 
 	# tiling to replicate correct_word and correct_image
@@ -98,11 +110,11 @@ def hinge_rank_loss(y_true, y_pred, TESTING=False):
 	wrong_images = l2norm(wrong_images)
 
 	# correct_image VS incorrect_words | Note the singular/plurals
-	cost_images = MARGIN - K.sum(correct_images * correct_words, 1) + K.sum(correct_images * wrong_words, 1) 
+	cost_images = MARGIN - K.sum(correct_images * correct_words, axis=1) + K.sum(correct_images * wrong_words, axis=1) 
 	cost_images = K.maximum(cost_images, 0.0)
 	
 	# correct_word VS incorrect_images | Note the singular/plurals
-	cost_words = MARGIN - K.sum(correct_words * correct_images, 1) + K.sum(correct_words * wrong_images, 1) 
+	cost_words = MARGIN - K.sum(correct_words * correct_images, axis=1) + K.sum(correct_words * wrong_images, axis=1) 
 	cost_words = K.maximum(cost_words, 0.0)
 
 	# currently cost_words and cost_images are vectors - need to convert to scalar
