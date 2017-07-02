@@ -37,7 +37,7 @@ else:
 
 # output and input folder name 
 INPUT_FOLDER_NAME  = INPUT_PATH.rstrip("/") 
-OUTPUT_FOLDER_NAME = OUTPUT_FOLDER_NAME.rstrip("/") 
+OUTPUT_FOLDER_NAME = OUTPUT_PATH.rstrip("/") 
 
 print "INPUT_PATH: {} | OUTPUT_PATH: {}".format(INPUT_PATH, OUTPUT_PATH)
 print "INPUT_FODLER_NAME: {} | OUTPUT_FODLER_NAME: {}".format(INPUT_FOLDER_NAME, OUTPUT_FOLDER_NAME)
