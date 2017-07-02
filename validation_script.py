@@ -3,6 +3,7 @@ import keras
 import h5py
 import keras.backend as K
 from keras import metrics
+from time import time
 
 from tensorboard_logging import Logger
 
@@ -39,7 +40,7 @@ class ValidCallBack(keras.callbacks.Callback):
 		self.unique_classes_embed = np.array(self.unique_classes_embed)
 		self.unique_classes_embed = self.unique_classes_embed / np.linalg.norm(self.unique_classes_embed, axis=1, keepdims=True)
 
-		self.mylogger = Logger("logs")
+		self.mylogger = Logger("logs/top_{}".format(time()))
 
 
 	def on_epoch_end(self, epoch, logs={}):
