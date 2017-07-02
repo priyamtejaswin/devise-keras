@@ -17,3 +17,12 @@ python clean_data.py
 python extract_features_and_dump.py -weights_path vgg16_weights_th_dim_ordering_th_kernels.h5 -images_path UIUC_PASCAL_DATA_clean/ -embeddings_path glove.6B.50d.txt -dump_path processed_features/
 
 python model.py TRAIN
+
+### Changes required:
+- .gitignore: Done
+- base validation script
+- Updates/correct loss function
+- validation split
+- tensorboard changes + logging
+- embedding separation
+- caption preparation
