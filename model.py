@@ -142,7 +142,6 @@ def main():
 		# remote_cb = RemoteMonitor(root='http://localhost:9000')
 		tensorboard = TensorBoard(log_dir="logs/{}".format(time()))
 		epoch_cb    = EpochCheckpoint(folder="./snapshots/")
-		delay_cb 	= DelayCallback()
 		valid_cb	= ValidCallBack()
 
 		# fit generator
