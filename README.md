@@ -21,7 +21,7 @@ python model.py TRAIN
 ### Changes required:
 - .gitignore: Done
 - base validation script
-- Updates/correct loss function
+- Updates/correct loss function: Done
 - validation split
 - tensorboard changes + logging
 - embedding separation

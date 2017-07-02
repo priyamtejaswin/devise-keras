@@ -188,7 +188,7 @@ def main():
 				train_datagen,
 				steps_per_epoch=steps_per_epoch,
 				epochs=750,
-				callbacks=[tensorboard, epoch_cb]
+				callbacks=[tensorboard]
 			)
 		print history.history.keys()
 
