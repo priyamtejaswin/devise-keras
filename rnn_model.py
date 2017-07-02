@@ -5,6 +5,7 @@ from keras.layers import Embedding
 from keras.layers import LSTM
 from keras.layers import Lambda
 from keras.layers import concatenate
+from keras.layers.normalization import BatchNormalization
 from keras.callbacks import RemoteMonitor
 import keras
 from time import time, sleep
@@ -131,6 +132,7 @@ def hinge_rank_loss(y_true, y_pred, TESTING=False):
 
 def build_model(image_features, caption_features):
 	image_output = Dense(WORD_DIM, name="image_dense")(image_features)
+	image_output = BatchNormalization()(image_output)
 
 	embedding_matrix = pickle.load(open("KERAS_embedding_layer.pkl"))
 
@@ -145,6 +147,7 @@ def build_model(image_features, caption_features):
 
 	lstm_out = LSTM(50)(cap_embed)
 	caption_output = Dense(WORD_DIM, name="lstm_dense")(lstm_out)
+	caption_output = BatchNormalization()(caption_output)
 
 	concated = concatenate([image_output, caption_output], axis=-1)
 
