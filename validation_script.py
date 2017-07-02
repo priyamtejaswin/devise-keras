@@ -99,3 +99,53 @@ class ValidCallBack(keras.callbacks.Callback):
 			
 		return top_accuracy
 
+class LoadValidationData():
+
+	def __init__(self):
+
+		# validation features (200x4096) and its true class (cat, dog, aeroplane.. 200)
+		F 					= h5py.File("./processed_features/validation_features.h5", "r")
+		self.val_features 	= F["data/features"][:]
+		self.image_fnames 	= map(lambda a:a[0], F["data/fnames"][:])
+		self.image_GT  		= [fname.split("/")[-2] for fname in self.image_fnames]
+		F.close()
+
+		# embeddings (400000x50) 
+		wordF = h5py.File("./processed_features/embeddings.h5", 'r')
+		self.word_embed	= wordF["data/word_embeddings"][:,:] 
+		self.word_names  = map(lambda a:a[0], wordF["data/word_names"][:])
+		wordF.close()
+
+		# unique classes in validation set and their embeddings 
+		self.unique_classes = list(set(self.image_GT))
+		self.unique_classes_embed = []
+		for cl in self.unique_classes:
+			idx = self.word_names.index(cl)
+			self.unique_classes_embed.append(self.word_embed[idx])
+		self.unique_classes_embed = np.array(self.unique_classes_embed)
+		self.unique_classes_embed = self.unique_classes_embed / np.linalg.norm(self.unique_classes_embed, axis=1, keepdims=True)
+
+		# convert self.image_GT ==> self.image_GT_indices based on self.unique_classes
+		self.image_GT_indices = [] 
+		for cl in self.image_GT:
+			self.image_GT_indices.append(self.unique_classes.index(cl))
+
+		assert len(self.image_GT_indices) 	== len(self.val_features)
+		assert len(self.image_GT) 			== len(self.val_features)
+
+	def get_data(self):
+
+		return self.val_features, self.image_GT_indices
+
+
+
+
+
+
+
+
+
+
+
+
+
