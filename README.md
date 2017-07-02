@@ -31,3 +31,13 @@ rm snapshots/* ## Optional.
 
 python model.py TRAIN
 ````
+
+### Results
+The network was trained for 250 epochs with 800 training images and 200 validation images.
+
+#### Hinge Rank Loss
+![Loss function](./data_readme/loss.png)
+#### Top - 1 Accuracy
+![top 1 acc](./data_readme/top1.png)
+#### Top - 3 Accuracy
+![top 3 acc](./data_readme/top3.png)
