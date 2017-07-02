@@ -2,6 +2,7 @@ from keras.models import Model
 from keras.layers import Input
 from keras.layers import Dense
 from keras.layers import Lambda
+from keras.layers.normalization import BatchNormalization
 from keras.callbacks import RemoteMonitor
 import keras
 from time import time, sleep
@@ -58,7 +59,8 @@ def linear_transformation(a):
 	Takes a 4096-dim vector, applies linear transformation to get WORD_DIM vector.
 	"""
 	b = Dense(WORD_DIM, name='transform')(a)
-	return b
+	c = BatchNormalization()(b)
+	return c
 
 def hinge_rank_loss(word_vectors, image_vectors, TESTING=False):
 	"""
@@ -140,7 +142,6 @@ def main():
 		# remote_cb = RemoteMonitor(root='http://localhost:9000')
 		tensorboard = TensorBoard(log_dir="logs/{}".format(time()))
 		epoch_cb    = EpochCheckpoint(folder="./snapshots/")
-		delay_cb 	= DelayCallback()
 		valid_cb	= ValidCallBack()
 
 		# fit generator
