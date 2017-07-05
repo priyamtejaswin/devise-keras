@@ -19,6 +19,8 @@ python extract_features_and_dump.py -weights_path vgg16_weights_th_dim_ordering_
 python model.py TRAIN
 
 ### Changes required:
+DO NOT look at branch:master for merging the missing pieces. Look at branch:priyam_dev for reference - it contains the master code WITHOUT the config.
+
 - .gitignore: Done
 - base validation script
 - Updates/correct loss function: Done
