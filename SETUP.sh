@@ -25,6 +25,16 @@ else
 fi
 echo
 
+uiucSource="SOURCE_PASCAL_SENTENCES_vision.cs.uiuc.edu.html"
+if [ -f "$uiucSource" ];
+        then
+        echo -e "$uiucSource exists.\n"
+else
+        echo -e "$uiucSource not found. Downloading...\n"
+        wget -O $uiucSource "vision.cs.uiuc.edu/pascal-sentences/"
+fi
+echo
+
 featsDir="processed_features"
 if [ -d "$featsDir" ];
 	then
