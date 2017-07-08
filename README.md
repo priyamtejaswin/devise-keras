@@ -28,3 +28,4 @@ DO NOT look at branch:master for merging the missing pieces. Look at branch:priy
 - tensorboard changes + logging: Done(added tensorboard_logging.py)
 - embedding separation: Done
 - caption preparation: Done(not changed for now)
+- update extract_featurs: Done
