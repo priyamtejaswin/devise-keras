@@ -187,7 +187,7 @@ def main():
 		history = model.fit_generator(
 				train_datagen,
 				steps_per_epoch=steps_per_epoch,
-				epochs=750,
+				epochs=250,
 				callbacks=[tensorboard]
 			)
 		print history.history.keys()
