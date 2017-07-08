@@ -166,7 +166,7 @@ tokenizer.fit_on_texts(captions_list)
 sequences = tokenizer.texts_to_sequences(captions_list)
 
 word_index = tokenizer.word_index
-print('Found %s unique tokens.' % len(word_index))
+print('\nFound %s unique tokens.' % len(word_index))
 data = pad_sequences(sequences, maxlen=20, padding='post', truncating='post')
 
 # missing_indices = [v for k,v in word_index.items() if k not in glove_index]
@@ -175,18 +175,25 @@ data = pad_sequences(sequences, maxlen=20, padding='post', truncating='post')
 # print "Missing indices:", missing_indices
 # print "Replaced missing with <unk>"
 
-print "Creating embedding_layer weights..."
+print "\nCreating embedding_layer weights..."
 embedding_layer = np.zeros((len(word_index) + 1, 50))
 for word,ix in word_index.items():
 		embedding_layer[ix, :] = glove_index[word]
 
-print "Saving embedding and word_index to disk..."
+print "\nSaving embedding and word_index to disk..."
+
+print "\t\tembedding matrix CONTAINS <pad> at the 0 index. Size:", embedding_layer.shape
 pickle.dump(embedding_layer, open("KERAS_embedding_layer.pkl", "w"))
+
+print "\t\tword index DOES NOT CONTAIN <pad>. The index starts from 0. Size:", len(word_index)
 pickle.dump(word_index, open("DICT_word_index.pkl", "w"))
+
+print "\t\tcaption_data contains ALL the captions."
+print "Use id_TO_class, class_TO_images, image_TO_captions for collecting the paired captions."
 pickle.dump(data, open("ARRAY_caption_data.pkl", "w"))
 
 pickle.dump(id_TO_class, open("DICT_id_TO_class.pkl", "w"))
 pickle.dump(class_TO_images, open("DICT_class_TO_images.pkl", "w"))
 pickle.dump(image_TO_captions, open("DICT_image_TO_captions.pkl", "w"))
 
-print "DONE"
+print "\nDONE\nRemember that the class_TO_images dict has to be udpated after shuffling validation data."
