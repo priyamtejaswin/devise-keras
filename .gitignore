@@ -9,6 +9,7 @@ VOC*
 snapshots/*
 UIUC_PASCAL_DATA/*
 *.txt
+!requirements.txt
 wget-log*
 UIUC_PASCAL_DATA_clean/*
 UIUC_PASCAL_*/*
