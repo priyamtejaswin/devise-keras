@@ -187,15 +187,15 @@ def main():
 		history = model.fit_generator(
 				train_datagen,
 				steps_per_epoch=steps_per_epoch,
-				epochs=250,
-				callbacks=[tensorboard]
+				epochs=100,
+				callbacks=[tensorboard, epoch_cb]
 			)
 		print history.history.keys()
 
 
 	elif RUN_TIME == "TEST":
 		from keras.models import load_model 
-		model = load_model("snapshots/epoch_749.hdf5", custom_objects={"hinge_rank_loss":hinge_rank_loss})
+		model = load_model("snapshots/epoch_69.hdf5", custom_objects={"hinge_rank_loss":hinge_rank_loss})
 
 	hf = h5py.File("processed_features/features.h5","r")
 
