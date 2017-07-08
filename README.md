@@ -22,9 +22,9 @@ python model.py TRAIN
 DO NOT look at branch:master for merging the missing pieces. Look at branch:priyam_dev for reference - it contains the master code WITHOUT the config.
 
 - .gitignore: Done
-- base validation script
+- base validation script: akshay is working on it
 - Updates/correct loss function: Done
 - validation split: Done - now deletes the images from DICT_class_TO_images.pkl
-- tensorboard changes + logging
+- tensorboard changes + logging: Done(added tensorboard_logging.py)
 - embedding separation: Done
 - caption preparation: Done(not changed for now)
