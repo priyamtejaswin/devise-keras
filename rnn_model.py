@@ -16,6 +16,7 @@ import math, os, sys
 from extract_features_and_dump import data_generator
 import numpy as np
 from keras.callbacks import TensorBoard
+from validation_script import ValidCallBack
 import cv2
 import pickle
 import numpy as np
@@ -178,6 +179,7 @@ def main():
 		# remote_cb = RemoteMonitor(root='http://localhost:9000')
 		tensorboard = TensorBoard(log_dir="logs/{}".format(time()))
 		epoch_cb    = EpochCheckpoint(folder="./snapshots/")
+		valid_cb    = ValidCallBack()
 
 		# fit generator
 		steps_per_epoch = math.ceil(_num_train*5/float(BATCH))
@@ -188,7 +190,7 @@ def main():
 				train_datagen,
 				steps_per_epoch=steps_per_epoch,
 				epochs=100,
-				callbacks=[tensorboard, epoch_cb]
+				callbacks=[tensorboard, epoch_cb, valid_cb]
 			)
 		print history.history.keys()
 
