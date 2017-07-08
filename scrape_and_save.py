@@ -44,13 +44,18 @@ if answer == "n":
 # UNK_ix = glove_index["<unk>"]
 
 if os.path.exists(UIUC_ROOT):
-	print "\nUIUC_PASCAL_DATA detected. The program has stopped here. Press ENTER to continue downloading all data. Press CTRL+C to exit program now.\n"
+	raw_input("\nUIUC_PASCAL_DATA detected. The program has stopped here. Press ENTER to continue downloading all data. Press CTRL+C to exit program now.\n")
 else:
 	os.makedirs(UIUC_ROOT)
 if os.path.exists(UIUC_VAL):
-	print "\nUIUC_PASCAL_VAL detected. The program has stopped here. Press ENTER to continue downloading all data. Press CTRL+C to exit program now.\n"
+	raw_input("\nUIUC_PASCAL_VAL detected. The program has stopped here. Press ENTER to continue downloading all data. Press CTRL+C to exit program now.\n")
 else:
 	os.makedirs(UIUC_VAL)
+
+print "\nLoading word_embeddings...\n"
+emfp = h5py.File("processed_features/embeddings.h5", 'r') 
+word_embeds	= emfp["data/word_embeddings"][:,:]
+glove_index = {w[0]:word_embeds[n].tolist() for n,w in enumerate(emfp["data/word_names"][:])}
 
 print "\nParsing and downloading html source...\n"
 
