@@ -1,4 +1,9 @@
-import os, sys, shutil, itertools
+import os
+import sys
+import shutil
+import itertools
+import pickle
+import ipdb
 
 count = 0
 
@@ -32,3 +37,18 @@ res = raw_input("CONFIRM. Delete original files?<y/n>")
 if res=="y":
 	for fname in files_to_copy:
 		os.remove(fname)
+
+print "Updating DICT_class_TO_images."
+indices_to_drop = set(indices_to_drop)
+class_to_images_file = "DICT_class_TO_images.pkl"
+
+with open(class_to_images_file, 'r') as fp:
+	class_TO_images = pickle.load(fp)
+
+	for c,l in class_TO_images.iteritems():
+		class_TO_images[c] = [i for i in l if i not in indices_to_drop]
+
+with open(class_to_images_file, 'w') as fp:
+	pickle.dump(class_TO_images, fp)
+
+print "DONE"
