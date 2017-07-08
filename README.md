@@ -24,7 +24,7 @@ DO NOT look at branch:master for merging the missing pieces. Look at branch:priy
 - .gitignore: Done
 - base validation script
 - Updates/correct loss function: Done
-- validation split
+- validation split: Done - now deletes the images from DICT_class_TO_images.pkl
 - tensorboard changes + logging
 - embedding separation: Done
 - caption preparation: Done(not changed for now)
