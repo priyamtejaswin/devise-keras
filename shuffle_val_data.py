@@ -1,15 +1,15 @@
 import os, sys, shutil, itertools
 
-count = 1
+count = 0
 
-files_to_copy, new_file_paths = [], []
+files_to_copy, new_file_paths, indices_to_drop = [], [], []
 
 for root, dirs, files in os.walk("UIUC_PASCAL_DATA"):
 	for fname in files:
 		if "DS_Store" in fname:
 			continue
 		
-		if count%5==0:
+		if (count+1)%5==0:
 			files_to_copy.append(os.path.join(root, fname))
 			print root, fname
 
@@ -18,6 +18,8 @@ for root, dirs, files in os.walk("UIUC_PASCAL_DATA"):
 				os.mkdir(new_root)
 
 			new_file_paths.append(os.path.join(new_root, fname))
+
+			indices_to_drop.append(count)
 
 		count+=1
 
