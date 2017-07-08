@@ -26,5 +26,5 @@ DO NOT look at branch:master for merging the missing pieces. Look at branch:priy
 - Updates/correct loss function: Done
 - validation split
 - tensorboard changes + logging
-- embedding separation
-- caption preparation
+- embedding separation: Done
+- caption preparation: Done(not changed for now)
