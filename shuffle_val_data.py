@@ -39,16 +39,20 @@ if res=="y":
 		os.remove(fname)
 
 print "Updating DICT_class_TO_images."
-indices_to_drop = set(indices_to_drop)
+SET_indices_to_drop = set(indices_to_drop)
 class_to_images_file = "DICT_class_TO_images.pkl"
 
 with open(class_to_images_file, 'r') as fp:
 	class_TO_images = pickle.load(fp)
 
 	for c,l in class_TO_images.iteritems():
-		class_TO_images[c] = [i for i in l if i not in indices_to_drop]
+		class_TO_images[c] = [i for i in l if i not in SET_indices_to_drop]
 
 with open(class_to_images_file, 'w') as fp:
 	pickle.dump(class_TO_images, fp)
+
+print "Dumping validation image indices to original data for DICT_image_TO_captions.pkl"
+with open("LIST_validation_images_mappings.pkl", 'w') as fp:
+	pickle.dump(indices_to_drop, fp)
 
 print "DONE"
