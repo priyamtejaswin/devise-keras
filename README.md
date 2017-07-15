@@ -30,7 +30,7 @@ python extract_features_and_dump.py -weights_path vgg16_weights_th_dim_ordering_
 
 rm snapshots/* ## Optional.
 
-python model.py TRAIN
+python rnn_model.py TRAIN
 ````
 
 ### Changes required:
@@ -46,3 +46,4 @@ DO NOT look at branch:master for merging the missing pieces. Look at branch:priy
 - update extract_featurs: Done
 - update to use CONFIG
 - changes for server??
+- add more parameters to model
