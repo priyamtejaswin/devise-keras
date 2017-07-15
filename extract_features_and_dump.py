@@ -36,7 +36,7 @@ def get_class_ranges(fnames):
 
 	return class_ranges
 
-def data_generator(path_to_h5py="processed_features/features.h5", batch_size=2):
+def data_generator(path_to_h5py="processed_features/features.h5", batch_size=2,):
 	
 	#print "\nloading data for training...\n"
 	
@@ -82,21 +82,27 @@ def data_generator(path_to_h5py="processed_features/features.h5", batch_size=2):
 		# 	# print epoch, i
 		# 	yield X, y
 
-		true_class = random.choice(id_TO_class.keys())
-		true_image_ix = random.choice(class_TO_images[true_class])
-		false_image_ixs = random.sample(all_images-set(class_TO_images[true_class]), batch_size)
+		# for ix,not_ix in zip(image_ix, not_image_ix): ## REMOVE INDENT WHEN REQUIRED
+			true_class = random.choice(id_TO_class.keys())
+			true_image_ix = random.choice(class_TO_images[true_class])
+			# true_image_ix = ix
+			false_image_ixs = random.sample(all_images-set(class_TO_images[true_class]), batch_size)
+			# false_image_ixs = random.sample(list(not_ix), batch_size)
 
-		true_cap_ix = random.choice(image_TO_captions[true_image_ix])
-		false_cap_ixs = [random.choice(image_TO_captions[ix]) for ix in false_image_ixs]
+			true_cap_ix = random.choice(image_TO_captions[true_image_ix])
+			false_cap_ixs = [random.choice(image_TO_captions[ix]) for ix in false_image_ixs]
 
-		X_images = np.zeros((batch_size+1, IMAGE_DIM))
-		X_images[0] = VGGfeats[true_image_ix]
-		for i,j in enumerate(false_image_ixs):
-			X_images[i] = VGGfeats[j]
+			X_images = np.zeros((batch_size+1, IMAGE_DIM))
+			X_images[0] = VGGfeats[true_image_ix]
 
-		X_captions = caption_data[[true_cap_ix] + false_cap_ixs]
+			# ipdb.set_trace()
 
-		yield (X_images, X_captions), (0, 0)
+			for i,j in enumerate(false_image_ixs):
+				X_images[i+1] = VGGfeats[j]
+
+			X_captions = caption_data[[true_cap_ix] + false_cap_ixs]
+
+			yield [X_images, X_captions], np.zeros(1+batch_size) ## This is bogus!!!!
 
 		# print "true_class", true_class, id_TO_class[true_class]
 		# print "true_image_ix", true_image_ix
@@ -200,6 +206,8 @@ def define_model(path):
 	return model  
 
 def create_indices(total_length, batch_size):
+	if batch_size>=total_length:
+		batch_size=total_length-1
 	return izip(xrange(0, total_length, batch_size), xrange(batch_size, total_length+batch_size, batch_size))
 
 
@@ -210,6 +218,7 @@ def main():
 	parser.add_argument("-images_path", help="folder where images are located")
 	parser.add_argument("-embeddings_path", help="binary where word embeddings are saved")
 	parser.add_argument("-dump_path", help="folder where features will be dumped")
+
 	args = parser.parse_args()
 
 	weights_path 	= args.weights_path
@@ -218,7 +227,7 @@ def main():
 	embeddings_path = args.embeddings_path
 
 	assert os.path.isdir(images_path), "---path is not a folder--"
-	assert os.path.isdir(dump_path), "---path is not a folder--"
+	assert os.path.isfile(dump_path), "---path is not a file--"
 	
 	print "defining model.."
 	model = define_model(weights_path)
@@ -231,9 +240,9 @@ def main():
 
 	print "Total files:", len(list_of_files)
 	
-	print "creating h5py files features.h5.."
+	print "Appending to h5py files ",dump_path
 	# h5py 
-	hf = h5py.File(os.path.join(dump_path,"features.h5"),"r+")
+	hf = h5py.File(dump_path,"r+")
 	data = hf["data"]
 
 	if data.get("features") is None:
@@ -249,7 +258,7 @@ def main():
 
 	# extract and dump image features
 	print "Dumping image features.."
-	for i,j in tqdm(create_indices(len(list_of_files), batch_size=2)):
+	for i,j in tqdm(create_indices(len(list_of_files), batch_size=5)):
 		
 		j = min(j, len(list_of_files))
 
@@ -272,13 +281,8 @@ def main():
 
 		dump_to_h5(names=dump_names, scores=scores, hf=hf)
 
-	# extract and dump class ranges
-	class_ranges = get_class_ranges(map(lambda a:a[0], fnames_h5[:])) # fnames is list of single lists!
-	with open("image_class_ranges.pkl","w") as f:
-		pickle.dump(class_ranges, f)
-		print "...saved to pickle image_class_ranges.pkl"
-
 	K.clear_session()
+	hf.close()
 
 if __name__=="__main__":
 	main()
