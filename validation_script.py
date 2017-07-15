@@ -54,12 +54,12 @@ class ValidCallBack(keras.callbacks.Callback):
 
 		# running forward pass for image_feats + dummy captions
 		MAX_SEQUENCE_LENGTH = 20
-		WORD_DIM = 50
+		WORD_DIM = 300
 		preds = self.model.predict([self.val_features, np.zeros((len(self.val_features), 20))])  
 		im_outs = preds[:, :WORD_DIM]
 
 		# runnign forward pass for dummy feats + actual captions 
-		BATCH_SIZE = 50 
+		BATCH_SIZE = 32 
 		just_captions = [cap for cap,_ in self.val_to_caption]
 		just_indices  = [val_idx for _,val_idx in self.val_to_caption]
 		just_captions = np.array(just_captions)
@@ -134,7 +134,7 @@ class LoadValidationData(): # DEPRECATED #
 		self.image_GT  		= [fname.split("/")[-2] for fname in self.image_fnames]
 		F.close()
 
-		# embeddings (400000x50) 
+		# embeddings (400000xWORD_DIM) 
 		wordF = h5py.File("./processed_features/embeddings.h5", 'r')
 		self.word_embed	= wordF["data/word_embeddings"][:,:] 
 		self.word_names  = map(lambda a:a[0], wordF["data/word_names"][:])

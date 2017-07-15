@@ -22,7 +22,7 @@ import random
 np.random.seed(123)
 
 IMAGE_DIM = 4096
-WORD_DIM = 50
+WORD_DIM = 300
 
 def get_class_ranges(fnames):
 	class_ranges = {} 

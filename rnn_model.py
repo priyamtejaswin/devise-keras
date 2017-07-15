@@ -26,7 +26,7 @@ MARGIN = 0.2
 INCORRECT_BATCH = 32
 BATCH = INCORRECT_BATCH + 1
 IMAGE_DIM = 4096
-WORD_DIM = 50
+WORD_DIM = 300
 MAX_SEQUENCE_LENGTH = 20
 
 class DelayCallback(keras.callbacks.Callback):
@@ -143,14 +143,14 @@ def build_model(image_features, caption_features):
 
 	cap_embed = Embedding(
 		input_dim=embedding_matrix.shape[0],
-		output_dim=50,
+		output_dim=WORD_DIM,
 		weights=[embedding_matrix],
 		input_length=MAX_SEQUENCE_LENGTH,
 		trainable=False,
 		name="caption_embedding"
 		)(caption_features)
 
-	lstm_out = LSTM(50)(cap_embed)
+	lstm_out = LSTM(300)(cap_embed)
 	caption_output = Dense(WORD_DIM, name="lstm_dense")(lstm_out)
 	caption_output = BatchNormalization()(caption_output)
 
