@@ -53,5 +53,14 @@ else
 	echo -e "Created $snapsDir\n"
 fi
 
+logsDir="logs"
+if [ -d "$logsDir" ];
+        then
+        echo -e "$logsDir exists.\n"
+else
+        mkdir $logsDir
+        echo -e "Created $logsDir\n"
+fi
+
 echo -e "DONE\nFollow steps listed under SETUP in README.md"
 echo -e "\n_scrape_and_preprocess_captions.py will ask to continue after every 150 images in the process of downloading 1000 images. If you wish to download all without interruption, comment lines 135 to 139(both inclusive) in _scrape_and_preprocess_captions.py\n"
