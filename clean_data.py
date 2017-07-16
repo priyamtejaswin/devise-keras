@@ -42,11 +42,14 @@ for root, dirs, files in os.walk(INPUT_PATH, topdown=False):
         list_files.append(os.path.join(root, name))
 
 
-# all types of classes + make dirs for them  
-classes = os.listdir(INPUT_PATH)
-print "num images Found: ", len(classes)
-for c in classes:
-	os.mkdir(os.path.join(OUTPUT_PATH,c))
+### NOTE: This piece of code not used in mscoco because 
+### it does not have any classes so we do not need to make
+### any folders for different classes.
+# # all types of classes + make dirs for them  
+# classes = os.listdir(INPUT_PATH)
+# print "Classes Found: ", classes
+# for c in classes:
+# 	os.mkdir(os.path.join(OUTPUT_PATH,c))
 
 # dump as resized .png files
 print "Dumping resized (224x224) images to disk.."

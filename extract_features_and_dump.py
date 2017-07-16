@@ -24,18 +24,6 @@ np.random.seed(123)
 IMAGE_DIM = 4096
 WORD_DIM = 300
 
-def get_class_ranges(fnames):
-	class_ranges = {} 
-
-	for idx,fname in enumerate(fnames):
-		class_name = fname.split("/")[-2]
-		if class_name not in class_ranges.keys():
-			class_ranges[class_name] = [idx,idx]
-		else:
-			class_ranges[class_name][1] = idx
-
-	return class_ranges
-
 
 def data_generator_coco(path_to_h5py="processed_features/features.h5", incorrect_batch=2):
 	''' Data generator for coco dataset ''' 
