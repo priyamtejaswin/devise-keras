@@ -197,7 +197,7 @@ def main():
 		# valid_cb    = ValidCallBack()
 
 		# fit generator
-		steps_per_epoch = math.ceil(_num_train*5) # /float(BATCH))
+		steps_per_epoch = math.ceil(_num_train*1) ## Changed the factor to 1. This way it will see all images but not all captions. 
 		print "Steps per epoch i.e number of iterations: ",steps_per_epoch
 		
 		train_datagen = data_generator_coco(incorrect_batch=INCORRECT_BATCH)
