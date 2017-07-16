@@ -56,6 +56,9 @@ _c = 0
 captions_list = []
 image_TO_captions = defaultdict(list)
 
+_cap_unk_words = 0
+_unk_words = []
+
 for capId, capInfo in cocoObj.anns.iteritems(): 
 	assert capId==capInfo["id"], "Something is seriously wrong with the data!!!"
 
@@ -79,7 +82,12 @@ for capId, capInfo in cocoObj.anns.iteritems():
 			else:
 				## current strategy is to skip unknown words!
 				# new_list.append("<unk>")
-				print "UNK WORD %s:"%(word), caption_text
+				print "UNK WORD %s:"%(word), with_spaces
+				_unk_words.append(word)
+				_c+=1
+		if _c>0:
+			_cap_unk_words+=1
+		_c=0
 
 		captions_list.append(" ".join(new_list))
 
