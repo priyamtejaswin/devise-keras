@@ -34,4 +34,5 @@ python rnn_model.py TRAIN
 - extract_features_and_dump.py NO CONCEPT OF CATAGORY, or CLASS DONE
 - extract_features_and_dump.py DATA_GENERATOR DONE
 - scrape_and_save.py Update the dicts and pkls DONE
-- rnn_model.py UPDATES??
+- rnn_model.py UPDATES?? DONE
+- FIX validation_script.py
