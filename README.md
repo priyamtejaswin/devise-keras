@@ -1,8 +1,8 @@
 # devise-keras
 
-# THIS BRANCH IS NOT BEING UPDATED. Switch to add_rnn_model for development.
+# THIS BRANCH SHOULD ONLY CONTAIN WORKING CODE. Switch to add_rnn_model for development.
 
-The **master** branch contains code to setup the experiment, download/pre-process data for implementing the [Google-Devise paper](https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/41869.pdf). `model.py` contains the code for the model. Due to computational constraints, the experiments are run on the [UIUC PASCAL sentences dataset](http://vision.cs.uiuc.edu/pascal-sentences/) as opposed to [ImageNet](http://www.image-net.org/). This dataset contains 50 images per category for 20 categories along with 5 captions per image. These captions are used for the extension of the project in the **devise-rnn** branch.
+An extention of the [Google-Devise paper](https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/41869.pdf) which is implemented in **master**. `rnn_model.py` contains the code for the model. Due to computational constraints, the experiments are run on the [UIUC PASCAL sentences dataset](http://vision.cs.uiuc.edu/pascal-sentences/). This dataset contains 50 images per category for 20 categories along with 5 captions per image. These captions are used in the same pairwise loss function to learn an image search engine entirely from annotated images.
 
 The project uses the following python packages over the conda python stack:
 - tensorflow 1.1.0
@@ -16,7 +16,7 @@ The project uses the following python packages over the conda python stack:
 
 bash SETUP.sh
 
-python extract_word_embeddings.py glove.6B.50d.txt processed_features/embeddings.h5
+python extract_word_embeddings.py glove.6B.300d.txt processed_features/embeddings.h5
 
 python scrape_and_save.py SOURCE_PASCAL_SENTENCES_vision.cs.uiuc.edu.html LOCAL
 
