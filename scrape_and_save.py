@@ -58,6 +58,8 @@ image_TO_captions = defaultdict(list)
 
 _cap_unk_words = 0
 _unk_words = []
+_cap_count = 0
+caption_TO_count = {}
 
 for capId, capInfo in cocoObj.anns.iteritems(): 
 	assert capId==capInfo["id"], "Something is seriously wrong with the data!!!"
@@ -89,6 +91,9 @@ for capId, capInfo in cocoObj.anns.iteritems():
 			## Only associate with the image if NO unk WORDS found.
 			image_TO_captions[capInfo["image_id"]].append(capId)
 			captions_list.append(" ".join(new_list).encode("utf-8"))
+			caption_TO_count[capId] = _cap_count
+			_cap_count+=1
+
 		_c=0
 
 	else:
@@ -126,7 +131,7 @@ embedding_layer = np.zeros((len(word_index) + 1, WORD_DIM))
 for word,ix in word_index.items():
 		embedding_layer[ix, :] = glove_index[word]
 
-print "\nSaving embedding and word_index to disk..."
+print "\nSaving embedding and word_index to disk...\n"
 
 print "\t\tembedding matrix CONTAINS <pad> at the 0 index. Size:", embedding_layer.shape
 pickle.dump(embedding_layer, open("KERAS_embedding_layer.pkl", "w"))
@@ -137,6 +142,14 @@ pickle.dump(word_index, open("DICT_word_index.pkl", "w"))
 print "\t\tcaption_data contains ALL the captions."
 pickle.dump(data, open("ARRAY_caption_data.pkl", "w"))
 
+print "\t\timage_TO_captions contains the CAPTION_IDS for every IMAGE_ID."
 pickle.dump(image_TO_captions, open("DICT_image_TO_captions.pkl", "w"))
 
+image_TO_tokens = {}
+for imgId, list_of_caption_ids in image_TO_captions.iteritems():
+	image_TO_tokens[imgId] = [data[caption_TO_count[cid]] for cid in list_of_caption_ids]
+print "\t\timage_TO_tokens contains the list of TOKEN_IDS for every IMAGE_ID."
+pickle.dump(image_TO_tokens, open("DICT_image_TO_tokens.pkl", "w"))
+
+ipdb.set_trace()
 print "\nDONE.\n"
