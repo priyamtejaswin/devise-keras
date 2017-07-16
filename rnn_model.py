@@ -13,7 +13,7 @@ import keras.backend as K
 import h5py
 import sys, ipdb
 import math, os, sys
-from extract_features_and_dump import data_generator
+from extract_features_and_dump import data_generator_coco
 import numpy as np
 from keras.callbacks import TensorBoard
 from validation_script import ValidCallBack
@@ -200,7 +200,7 @@ def main():
 		steps_per_epoch = math.ceil(_num_train*5) # /float(BATCH))
 		print "Steps per epoch i.e number of iterations: ",steps_per_epoch
 		
-		train_datagen = data_generator(batch_size=INCORRECT_BATCH)
+		train_datagen = data_generator_coco(incorrect_batch=INCORRECT_BATCH)
 		history = model.fit_generator(
 				train_datagen,
 				steps_per_epoch=steps_per_epoch,

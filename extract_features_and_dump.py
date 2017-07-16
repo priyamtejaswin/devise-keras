@@ -36,7 +36,48 @@ def get_class_ranges(fnames):
 
 	return class_ranges
 
-def data_generator(path_to_h5py="processed_features/features.h5", batch_size=2,):
+
+def data_generator_coco(path_to_h5py="processed_features/features.h5", incorrect_batch=2):
+	''' Data generator for coco dataset ''' 
+
+	caption_data = pickle.load(open("ARRAY_caption_data.pkl"))
+	image_to_caption = pickle.load(open("DICT_image_TO_captions.pkl"))
+
+	FP = h5py.File(path_to_h5py, 'r')
+	VGGfeats = FP["data/features"]
+
+	all_indices = image_to_caption.keys() 
+
+	while 1:
+
+		for i in xrange(len(all_indices)):
+
+			# pick one true index
+			true_image_ix   = i 
+
+			# pick incorrect_batch number of indices (which are not true batch)
+			false_image_ixs = random.choice(all_indices[:i] + all_indices[i+1:], incorrect_batch, replace=False) 
+
+			# pick 1 caption for 1 true image  
+			true_cap_ix = random.choice(image_to_caption[true_image_ix])
+
+			# pick 1 caption for incorrect_batch false images
+			false_cap_ixs = [random.choice(image_to_captions[ix]) for ix in false_image_ixs]
+
+			# X_images from VGGfeats
+			X_images = np.zeros((incorrect_batch+1, IMAGE_DIM))
+			for k, img_idx in enumerate([true_image_ix]+false_image_ixs):
+				X_images[k] = VGGfeats[img_idx]
+
+			# X_captions from caption_data
+			X_captions = caption_data[[true_cap_ix] + false_cap_ixs]
+
+			yield [X_images, X_captions], np.zeros(1+incorrect_batch)
+
+
+
+
+def data_generator(path_to_h5py="processed_features/features.h5", batch_size=2):
 	
 	#print "\nloading data for training...\n"
 	
