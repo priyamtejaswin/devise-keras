@@ -15,6 +15,7 @@ import pickle
 import matplotlib.pyplot as plt
 import numpy as np
 import shutil
+import urllib
 
 print "\n\n\t\tCreating features.h5 and validation_features.h5 in processed_features\n\n"
 tempF = h5py.File("processed_features/features.h5", "w")
@@ -35,7 +36,7 @@ UIUC_ROOT = "UIUC_PASCAL_DATA"
 UIUC_VAL = "UIUC_PASCAL_VAL"
 UIUC_URL = "http://vision.cs.uiuc.edu/pascal-sentences"
 WHITELIST = string.letters + string.digits
-WORD_DIM = 50
+WORD_DIM = 300
 
 answer = raw_input("DO you want to continue with downloading UIUC_PASCAL stuff?<y/n>")
 if answer == "n":
@@ -100,7 +101,9 @@ with open(file_path, 'r') as fp:
 			system_string = "wget %s -O %s"%(img_url, img_name)
 
 			if not os.path.exists(img_name):
-				os.system(system_string)
+				#os.system(system_string)
+                                print "Downloading link %s"%(img_url)
+				urllib.urlretrieve(img_url, img_name)
 
 			id_TO_class[len(uniq_class) -1] = class_name
 			class_TO_images[len(uniq_class) -1].append(image_count)
@@ -176,7 +179,7 @@ data = pad_sequences(sequences, maxlen=20, padding='post', truncating='post')
 # print "Replaced missing with <unk>"
 
 print "\nCreating embedding_layer weights..."
-embedding_layer = np.zeros((len(word_index) + 1, 50))
+embedding_layer = np.zeros((len(word_index) + 1, WORD_DIM))
 for word,ix in word_index.items():
 		embedding_layer[ix, :] = glove_index[word]
 

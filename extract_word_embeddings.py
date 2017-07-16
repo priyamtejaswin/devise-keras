@@ -6,7 +6,7 @@ import numpy as np
 from extract_features_and_dump import dump_wv_to_h5
 
 embeddings_path, dump_path = sys.argv[1], sys.argv[2]
-WORD_DIM = 50
+WORD_DIM = 300
 
 if os.path.isfile(dump_path):
 	res = raw_input("Found existing embedding dump file. Continue<y/n>?")

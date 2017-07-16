@@ -24,13 +24,13 @@ python scrape_and_save.py SOURCE_PASCAL_SENTENCES_vision.cs.uiuc.edu.html LOCAL
 
 python clean_data.py UIUC_PASCAL_DATA
 
-python extract_features_and_dump.py -weights_path vgg16_weights_th_dim_ordering_th_kernels.h5 -images_path UIUC_PASCAL_DATA_clean/ -embeddings_path glove.6B.50d.txt -dump_path processed_features/features.h5
+python extract_features_and_dump.py -weights_path vgg16_weights_th_dim_ordering_th_kernels.h5 -images_path UIUC_PASCAL_DATA_clean/  -dump_path processed_features/features.h5
 
 python shuffle_val_data.py
 
 python clean_data.py UIUC_PASCAL_VAL
 
-python extract_features_and_dump.py -weights_path vgg16_weights_th_dim_ordering_th_kernels.h5 -images_path UIUC_PASCAL_VAL_clean/ -embeddings_path glove.6B.50d.txt -dump_path processed_features/validation_features.h5
+python extract_features_and_dump.py -weights_path vgg16_weights_th_dim_ordering_th_kernels.h5 -images_path UIUC_PASCAL_VAL_clean/  -dump_path processed_features/validation_features.h5
 
 rm snapshots/* ## Optional.
 
