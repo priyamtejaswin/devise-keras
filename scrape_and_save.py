@@ -102,6 +102,7 @@ with open(file_path, 'r') as fp:
 
 			if not os.path.exists(img_name):
 				#os.system(system_string)
+                                print "Downloading link %s"%(img_url)
 				urllib.urlretrieve(img_url, img_name)
 
 			id_TO_class[len(uniq_class) -1] = class_name
