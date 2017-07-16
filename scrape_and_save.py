@@ -151,5 +151,4 @@ for imgId, list_of_caption_ids in image_TO_captions.iteritems():
 print "\t\timage_TO_tokens contains the list of TOKEN_IDS for every IMAGE_ID."
 pickle.dump(image_TO_tokens, open("DICT_image_TO_tokens.pkl", "w"))
 
-ipdb.set_trace()
 print "\nDONE.\n"

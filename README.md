@@ -34,7 +34,8 @@ python rnn_model.py TRAIN
 ````
 
 ### Changes required:
-- pre-process annotations
-- extract_features_and_dump.py NO CONCEPT OF CATAGORY, or CLASS
-- extract_features_and_dump.py DATA_GENERATOR 
-- scrape_and_save.py Update the dicts and pkls
+- scrape_and_save.py pre-process annotations DONE
+- extract_features_and_dump.py NO CONCEPT OF CATAGORY, or CLASS DONE
+- extract_features_and_dump.py DATA_GENERATOR DONE
+- scrape_and_save.py Update the dicts and pkls DONE
+- rnn_model.py UPDATES??
