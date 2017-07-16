@@ -26,13 +26,17 @@ tempF.create_group("data")
 tempF.close()
 print "\n\n\t\tDONE\n\n"
 
-file_path = sys.argv[1]
-ENV = sys.argv[2]
-
 WHITELIST = string.letters + string.digits
 WORD_DIM = 300
 
 COCO_ROOT = "/home/tejaswin.p/MSCOCO-stuff/coco"
+
+"""
+loc_to_raw_file: location to json file for cap_type
+cap_type: train/val/test
+"""
+loc_to_raw_file, cap_type = sys.argv[1], sys.argv[2]
+assert os.path.isfile(loc_to_raw_file), "--File %s not found--"%(loc_to_raw_file)
 
 # UNK_ix = glove_index["<unk>"]
 
@@ -40,13 +44,6 @@ print "\nLoading word_embeddings...\n"
 emfp = h5py.File("processed_features/embeddings.h5", 'r') 
 word_embeds	= emfp["data/word_embeddings"][:,:]
 glove_index = {w[0]:word_embeds[n].tolist() for n,w in enumerate(emfp["data/word_names"][:])}
-
-
-loc_to_raw_file, cap_type = sys.argv[1], sys.argv[2]
-"""
-loc_to_raw_file: location to json file for cap_type
-cap_type: train/val/test
-"""
 
 _response = raw_input("\nParsing captions type %s at %s ...<y/n>?"%(cap_type, loc_to_raw_file))
 if _response=='n':
