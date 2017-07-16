@@ -260,12 +260,8 @@ def main():
 	
 	print "defining model.."
 	model = define_model(weights_path)
-	
-	dir_fnames = []
-	for dirpath, dirnames, filenames in os.walk(images_path):
-		if filenames != []:
-			dir_fnames += [os.path.join(dirpath, fn) for fn in filenames]
-	list_of_files = dir_fnames
+	ipdb.set_trace()
+	list_of_files = [os.path.join(images_path, n) for n in  os.listdir(images_path)]
 
 	print "Total files:", len(list_of_files)
 	
@@ -287,7 +283,7 @@ def main():
 
 	# extract and dump image features
 	print "Dumping image features.."
-	for i,j in tqdm(create_indices(len(list_of_files), batch_size=5)):
+	for i,j in tqdm(create_indices(len(list_of_files), batch_size=50)):
 		
 		j = min(j, len(list_of_files))
 
