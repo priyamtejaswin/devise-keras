@@ -10,8 +10,6 @@ The project uses the following python packages over the conda python stack:
 
 ### SETUP
 ````
-# edit local.cfg to set LOCAL/PROD in ENV
-
 bash SETUP.sh
 
 python extract_word_embeddings.py glove.6B.300d.txt processed_features/embeddings.h5
@@ -36,16 +34,7 @@ python rnn_model.py TRAIN
 ````
 
 ### Changes required:
-DO NOT look at branch:master for merging the missing pieces. Look at branch:priyam_dev for reference - it contains the master code WITHOUT the config.
-
-- .gitignore: Done
-- base validation script: akshay is working on it - Done
-- Updates/correct loss function: Done
-- validation split: Done - now deletes the images from DICT_class_TO_images.pkl
-- tensorboard changes + logging: Done(added tensorboard_logging.py) Done(logging)
-- embedding separation: Done
-- caption preparation: Done(not changed for now)
-- update extract_featurs: Done
-- update to use CONFIG
-- changes for server??
-- add more parameters to model
+- pre-process annotations
+- extract_features_and_dump.py NO CONCEPT OF CATAGORY, or CLASS
+- extract_features_and_dump.py DATA_GENERATOR 
+- scrape_and_save.py Update the dicts and pkls
