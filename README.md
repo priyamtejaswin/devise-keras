@@ -14,21 +14,17 @@ bash SETUP.sh
 
 python extract_word_embeddings.py glove.6B.300d.txt processed_features/embeddings.h5
 
-python scrape_and_save.py SOURCE_PASCAL_SENTENCES_vision.cs.uiuc.edu.html LOCAL
+python scrape_and_save.py /home/tejaswin.p/MSCOCO-stuff/coco/annotations/captions_train2014.json TRAIN
 
 ## Ensure DS_Store files are not in the image folders.
 
-python clean_data.py UIUC_PASCAL_DATA
+python clean_data.py /var/coco/images/train2014
 
-python extract_features_and_dump.py -weights_path vgg16_weights_th_dim_ordering_th_kernels.h5 -images_path UIUC_PASCAL_DATA_clean/  -dump_path processed_features/features.h5
-
-python shuffle_val_data.py
-
-python clean_data.py UIUC_PASCAL_VAL
-
-python extract_features_and_dump.py -weights_path vgg16_weights_th_dim_ordering_th_kernels.h5 -images_path UIUC_PASCAL_VAL_clean/  -dump_path processed_features/validation_features.h5
+python extract_features_and_dump.py -weights_path vgg16_weights_th_dim_ordering_th_kernels.h5 -images_path /var/coco/images/train2014_clean  -dump_path processed_features/features.h5
 
 rm snapshots/* ## Optional.
+
+rm logs/* ## Optional.
 
 python rnn_model.py TRAIN
 ````
