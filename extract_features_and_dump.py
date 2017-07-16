@@ -216,7 +216,6 @@ def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-weights_path", help="weights file path")
 	parser.add_argument("-images_path", help="folder where images are located")
-	parser.add_argument("-embeddings_path", help="binary where word embeddings are saved")
 	parser.add_argument("-dump_path", help="folder where features will be dumped")
 
 	args = parser.parse_args()
@@ -224,7 +223,6 @@ def main():
 	weights_path 	= args.weights_path
 	images_path 	= args.images_path
 	dump_path   	= args.dump_path
-	embeddings_path = args.embeddings_path
 
 	assert os.path.isdir(images_path), "---path is not a folder--"
 	assert os.path.isfile(dump_path), "---path is not a file--"
