@@ -34,7 +34,7 @@ def data_generator_coco(path_to_h5py="processed_features/features.h5", incorrect
 	FP = h5py.File(path_to_h5py, 'r')
 	VGGfeats = FP["data/features"]
 	VGGnames = FP["data/fnames"][:]
-	imageid_to_vggfeats = {int(name.split("_")[-1].split(".")[0]):i for i,name in enumerate(VGGnames)}
+	imageid_to_vggfeats = {int(name[0].split("_")[-1].split(".")[0]):i for i,name in enumerate(VGGnames)}
 
 	all_imageids = imageid_to_vggfeats.keys() 
 
@@ -46,7 +46,7 @@ def data_generator_coco(path_to_h5py="processed_features/features.h5", incorrect
 			true_image_ix   = all_imageids[i] 
 
 			# pick incorrect_batch number of indices (which are not true batch)
-			false_image_ixs = random.choice(all_imageids[:i] + all_imageids[i+1:], incorrect_batch, replace=False) 
+			false_image_ixs = np.random.choice(all_imageids[:i] + all_imageids[i+1:], incorrect_batch, replace=False).tolist() 
 
 			# pick 1 caption for 1 true image  
 			true_cap = random.choice(image_to_tokens[true_image_ix])
@@ -60,7 +60,7 @@ def data_generator_coco(path_to_h5py="processed_features/features.h5", incorrect
 				X_images[k] = VGGfeats[imageid_to_vggfeats[img_idx]]
 
 			# X_captions from caption_data
-			X_captions = np.concatenate([true_cap] + false_caps, axis=0)
+			X_captions = np.array([true_cap] + false_caps)
 
 			yield [X_images, X_captions], np.zeros(1+incorrect_batch)
 
