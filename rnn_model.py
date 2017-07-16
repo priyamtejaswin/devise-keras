@@ -1,6 +1,6 @@
 from keras.models import Model
 from keras.layers import Input
-from keras.layers import Dense
+from keras.layers import Dense, Activation, Dropout
 from keras.layers import Embedding
 from keras.layers import LSTM
 from keras.layers import Lambda
@@ -140,9 +140,19 @@ def hinge_rank_loss(y_true, y_pred, TESTING=False):
 	
 
 def build_model(image_features, caption_features):
-	image_dense = Dense(WORD_DIM, name="image_dense")(image_features)
-	image_output = BatchNormalization()(image_dense)
+	
+	# visual model 	
+	# 	Hidden Layer - 1	
+	image_dense1 = Dense(WORD_DIM, name="image_dense1")(image_features)
+	image_dense1 = BatchNormalization()(image_dense1)
+	image_dense1 = Activation("relu")(image_dense1)
+	image_dense1 = Dropout(0.5)(image_dense1)	
+	
+	#   Hidden Layer - 2
+	image_dense2 = Dense(WORD_DIM, name="image_dense2")(image_dense1)
+	image_output = BatchNormalization()(image_dense2)
 
+	# rnn model
 	embedding_matrix = pickle.load(open("KERAS_embedding_layer.pkl"))
 
 	cap_embed = Embedding(
@@ -154,8 +164,9 @@ def build_model(image_features, caption_features):
 		name="caption_embedding"
 		)(caption_features)
 
-	lstm_out = LSTM(300)(cap_embed)
-	caption_output = Dense(WORD_DIM, name="lstm_dense")(lstm_out)
+	lstm_out_1 = LSTM(300, return_sequences=True)(cap_embed)
+	lstm_out_2 = LSTM(300)(lstm_out_1)
+	caption_output = Dense(WORD_DIM, name="lstm_dense")(lstm_out_2)
 	caption_output = BatchNormalization()(caption_output)
 
 	concated = concatenate([image_output, caption_output], axis=-1)
