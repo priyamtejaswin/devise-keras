@@ -44,6 +44,7 @@ print "\nLoading word_embeddings...\n"
 emfp = h5py.File("processed_features/embeddings.h5", 'r') 
 word_embeds	= emfp["data/word_embeddings"][:,:]
 glove_index = {w[0]:word_embeds[n].tolist() for n,w in enumerate(emfp["data/word_names"][:])}
+assert WORD_DIM==len(glove_index["the"]), "--Mismatch b/w WORD_DIM and glove data--"
 
 _response = raw_input("\nParsing captions type %s at %s ...<y/n>?"%(cap_type, loc_to_raw_file))
 if _response=='n':
@@ -69,8 +70,7 @@ for capId, capInfo in cocoObj.anns.iteritems():
 			with_spaces+=" "+char
 
 	if len(with_spaces.split())>=5: # Ultimate check for including a caption.
-		caption_count+=1
-		image_TO_captions[image_count].append(caption_count)
+		image_TO_captions[capInfo["image_id"]].append(capId)
 
 		new_list = []
 		for word in with_spaces.split():
