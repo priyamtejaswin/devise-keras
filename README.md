@@ -1,8 +1,6 @@
-# devise-keras
+# mscoco-search extends devise-rnn
 
-# THIS BRANCH SHOULD ONLY CONTAIN WORKING CODE. Switch to add_rnn_model for development.
-
-An extention of the [Google-Devise paper](https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/41869.pdf) which is implemented in **master**. `rnn_model.py` contains the code for the model. Due to computational constraints, the experiments are run on the [UIUC PASCAL sentences dataset](http://vision.cs.uiuc.edu/pascal-sentences/). This dataset contains 50 images per category for 20 categories along with 5 captions per image. These captions are used in the same pairwise loss function to learn an image search engine entirely from annotated images.
+## Changes to the devise-rnn branch to train an image search engine using mscoco dataset.
 
 The project uses the following python packages over the conda python stack:
 - tensorflow 1.1.0
