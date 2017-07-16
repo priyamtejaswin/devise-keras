@@ -37,7 +37,7 @@ def get_class_ranges(fnames):
 	return class_ranges
 
 
-def data_generator_coco(path_to_h5py="processed_features/features.h5", incorect_batch=2):
+def data_generator_coco(path_to_h5py="processed_features/features.h5", incorrect_batch=2):
 	''' Data generator for coco dataset ''' 
 
 	caption_data = pickle.load(open("ARRAY_caption_data.pkl"))
@@ -65,14 +65,14 @@ def data_generator_coco(path_to_h5py="processed_features/features.h5", incorect_
 			false_cap_ixs = [random.choice(image_to_captions[ix]) for ix in false_image_ixs]
 
 			# X_images from VGGfeats
-			X_images = np.zeros((incorect_batch+1, IMAGE_DIM))
+			X_images = np.zeros((incorrect_batch+1, IMAGE_DIM))
 			for k, img_idx in enumerate([true_image_ix]+false_image_ixs):
 				X_images[k] = VGGfeats[img_idx]
 
 			# X_captions from caption_data
 			X_captions = caption_data[[true_cap_ix] + false_cap_ixs]
 
-			yield [X_images, X_captions], np.zeros(1+incorect_batch)
+			yield [X_images, X_captions], np.zeros(1+incorrect_batch)
 
 
 
