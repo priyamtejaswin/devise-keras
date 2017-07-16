@@ -70,11 +70,9 @@ for capId, capInfo in cocoObj.anns.iteritems():
 		if char in WHITELIST:
 			with_spaces+=char
 		else:
-			with_spaces+=" "+char
+			with_spaces+=" "
 
 	if len(with_spaces.split())>=5: # Ultimate check for including a caption.
-		image_TO_captions[capInfo["image_id"]].append(capId)
-
 		new_list = []
 		for word in with_spaces.split():
 			if word in glove_index:
@@ -87,12 +85,21 @@ for capId, capInfo in cocoObj.anns.iteritems():
 				_c+=1
 		if _c>0:
 			_cap_unk_words+=1
+		else:
+			## Only associate with the image if NO unk WORDS found.
+			image_TO_captions[capInfo["image_id"]].append(capId)
+			captions_list.append(" ".join(new_list).encode("utf-8"))
 		_c=0
-
-		captions_list.append(" ".join(new_list))
 
 	else:
 		print "LEN <5:", caption_text
+
+print "Unk words", _unk_words
+print "Len unkown words", len(_unk_words), len(set(_unk_words))
+print "Captions with unk words", _cap_unk_words
+
+
+#ipdb.set_trace()
 
 _response = raw_input("\nFinished parsing %s. Proceed with saving processed text data and meta-data?<y/n>"%(loc_to_raw_file))
 if _response=='n':
@@ -103,6 +110,8 @@ print sorted(Counter(_counts))
 
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
+
+#ipdb.set_trace()
 
 tokenizer = Tokenizer()
 tokenizer.fit_on_texts(captions_list)
@@ -126,11 +135,8 @@ print "\t\tword index DOES NOT CONTAIN <pad>. The index starts from 0. Size:", l
 pickle.dump(word_index, open("DICT_word_index.pkl", "w"))
 
 print "\t\tcaption_data contains ALL the captions."
-print "Use id_TO_class, class_TO_images, image_TO_captions for collecting the paired captions."
 pickle.dump(data, open("ARRAY_caption_data.pkl", "w"))
 
-pickle.dump(id_TO_class, open("DICT_id_TO_class.pkl", "w"))
-pickle.dump(class_TO_images, open("DICT_class_TO_images.pkl", "w"))
 pickle.dump(image_TO_captions, open("DICT_image_TO_captions.pkl", "w"))
 
-print "\nDONE\nRemember that the class_TO_images dict has to be udpated after shuffling validation data."
+print "\nDONE.\n"
