@@ -12,7 +12,7 @@ The project uses the following python packages over the conda python stack:
 
 bash SETUP.sh
 
-python extract_word_embeddings.py glove.6B.50d.txt processed_features/embeddings.h5
+python extract_word_embeddings.py glove.6B.300d.txt processed_features/embeddings.h5
 
 python scrape_and_save.py SOURCE_PASCAL_SENTENCES_vision.cs.uiuc.edu.html LOCAL
 
