@@ -47,10 +47,14 @@ class EpochCheckpoint(keras.callbacks.Callback):
 		print " Saving model..."
 		self.model.save(os.path.join(self.folder,"epoch_"+str(epoch)+".hdf5"))
 
-def get_num_train_images():
+def get_num_train_images(from_pkl=False):
 	'''
+        if path_to_pkl is NOT False: get it from the pickle. else
 	get the number of training images in processed_features/features.h5
 	'''
+        if from_pkl is not False:
+            class_TO_images = pickle.load(open("DICT_class_TO_images.pkl"))
+            return sum(len(l) for l in class_TO_images.itervalues())
 	
 	hf = h5py.File(PATH_h5, "r")
 	x_h5 = hf["data/features"]
@@ -172,7 +176,7 @@ def main():
 		print model.summary()
 
 		# number of training images 
-		_num_train = get_num_train_images()
+		_num_train = get_num_train_images(from_pkl=True)
 		# _num_train = 6
 
 		# Callbacks 
@@ -182,7 +186,7 @@ def main():
 		valid_cb    = ValidCallBack()
 
 		# fit generator
-		steps_per_epoch = math.ceil(_num_train*5/float(BATCH))
+		steps_per_epoch = math.ceil(_num_train*5) # /float(BATCH))
 		print "Steps per epoch i.e number of iterations: ",steps_per_epoch
 		
 		train_datagen = data_generator(batch_size=INCORRECT_BATCH)
