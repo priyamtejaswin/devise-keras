@@ -29,7 +29,7 @@ print "\n\n\t\tDONE\n\n"
 WHITELIST = string.letters + string.digits
 WORD_DIM = 300
 
-COCO_ROOT = "/home/tejaswin.p/MSCOCO-stuff/coco"
+COCO_ROOT = "/var/coco"
 
 """
 loc_to_raw_file: location to json file for cap_type
