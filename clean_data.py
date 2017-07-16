@@ -44,7 +44,7 @@ for root, dirs, files in os.walk(INPUT_PATH, topdown=False):
 
 # all types of classes + make dirs for them  
 classes = os.listdir(INPUT_PATH)
-print "Classes Found: ", classes
+print "num images Found: ", len(classes)
 for c in classes:
 	os.mkdir(os.path.join(OUTPUT_PATH,c))
 

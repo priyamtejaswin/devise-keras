@@ -50,7 +50,7 @@ _response = raw_input("\nParsing captions type %s at %s ...<y/n>?"%(cap_type, lo
 if _response=='n':
 	sys.exit()
 
-cocoObj = COCO(os.path.join(COCO_ROOT, loc_to_raw_file))
+cocoObj = COCO(loc_to_raw_file)
 
 _c = 0
 captions_list = []
