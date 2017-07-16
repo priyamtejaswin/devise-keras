@@ -14,7 +14,7 @@ bash SETUP.sh
 
 python extract_word_embeddings.py glove.6B.300d.txt processed_features/embeddings.h5
 
-python scrape_and_save.py /home/tejaswin.p/MSCOCO-stuff/coco/annotations/captions_train2014.json TRAIN
+python scrape_and_save.py /var/coco/annotations/captions_train2014.json TRAIN
 
 ## Ensure DS_Store files are not in the image folders.
 
