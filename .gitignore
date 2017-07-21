@@ -1,0 +1,17 @@
+# weights file too big for github
+vgg16_weights_th_dim_ordering_th_kernels.h5
+glove.*
+/processed_features/features.h5
+*.pkl
+*.pyc
+logs/*
+VOC*
+snapshots/*
+UIUC_PASCAL_DATA/*
+*.txt
+!requirements.txt
+wget-log*
+UIUC_PASCAL_DATA_clean/*
+UIUC_PASCAL_*/*
+*.h5
+*.html
