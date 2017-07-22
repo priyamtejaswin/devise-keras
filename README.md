@@ -22,6 +22,8 @@ python clean_data.py /var/coco/images/train2014
 
 python extract_features_and_dump.py -weights_path vgg16_weights_th_dim_ordering_th_kernels.h5 -images_path /var/coco/images/train2014_clean  -dump_path processed_features/features.h5
 
+## Repeat the above for Validation data.
+
 rm snapshots/* ## Optional.
 
 rm logs/* ## Optional.
@@ -35,4 +37,4 @@ python rnn_model.py TRAIN
 - extract_features_and_dump.py DATA_GENERATOR DONE
 - scrape_and_save.py Update the dicts and pkls DONE
 - rnn_model.py UPDATES?? DONE
-- FIX validation_script.py
+- FIX validation_script.py - In progress: mscoco_priyam
