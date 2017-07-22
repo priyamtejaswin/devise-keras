@@ -1,6 +1,10 @@
 """
 Code to collect and parse captions for MSCOCO.
 Images/captions are already separated into two sets for TRAIN and VAL.
+
+INPUTS:
+loc_to_raw_file: location to json file for cap_type
+cap_type: train/val/test
 """
 
 import os
@@ -29,11 +33,6 @@ print "\n\n\t\tDONE\n\n"
 WHITELIST = string.letters + string.digits
 WORD_DIM = 300
 
-"""
-INPUTS:
-loc_to_raw_file: location to json file for cap_type
-cap_type: train/val/test
-"""
 loc_to_raw_file = sys.argv[1]
 cap_type = sys.argv[2].strip().upper()
 assert os.path.isfile(loc_to_raw_file), "--File %s not found--"%(loc_to_raw_file)
