@@ -25,11 +25,15 @@ IMAGE_DIM = 4096
 WORD_DIM = 300
 
 
-def data_generator_coco(path_to_h5py="processed_features/features.h5", incorrect_batch=2):
+def data_generator_coco(
+	path_to_h5py="processed_features/features.h5", 
+	path_to_caption_data="ARRAY_caption_data.pkl",
+	path_to_image_tokens="DICT_image_TO_tokens.pkl",
+	incorrect_batch=2):
 	''' Data generator for coco dataset ''' 
 
-	caption_data = pickle.load(open("ARRAY_caption_data.pkl"))
-	image_to_tokens = pickle.load(open("DICT_image_TO_tokens.pkl"))
+	caption_data = pickle.load(open(path_to_caption_data))
+	image_to_tokens = pickle.load(open(path_to_image_tokens))
 
 	FP = h5py.File(path_to_h5py, 'r')
 	VGGfeats = FP["data/features"]
