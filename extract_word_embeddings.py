@@ -1,3 +1,10 @@
+"""
+USAGE: python extract_word_embeddings.py /path/to/raw_embeddings.txt /path/to/dump/data.h5
+
+Script to extract word_embeddings from the raw file
+and save to path.
+"""
+
 import sys
 import os
 import h5py
