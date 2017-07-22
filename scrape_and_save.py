@@ -29,14 +29,15 @@ print "\n\n\t\tDONE\n\n"
 WHITELIST = string.letters + string.digits
 WORD_DIM = 300
 
-COCO_ROOT = "/var/coco"
-
 """
+INPUTS:
 loc_to_raw_file: location to json file for cap_type
 cap_type: train/val/test
 """
-loc_to_raw_file, cap_type = sys.argv[1], sys.argv[2]
+loc_to_raw_file = sys.argv[1]
+cap_type = sys.argv[2].strip().upper()
 assert os.path.isfile(loc_to_raw_file), "--File %s not found--"%(loc_to_raw_file)
+assert cap_type in ("TRAIN", "VAL"), "--TYPE in not TRAIN or VAL--"
 
 # UNK_ix = glove_index["<unk>"]
 
@@ -103,7 +104,6 @@ print "Unk words", _unk_words
 print "Len unkown words", len(_unk_words), len(set(_unk_words))
 print "Captions with unk words", _cap_unk_words
 
-
 #ipdb.set_trace()
 
 _response = raw_input("\nFinished parsing %s. Proceed with saving processed text data and meta-data?<y/n>"%(loc_to_raw_file))
@@ -134,21 +134,21 @@ for word,ix in word_index.items():
 print "\nSaving embedding and word_index to disk...\n"
 
 print "\t\tembedding matrix CONTAINS <pad> at the 0 index. Size:", embedding_layer.shape
-pickle.dump(embedding_layer, open("KERAS_embedding_layer.pkl", "w"))
+pickle.dump(embedding_layer, open("KERAS_embedding_layer.%s.pkl"%(cap_type), "w"))
 
 print "\t\tword index DOES NOT CONTAIN <pad>. The index starts from 0. Size:", len(word_index)
-pickle.dump(word_index, open("DICT_word_index.pkl", "w"))
+pickle.dump(word_index, open("DICT_word_index.%s.pkl"%(cap_type), "w"))
 
 print "\t\tcaption_data contains ALL the captions."
-pickle.dump(data, open("ARRAY_caption_data.pkl", "w"))
+pickle.dump(data, open("ARRAY_caption_data.%s.pkl"%(cap_type), "w"))
 
 print "\t\timage_TO_captions contains the CAPTION_IDS for every IMAGE_ID."
-pickle.dump(image_TO_captions, open("DICT_image_TO_captions.pkl", "w"))
+pickle.dump(image_TO_captions, open("DICT_image_TO_captions.%s.pkl"%(cap_type), "w"))
 
 image_TO_tokens = {}
 for imgId, list_of_caption_ids in image_TO_captions.iteritems():
 	image_TO_tokens[imgId] = [data[caption_TO_count[cid]] for cid in list_of_caption_ids]
 print "\t\timage_TO_tokens contains the list of TOKEN_IDS for every IMAGE_ID."
-pickle.dump(image_TO_tokens, open("DICT_image_TO_tokens.pkl", "w"))
+pickle.dump(image_TO_tokens, open("DICT_image_TO_tokens.%s.pkl"%(cap_type), "w"))
 
 print "\nDONE.\n"
