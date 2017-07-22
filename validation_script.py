@@ -6,16 +6,23 @@ from keras import metrics
 from time import time
 import cPickle as pickle
 from tensorboard_logging import Logger
+from itertools import izip
 
 class ValidCallBack(keras.callbacks.Callback):
 
-	def __init__(self):
+	def __init__(self,
+		PATH_caption_data="ARRAY_caption_data.pkl",
+		PATH_image_to_captions="DICT_image_TO_captions.pkl",
+		PATH_image_features="processed_features/validation_features.h5"
+		):
+
 		super(ValidCallBack, self).__init__()
 		
 		# h5py file containing validation features and validation word embeddings
 		print "I am here.."
-		self.F 			= h5py.File("./processed_features/validation_features.h5", "r")
-		self.val_features= self.F["data/features"][:]
+		self.F 			  = h5py.File(PATH_image_features, "r")
+		self.val_features = self.F["data/features"] ## ALERT - DO NOT LOAD EVERYTHING!
+		self.len_img_feats = self.val_features.shape[0]
 
 		# load word indices 
 		self.word_index = pickle.load(open("DICT_word_index.pkl"))
@@ -35,7 +42,7 @@ class ValidCallBack(keras.callbacks.Callback):
 
 		# filter out the validation captions from "all_captions"
 		self.val_to_caption = []
-		for i in range(len(self.val_features)): # for each val image
+		for i in range(self.len_img_feats): # for each val image
 			val_idx = i 
 			image_idx = val_to_image[val_idx] # get image index from validation idx
 			val_caption_indices = image_to_captions[image_idx] # get indices of captions for this image
@@ -47,24 +54,51 @@ class ValidCallBack(keras.callbacks.Callback):
 		# EXPECTATION
 		# now we expect self.val_to_caption to be a list of 
 		# (string caption, val_features index) tuples.
-
+		self.len_cap_feats = len(self.val_to_caption)
 		self.mylogger = Logger("logs/top_{}".format(time()))
 
 	def on_epoch_end(self, epoch, logs={}):
+		BATCH_SIZE = 500 ## batch size for running forward passes.
 
 		# running forward pass for image_feats + dummy captions
 		MAX_SEQUENCE_LENGTH = 20
 		WORD_DIM = 300
-		preds = self.model.predict([self.val_features, np.zeros((len(self.val_features), 20))])  
-		im_outs = preds[:, :WORD_DIM]
+		# preds = self.model.predict([self.val_features, np.zeros((len(self.val_features), 20))]) 
+		# im_outs = preds[:, :WORD_DIM]
+
+		_img_ix_gen = zip(
+			range(0, self.len_img_feats, BATCH_SIZE), 
+			range(BATCH_SIZE, self.len_img_feats, BATCH_SIZE)
+		)
+		if _img_ix_gen[-1][1]!=self.len_img_feats:
+			_img_ix_gen.append((_img_ix_gen[-1][1], self.len_img_feats))
+
+		preds = [
+			self.model.predict([self.val_features[lx:ux, :], np.zeros((ux-lx, MAX_SEQUENCE_LENGTH))])[:, :WORD_DIM]
+			for lx,ux in _img_ix_gen
+		]
+		im_outs = np.concatenate(preds, axis=0)
 
 		# runnign forward pass for dummy feats + actual captions 
-		BATCH_SIZE = 32 
+		
+		_cap_ix_gen = zip(
+			range(0, self.len_cap_feats, BATCH_SIZE),
+			range(BATCH_SIZE, self.len_cap_feats, BATCH_SIZE)
+		)
+		if _cap_ix_gen[-1][1]!=self.len_cap_feats:
+			_cap_ix_gen.append((_cap_ix_gen[-1][1], self.len_cap_feats))
+
 		just_captions = [cap for cap,_ in self.val_to_caption]
 		just_indices  = [val_idx for _,val_idx in self.val_to_caption]
-		just_captions = np.array(just_captions)
-		preds = self.model.predict([ np.zeros((len(just_captions),4096)), just_captions])
-		cap_out = preds[:, WORD_DIM:]
+
+		# preds = self.model.predict([ np.zeros((len(just_captions),4096)), just_captions])
+		# cap_out = preds[:, WORD_DIM:]
+
+		preds = [
+			self.model.predict([np.zeros((ux-lx, 4096)), np.array(just_captions[lx:ux])])[:, WORD_DIM:]
+			for lx,ux in _cap_ix_gen
+		]
+		cap_out = np.concatenate(preds, axis=0)
 
 		# normalize the outputs
 		im_outs = im_outs / np.linalg.norm(im_outs, axis=1, keepdims=True)
