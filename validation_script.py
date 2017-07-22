@@ -13,7 +13,8 @@ class ValidCallBack(keras.callbacks.Callback):
 	def __init__(self,
 		PATH_caption_data="ARRAY_caption_data.pkl",
 		PATH_image_to_captions="DICT_image_TO_captions.pkl",
-		PATH_image_features="processed_features/validation_features.h5"
+		PATH_image_features="processed_features/validation_features.h5",
+		PATH_word_index="DICT_word_index.pkl"
 		):
 
 		super(ValidCallBack, self).__init__()
@@ -25,26 +26,18 @@ class ValidCallBack(keras.callbacks.Callback):
 		self.len_img_feats = self.val_features.shape[0]
 
 		# load word indices 
-		self.word_index = pickle.load(open("DICT_word_index.pkl"))
-
-		# image file paths
-		self.image_fnames = map(lambda a:a[0], self.F["data/fnames"][:])
+		self.word_index = pickle.load(open(PATH_word_index))
 		
 		print "[LOG] ValidCallBack: "
-		print "val_feats: {} -- image_fnames: {}".format(
-				self.val_features.shape, len(self.image_fnames)
-			) 
+		print "val_feats: {}".format(self.val_features.shape) 
 		
 		# Load ALL caption data 
-		all_captions = pickle.load(open("ARRAY_caption_data.pkl"))
-		image_to_captions = pickle.load(open("DICT_image_TO_captions.pkl"))
-		val_to_image = pickle.load(open("LIST_validation_images_mappings.pkl"))
+		all_captions = pickle.load(open(PATH_caption_data))
+		image_to_captions = pickle.load(open(PATH_image_to_captions))
 
 		# filter out the validation captions from "all_captions"
 		self.val_to_caption = []
-		for i in range(self.len_img_feats): # for each val image
-			val_idx = i 
-			image_idx = val_to_image[val_idx] # get image index from validation idx
+		for image_idx in range(self.len_img_feats): # for each val image
 			val_caption_indices = image_to_captions[image_idx] # get indices of captions for this image
 			val_captions = all_captions[val_caption_indices] # get all string captions for this image
 
