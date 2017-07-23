@@ -6,13 +6,26 @@ app = Flask(__name__)
 @app.route("/")
 @app.route("/index")
 def index():
-	user = {
-		"nickname": "akshay"
-	}
-	return render_template("index.html", title="Home", user=user)
+	return render_template("index.html", title="Home")
+
+def run_model(query_string):
+	''' This fxn takes a query string
+	runs it through the Keras model and returns result.'''
+
+	# run forward pass
+	# find diff 
+	# get images having closest diff 
+	return ["static/dog.jpg", "static/dog.jpg", "static/dog.jpg"]
 
 @app.route("/_process_query")
 def process_query():
-	a = request.args.get('a', 0, type=int)
-	b = request.args.get('b', 0, type=int)
-	return jsonify(result=a+b)
+
+	query_string  	= request.args.get('query', type=str)
+	images 			= run_model(query_string) 
+
+	result = {
+		"rc":0,
+		"images": images
+	}
+
+	return jsonify(result)
