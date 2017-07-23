@@ -8,6 +8,7 @@ from time import time
 import cPickle as pickle
 from tensorboard_logging import Logger
 from itertools import izip
+from tqdm import *
 
 class ValidCallBack(keras.callbacks.Callback):
 
@@ -101,7 +102,7 @@ class ValidCallBack(keras.callbacks.Callback):
 
 		TOP_K = 5
 		correct = 0.0
-		for i in xrange(len(cap_out)):
+		for i in tqdm(xrange(10000)):
 
 			diff = im_outs - cap_out[i] 
 			diff = np.linalg.norm(diff, axis=1)
