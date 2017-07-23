@@ -1,4 +1,5 @@
 import numpy as np
+import ipdb
 import keras
 import h5py
 import keras.backend as K
@@ -11,8 +12,7 @@ from itertools import izip
 class ValidCallBack(keras.callbacks.Callback):
 
 	def __init__(self,
-		PATH_caption_data="ARRAY_caption_data.pkl",
-		PATH_image_to_captions="DICT_image_TO_captions.pkl",
+		PATH_image_to_captions="DICT_image_TO_tokens.VAL.pkl",
 		PATH_image_features="processed_features/validation_features.h5",
 		PATH_word_index="DICT_word_index.pkl"
 		):
@@ -31,24 +31,22 @@ class ValidCallBack(keras.callbacks.Callback):
 		print "[LOG] ValidCallBack: "
 		print "val_feats: {}".format(self.val_features.shape) 
 		
+		ipdb.set_trace()
 		# Load ALL caption data 
-		all_captions = pickle.load(open(PATH_caption_data))
 		image_to_captions = pickle.load(open(PATH_image_to_captions))
 
 		# filter out the validation captions from "all_captions"
 		self.val_to_caption = []
-		for image_idx in range(self.len_img_feats): # for each val image
-			val_caption_indices = image_to_captions[image_idx] # get indices of captions for this image
-			val_captions = all_captions[val_caption_indices] # get all string captions for this image
-
-			for v_cap in val_captions:
-				self.val_to_caption.append([v_cap, i])
+		for imgId, capList in image_to_captions.iteritems()[:1000]:
+			for cap in capList:
+				self.val_to_caption.append((imgId, cap))
 
 		# EXPECTATION
 		# now we expect self.val_to_caption to be a list of 
 		# (string caption, val_features index) tuples.
 		self.len_cap_feats = len(self.val_to_caption)
 		self.mylogger = Logger("logs/top_{}".format(time()))
+		ipdb.set_trace()
 
 	def on_epoch_end(self, epoch, logs={}):
 		BATCH_SIZE = 500 ## batch size for running forward passes.
@@ -81,17 +79,21 @@ class ValidCallBack(keras.callbacks.Callback):
 		if _cap_ix_gen[-1][1]!=self.len_cap_feats:
 			_cap_ix_gen.append((_cap_ix_gen[-1][1], self.len_cap_feats))
 
-		just_captions = [cap for cap,_ in self.val_to_caption]
-		just_indices  = [val_idx for _,val_idx in self.val_to_caption]
+		just_captions = [cap for _,cap in self.val_to_caption]
+		just_indices  = [val_idx for val_idx,_ in self.val_to_caption]
 
 		# preds = self.model.predict([ np.zeros((len(just_captions),4096)), just_captions])
 		# cap_out = preds[:, WORD_DIM:]
+
+		ipdb.set_trace()
 
 		preds = [
 			self.model.predict([np.zeros((ux-lx, 4096)), np.array(just_captions[lx:ux])])[:, WORD_DIM:]
 			for lx,ux in _cap_ix_gen
 		]
 		cap_out = np.concatenate(preds, axis=0)
+
+		ipdb.set_trace()
 
 		# normalize the outputs
 		im_outs = im_outs / np.linalg.norm(im_outs, axis=1, keepdims=True)
