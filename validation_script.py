@@ -31,13 +31,13 @@ class ValidCallBack(keras.callbacks.Callback):
 		print "[LOG] ValidCallBack: "
 		print "val_feats: {}".format(self.val_features.shape) 
 		
-		ipdb.set_trace()
+		# ipdb.set_trace()
 		# Load ALL caption data 
 		image_to_captions = pickle.load(open(PATH_image_to_captions))
 
 		# filter out the validation captions from "all_captions"
 		self.val_to_caption = []
-		for imgId, capList in image_to_captions.iteritems()[:1000]:
+		for imgId, capList in image_to_captions.iteritems():
 			for cap in capList:
 				self.val_to_caption.append((imgId, cap))
 
