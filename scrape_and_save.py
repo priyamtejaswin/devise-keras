@@ -46,7 +46,10 @@ print "\nLoading word_embeddings...\n"
 emfp = h5py.File("processed_features/embeddings.h5", 'r') 
 word_embeds	= emfp["data/word_embeddings"][:,:]
 glove_index = {w[0]:word_embeds[n].tolist() for n,w in enumerate(emfp["data/word_names"][:])}
-word_TO_index = {w[0]:n for n,w in enumerate(emfp["data/word_names"][:])}
+
+## ATTENTION: the word_TO_index needs to start from 1 since 0 index is for PADDING.
+word_TO_index = {w[0]:n for n,w in enumerate(emfp["data/word_names"][:], start=1)}
+## ATTENTION: the word_TO_index needs to start from 1 since 0 index is for PADDING.
 
 assert WORD_DIM==len(glove_index["the"]), "--Mismatch b/w WORD_DIM and glove data--"
 
@@ -130,18 +133,27 @@ if USE_KERAS=="USE_KERAS":
 	tokenizer.fit_on_texts(captions_list)
 	sequences = tokenizer.texts_to_sequences(captions_list)
 
-	word_index = tokenizer.word_index
-
-	print('\nFound %s unique tokens.' % len(word_index))
+	word_index = tokenizer.word_index	
 	data = pad_sequences(sequences, maxlen=20, padding='post', truncating='post')
 
 else:
-	pass
+	data = []
+	for _caption in captions_list:
+		_dlist = [word_TO_index[_tok] for _tok in _caption.strip().split(' ')[:20]]
+		if len(_dlist)<20:
+			_dlist += [0 for _ in range(20 - len(_dlist))]
 
-print "\nCreating embedding_layer weights for type %s..."%(cap_type)
+		data.append(_dlist)
+
+	word_index = word_TO_index ## This is super important!!
+	data = np.array(data)
+
+print('\nFound %s unique tokens.' % len(word_index))
+
+print "\nCreating embedding_layer weights for type %s...%s"%(cap_type, USE_KERAS)
 embedding_layer = np.zeros((len(word_index) + 1, WORD_DIM))
 for word,ix in word_index.items():
-		embedding_layer[ix, :] = glove_index[word]
+	embedding_layer[ix, :] = glove_index[word]
 
 print "\nSaving embedding and word_index to disk...\n"
 
