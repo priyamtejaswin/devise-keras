@@ -1,3 +1,10 @@
+"""
+USAGE: python extract_word_embeddings.py /path/to/raw_embeddings.txt /path/to/dump/data.h5
+
+Script to extract word_embeddings from the raw file
+and save to path.
+"""
+
 import sys
 import os
 import h5py
@@ -12,6 +19,15 @@ if os.path.isfile(dump_path):
 	res = raw_input("Found existing embedding dump file. Continue<y/n>?")
 	if res=='n':
 		sys.exit()
+
+print "\n\n\t\tCreating features.h5 and validation_features.h5 in processed_features\n\n"
+tempF = h5py.File("processed_features/features.h5", "w")
+tempF.create_group("data")
+tempF.close()
+tempF = h5py.File("processed_features/validation_features.h5", "w")
+tempF.create_group("data")
+tempF.close()
+print "\n\n\t\tDONE\n\n"
 
 print "Loading glove vector data..."
 F = h5py.File(dump_path, "w")

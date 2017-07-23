@@ -16,7 +16,7 @@ import math, os, sys
 from extract_features_and_dump import data_generator_coco
 import numpy as np
 from keras.callbacks import TensorBoard
-# from validation_script import ValidCallBack
+from validation_script import ValidCallBack
 import cv2
 import pickle
 import numpy as np
@@ -153,7 +153,7 @@ def build_model(image_features, caption_features):
 	image_output = BatchNormalization()(image_dense2)
 
 	# rnn model
-	embedding_matrix = pickle.load(open("KERAS_embedding_layer.pkl"))
+	embedding_matrix = pickle.load(open("KERAS_embedding_layer.TRAIN.pkl"))
 
 	cap_embed = Embedding(
 		input_dim=embedding_matrix.shape[0],
@@ -194,18 +194,21 @@ def main():
 		# remote_cb = RemoteMonitor(root='http://localhost:9000')
 		tensorboard = TensorBoard(log_dir="logs/{}".format(time()))
 		epoch_cb    = EpochCheckpoint(folder="./snapshots/")
-		# valid_cb    = ValidCallBack()
+		valid_cb    = ValidCallBack(
+				PATH_image_to_captions="DICT_image_TO_tokens.VAL.pkl", 
+				PATH_image_features="processed_features/validation_features.h5", 
+				PATH_word_index="DICT_word_index.TRAIN.pkl")
 
 		# fit generator
 		steps_per_epoch = math.ceil(_num_train*1) ## Changed the factor to 1. This way it will see all images but not all captions. 
 		print "Steps per epoch i.e number of iterations: ",steps_per_epoch
 		
-		train_datagen = data_generator_coco(incorrect_batch=INCORRECT_BATCH)
+		train_datagen = data_generator_coco(path_to_h5py="processed_features/features.h5",path_to_caption_data="ARRAY_caption_data.TRAIN.pkl",path_to_image_tokens="DICT_image_TO_tokens.TRAIN.pkl",incorrect_batch=INCORRECT_BATCH)
 		history = model.fit_generator(
 				train_datagen,
 				steps_per_epoch=steps_per_epoch,
 				epochs=100,
-				callbacks=[tensorboard, epoch_cb]
+				callbacks=[tensorboard, epoch_cb, valid_cb]
 			)
 		print history.history.keys()
 
