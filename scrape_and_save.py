@@ -35,8 +35,10 @@ WORD_DIM = 300
 
 loc_to_raw_file = sys.argv[1]
 cap_type = sys.argv[2].strip().upper()
+USE_KERAS = sys.argv[3].strip().upper()
 assert os.path.isfile(loc_to_raw_file), "--File %s not found--"%(loc_to_raw_file)
 assert cap_type in ("TRAIN", "VAL"), "--TYPE in not TRAIN or VAL--"
+assert USE_KERAS in ("USE_KERAS", "EVERYTHING"), "--USE_KERAS arg invalid--"
 
 # UNK_ix = glove_index["<unk>"]
 
@@ -44,7 +46,13 @@ print "\nLoading word_embeddings...\n"
 emfp = h5py.File("processed_features/embeddings.h5", 'r') 
 word_embeds	= emfp["data/word_embeddings"][:,:]
 glove_index = {w[0]:word_embeds[n].tolist() for n,w in enumerate(emfp["data/word_names"][:])}
+word_TO_index = {w[0]:n for n,w in enumerate(emfp["data/word_names"][:])}
+
 assert WORD_DIM==len(glove_index["the"]), "--Mismatch b/w WORD_DIM and glove data--"
+
+_response = raw_input("\nText processing mode: %s. Continue<y/n>?"%(USE_KERAS))
+if _response=='n':
+	sys.exit()
 
 _response = raw_input("\nParsing captions type %s at %s ...<y/n>?"%(cap_type, loc_to_raw_file))
 if _response=='n':
@@ -112,18 +120,23 @@ if _response=='n':
 _counts = [len(c.strip().split()) for c in captions_list]
 print sorted(Counter(_counts))
 
-from keras.preprocessing.text import Tokenizer
-from keras.preprocessing.sequence import pad_sequences
+if USE_KERAS=="USE_KERAS":
+	from keras.preprocessing.text import Tokenizer
+	from keras.preprocessing.sequence import pad_sequences
 
-#ipdb.set_trace()
+	#ipdb.set_trace()
 
-tokenizer = Tokenizer()
-tokenizer.fit_on_texts(captions_list)
-sequences = tokenizer.texts_to_sequences(captions_list)
+	tokenizer = Tokenizer()
+	tokenizer.fit_on_texts(captions_list)
+	sequences = tokenizer.texts_to_sequences(captions_list)
 
-word_index = tokenizer.word_index
-print('\nFound %s unique tokens.' % len(word_index))
-data = pad_sequences(sequences, maxlen=20, padding='post', truncating='post')
+	word_index = tokenizer.word_index
+
+	print('\nFound %s unique tokens.' % len(word_index))
+	data = pad_sequences(sequences, maxlen=20, padding='post', truncating='post')
+
+else:
+	pass
 
 print "\nCreating embedding_layer weights for type %s..."%(cap_type)
 embedding_layer = np.zeros((len(word_index) + 1, WORD_DIM))
