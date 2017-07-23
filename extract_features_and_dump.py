@@ -264,7 +264,7 @@ def main():
 	
 	print "defining model.."
 	model = define_model(weights_path)
-	ipdb.set_trace()
+	
 	list_of_files = [os.path.join(images_path, n) for n in  os.listdir(images_path)]
 
 	print "Total files:", len(list_of_files)
