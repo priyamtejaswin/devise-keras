@@ -85,7 +85,7 @@ class ValidCallBack(keras.callbacks.Callback):
 		# preds = self.model.predict([ np.zeros((len(just_captions),4096)), just_captions])
 		# cap_out = preds[:, WORD_DIM:]
 
-		ipdb.set_trace()
+		#ipdb.set_trace()
 
 		preds = [
 			self.model.predict([np.zeros((ux-lx, 4096)), np.array(just_captions[lx:ux])])[:, WORD_DIM:]
@@ -93,40 +93,54 @@ class ValidCallBack(keras.callbacks.Callback):
 		]
 		cap_out = np.concatenate(preds, axis=0)
 
-		ipdb.set_trace()
+		#ipdb.set_trace()
 
 		# normalize the outputs
 		im_outs = im_outs / np.linalg.norm(im_outs, axis=1, keepdims=True)
 		cap_out = cap_out / np.linalg.norm(cap_out, axis=1, keepdims=True)
 
-		# REPEAT cap_out 
-		cap_out_repeated = np.repeat( cap_out, repeats=len(im_outs), axis=0 )
-
-		# TILE im_outs 
-		im_outs_tile     = np.tile( im_outs, reps=(len(cap_out),1) )
-
-		# just a check
-		assert im_outs_tile.shape[0] == cap_out_repeated.shape[0], "tiled and repeated matrices MUST have same num of rows"
-
-		# do comparison 
-		diff = im_outs_tile - cap_out_repeated
-		diff = np.linalg.norm(diff, axis=1)
-
 		TOP_K = 5
 		correct = 0.0
-		for i in range(len(cap_out)):
+		for i in xrange(len(cap_out)):
 
-			diff_for_that_caption = diff[ i*len(im_outs) : i*len(im_outs) + len(im_outs) ]
-			top_k_indices = np.argsort(diff_for_that_caption)[:TOP_K].tolist()
+			diff = im_outs - cap_out[i] 
+			diff = np.linalg.norm(diff, axis=1)
+			top_k_indices = np.argsort(diff)[:TOP_K].tolist()
 
-			correct_index = just_indices[i]
+			correct_index = just_indices[i] 
 			if correct_index in top_k_indices:
-				correct += 1
+				correct += 1.0
+		print "validation accuracy: ", correct / len(cap_out)
+
+
+		# # REPEAT cap_out 
+		# cap_out_repeated = np.repeat( cap_out, repeats=len(im_outs), axis=0 )
+
+		# # TILE im_outs 
+		# im_outs_tile     = np.tile( im_outs, reps=(len(cap_out),1) )
+
+		# # just a check
+		# assert im_outs_tile.shape[0] == cap_out_repeated.shape[0], "tiled and repeated matrices MUST have same num of rows"
+
+		# # do comparison 
+		# diff = im_outs_tile - cap_out_repeated
+		# diff = np.linalg.norm(diff, axis=1)
+
+		# TOP_K = 5
+		# correct = 0.0
+		# for i in range(len(cap_out)):
+
+		# 	diff_for_that_caption = diff[ i*len(im_outs) : i*len(im_outs) + len(im_outs) ]
+		# 	top_k_indices = np.argsort(diff_for_that_caption)[:TOP_K].tolist()
+
+		# 	correct_index = just_indices[i]
+		# 	if correct_index in top_k_indices:
+		# 		correct += 1
 		
-		# calculate TOP_K accuracy 
-		accuracy_top_k = correct / len(self.val_to_caption)
-		print "Validation accuracy: ",accuracy_top_k
-		self.mylogger.log_scalar(tag="top_5", value=accuracy_top_k, step=epoch)
+		# # calculate TOP_K accuracy 
+		# accuracy_top_k = correct / len(self.val_to_caption)
+		# print "Validation accuracy: ",accuracy_top_k
+		# self.mylogger.log_scalar(tag="top_5", value=accuracy_top_k, step=epoch)
 
 	
 	def custom_for_keras(self, ALL_word_embeds): # DEPRECATED #
