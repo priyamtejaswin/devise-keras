@@ -20,6 +20,15 @@ if os.path.isfile(dump_path):
 	if res=='n':
 		sys.exit()
 
+print "\n\n\t\tCreating features.h5 and validation_features.h5 in processed_features\n\n"
+tempF = h5py.File("processed_features/features.h5", "w")
+tempF.create_group("data")
+tempF.close()
+tempF = h5py.File("processed_features/validation_features.h5", "w")
+tempF.create_group("data")
+tempF.close()
+print "\n\n\t\tDONE\n\n"
+
 print "Loading glove vector data..."
 F = h5py.File(dump_path, "w")
 data = F.create_group("data")
