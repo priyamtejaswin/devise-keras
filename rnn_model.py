@@ -153,7 +153,7 @@ def build_model(image_features, caption_features):
 	image_output = BatchNormalization()(image_dense2)
 
 	# rnn model
-	embedding_matrix = pickle.load(open("KERAS_embedding_layer.pkl"))
+	embedding_matrix = pickle.load(open("KERAS_embedding_layer.TRAIN.pkl"))
 
 	cap_embed = Embedding(
 		input_dim=embedding_matrix.shape[0],
@@ -200,7 +200,7 @@ def main():
 		steps_per_epoch = math.ceil(_num_train*1) ## Changed the factor to 1. This way it will see all images but not all captions. 
 		print "Steps per epoch i.e number of iterations: ",steps_per_epoch
 		
-		train_datagen = data_generator_coco(incorrect_batch=INCORRECT_BATCH)
+		train_datagen = data_generator_coco(path_to_h5py="processed_features/features.h5",path_to_caption_data="ARRAY_caption_data.TRAIN.pkl",path_to_image_tokens="DICT_image_TO_tokens.TRAIN.pkl",incorrect_batch=INCORRECT_BATCH)
 		history = model.fit_generator(
 				train_datagen,
 				steps_per_epoch=steps_per_epoch,

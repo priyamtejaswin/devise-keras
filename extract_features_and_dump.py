@@ -287,7 +287,7 @@ def main():
 
 	# extract and dump image features
 	print "Dumping image features.."
-	for i,j in tqdm(create_indices(len(list_of_files), batch_size=50)):
+	for i,j in tqdm(create_indices(len(list_of_files), batch_size=5000)):
 		
 		j = min(j, len(list_of_files))
 
