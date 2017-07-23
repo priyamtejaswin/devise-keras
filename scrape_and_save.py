@@ -21,15 +21,6 @@ import shutil
 import urllib
 from pycocotools.coco import COCO
 
-print "\n\n\t\tCreating features.h5 and validation_features.h5 in processed_features\n\n"
-tempF = h5py.File("processed_features/features.h5", "w")
-tempF.create_group("data")
-tempF.close()
-tempF = h5py.File("processed_features/validation_features.h5", "w")
-tempF.create_group("data")
-tempF.close()
-print "\n\n\t\tDONE\n\n"
-
 WHITELIST = string.letters + string.digits
 WORD_DIM = 300
 
