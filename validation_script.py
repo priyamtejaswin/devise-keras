@@ -47,7 +47,7 @@ class ValidCallBack(keras.callbacks.Callback):
 		# (string caption, val_features index) tuples.
 		self.len_cap_feats = len(self.val_to_caption)
 		self.mylogger = Logger("logs/top_{}".format(time()))
-		ipdb.set_trace()
+		# ipdb.set_trace()
 
 	def on_epoch_end(self, epoch, logs={}):
 		BATCH_SIZE = 500 ## batch size for running forward passes.
@@ -102,7 +102,7 @@ class ValidCallBack(keras.callbacks.Callback):
 
 		TOP_K = 5
 		correct = 0.0
-		for i in tqdm(xrange(10000)):
+		for i in tqdm(xrange(len(cap_out))):
 
 			diff = im_outs - cap_out[i] 
 			diff = np.linalg.norm(diff, axis=1)

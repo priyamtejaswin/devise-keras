@@ -200,7 +200,7 @@ def main():
 				PATH_word_index="DICT_word_index.TRAIN.pkl")
 
 		# fit generator
-		steps_per_epoch = 50#math.ceil(_num_train*1) ## Changed the factor to 1. This way it will see all images but not all captions. 
+		steps_per_epoch = math.ceil(_num_train*1) ## Changed the factor to 1. This way it will see all images but not all captions. 
 		print "Steps per epoch i.e number of iterations: ",steps_per_epoch
 		
 		train_datagen = data_generator_coco(path_to_h5py="processed_features/features.h5",path_to_caption_data="ARRAY_caption_data.TRAIN.pkl",path_to_image_tokens="DICT_image_TO_tokens.TRAIN.pkl",incorrect_batch=INCORRECT_BATCH)
