@@ -14,7 +14,7 @@ bash SETUP.sh
 
 python extract_word_embeddings.py glove.6B.300d.txt processed_features/embeddings.h5
 
-python scrape_and_save.py /var/coco/annotations/captions_train2014.json TRAIN
+python scrape_and_save.py /var/coco/annotations/captions_train2014.json TRAIN EVERYTHING
 
 ## Ensure DS_Store files are not in the image folders.
 
@@ -37,4 +37,4 @@ python rnn_model.py TRAIN
 - extract_features_and_dump.py DATA_GENERATOR DONE
 - scrape_and_save.py Update the dicts and pkls DONE
 - rnn_model.py UPDATES?? DONE
-- FIX validation_script.py - In progress: mscoco_priyam
+- FIX validation_script.py - TESTING : mscoco_priyam
