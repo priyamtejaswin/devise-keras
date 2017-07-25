@@ -101,7 +101,7 @@ class ValidCallBack(keras.callbacks.Callback):
 		cap_out = cap_out / np.linalg.norm(cap_out, axis=1, keepdims=True)
 
 		TOP_K = 5
-		correct = 0.0
+		correct = 0.0	
 		for i in tqdm(xrange(len(cap_out))):
 
 			diff = im_outs - cap_out[i] 
@@ -112,7 +112,8 @@ class ValidCallBack(keras.callbacks.Callback):
 			if correct_index in top_k_indices:
 				correct += 1.0
 		print "validation accuracy: ", correct / len(cap_out)
-
+		print "num correct : ", correct
+		self.mylogger.log_scalar(tag="top_5", value= correct / len(cap_out) , step = epoch)
 
 		# # REPEAT cap_out 
 		# cap_out_repeated = np.repeat( cap_out, repeats=len(im_outs), axis=0 )
