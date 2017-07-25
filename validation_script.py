@@ -9,6 +9,7 @@ import cPickle as pickle
 from tensorboard_logging import Logger
 from itertools import izip
 from tqdm import *
+import random
 
 class ValidCallBack(keras.callbacks.Callback):
 
@@ -100,9 +101,10 @@ class ValidCallBack(keras.callbacks.Callback):
 		im_outs = im_outs / np.linalg.norm(im_outs, axis=1, keepdims=True)
 		cap_out = cap_out / np.linalg.norm(cap_out, axis=1, keepdims=True)
 
-		TOP_K = 5
-		correct = 0.0	
-		for i in tqdm(xrange(len(cap_out))):
+		TOP_K = 100
+		correct = 0.0
+		_indices_10k = random.sample( range(len(cap_out)) , 10000) # sample any 10k captions (use python's stdlib random)	
+		for i in _indices_10k:
 
 			diff = im_outs - cap_out[i] 
 			diff = np.linalg.norm(diff, axis=1)
@@ -111,9 +113,9 @@ class ValidCallBack(keras.callbacks.Callback):
 			correct_index = just_indices[i] 
 			if correct_index in top_k_indices:
 				correct += 1.0
-		print "validation accuracy: ", correct / len(cap_out)
+		print "validation accuracy: ", correct / 10000
 		print "num correct : ", correct
-		self.mylogger.log_scalar(tag="top_5", value= correct / len(cap_out) , step = epoch)
+		self.mylogger.log_scalar(tag="top_K", value= correct , step = epoch)
 
 		# # REPEAT cap_out 
 		# cap_out_repeated = np.repeat( cap_out, repeats=len(im_outs), axis=0 )
