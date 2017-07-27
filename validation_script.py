@@ -107,13 +107,13 @@ class ValidCallBack(keras.callbacks.Callback):
 		_indices_10k = random.sample( range(len(cap_out)) , 10000) # sample any 10k captions (use python's stdlib random)	
 		im_outs_10k = im_outs[[just_indices[i] for i in _indices_10k]] ## Select the appropriate 10k images.
 
-		for i in _indices_10k:
+		for index_i, i in enumerate(_indices_10k):
 
 			diff = im_outs_10k - cap_out[i] 
 			diff = np.linalg.norm(diff, axis=1)
 			top_k_indices = np.argsort(diff)[:TOP_K].tolist() ## Determine which 10k positions are closest.
 
-			correct_index = i ## The image at the ith position is true, since the diff is from im_outs_10k
+			correct_index = index_i ## The image at the ith position is true, since the diff is from im_outs_10k
 			if correct_index in top_k_indices: ## Check if that is in the topK positions.
 				correct += 1.0
 
