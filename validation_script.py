@@ -9,6 +9,7 @@ import cPickle as pickle
 from tensorboard_logging import Logger
 from itertools import izip
 from tqdm import *
+import random
 
 class ValidCallBack(keras.callbacks.Callback):
 
@@ -100,19 +101,25 @@ class ValidCallBack(keras.callbacks.Callback):
 		im_outs = im_outs / np.linalg.norm(im_outs, axis=1, keepdims=True)
 		cap_out = cap_out / np.linalg.norm(cap_out, axis=1, keepdims=True)
 
-		TOP_K = 5
+		TOP_K = 100
 		correct = 0.0
-		for i in tqdm(xrange(len(cap_out))):
+		
+		_indices_10k = random.sample( range(len(cap_out)) , 10000) # sample any 10k captions (use python's stdlib random)	
+		im_outs_10k = im_outs[[just_indices[i] for i in _indices_10k]] ## Select the appropriate 10k images.
 
-			diff = im_outs - cap_out[i] 
+		for index_i, i in enumerate(_indices_10k):
+
+			diff = im_outs_10k - cap_out[i] 
 			diff = np.linalg.norm(diff, axis=1)
-			top_k_indices = np.argsort(diff)[:TOP_K].tolist()
+			top_k_indices = np.argsort(diff)[:TOP_K].tolist() ## Determine which 10k positions are closest.
 
-			correct_index = just_indices[i] 
-			if correct_index in top_k_indices:
+			correct_index = index_i ## The image at the ith position is true, since the diff is from im_outs_10k
+			if correct_index in top_k_indices: ## Check if that is in the topK positions.
 				correct += 1.0
-		print "validation accuracy: ", correct / len(cap_out)
 
+		print "validation accuracy: ", correct / 10000
+		print "num correct : ", correct
+		self.mylogger.log_scalar(tag="top_K", value= correct , step = epoch)
 
 		# # REPEAT cap_out 
 		# cap_out_repeated = np.repeat( cap_out, repeats=len(im_outs), axis=0 )
