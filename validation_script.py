@@ -103,16 +103,20 @@ class ValidCallBack(keras.callbacks.Callback):
 
 		TOP_K = 100
 		correct = 0.0
+		
 		_indices_10k = random.sample( range(len(cap_out)) , 10000) # sample any 10k captions (use python's stdlib random)	
+		im_outs_10k = im_outs[[just_indices[i] for i in _indices_10k]] ## Select the appropriate 10k images.
+
 		for i in _indices_10k:
 
-			diff = im_outs - cap_out[i] 
+			diff = im_outs_10k - cap_out[i] 
 			diff = np.linalg.norm(diff, axis=1)
-			top_k_indices = np.argsort(diff)[:TOP_K].tolist()
+			top_k_indices = np.argsort(diff)[:TOP_K].tolist() ## Determine which 10k positions are closest.
 
-			correct_index = just_indices[i] 
-			if correct_index in top_k_indices:
+			correct_index = i ## The image at the ith position is true, since the diff is from im_outs_10k
+			if correct_index in top_k_indices: ## Check if that is in the topK positions.
 				correct += 1.0
+
 		print "validation accuracy: ", correct / 10000
 		print "num correct : ", correct
 		self.mylogger.log_scalar(tag="top_K", value= correct , step = epoch)
