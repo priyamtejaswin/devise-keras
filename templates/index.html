@@ -1,7 +1,6 @@
 <html>
 <head>
     <title>Google DeViSE Image Search Engine</title>
-    <script src="jquery-3.2.1.min.js"></script>
     <style type="text/css">
         #search_button {
             background-color: #008CBA; /* Blue */
@@ -15,12 +14,7 @@
             font-size: 16px;
         }
         
-        #Search_Query {
-            
-            border-style: solid;
-            border-color: black;
-            border-width: 2px;
-        }
+        
 
         div.gallery {
             margin: 5px;
@@ -41,6 +35,7 @@
         div.desc {
             padding: 15px;
             text-align: center;
+            font-size: 9px;
         }
 
     </style>
@@ -52,72 +47,17 @@
 
     <h2>Image Search Engine</h2>
     <div id="Search_Query">
-    <input type="text" name="query">
+    <input type="text" name="query" id="myquery">
     <div id="search_button">Search</div>        
     </div>
 
     <br>
 
     <!-- Search Results -->
-    <div class="gallery">
-        <a target="_blank" href="whiskers.jpg">
-            <img src="whiskers.jpg" alt="Forest" width="300" height="200">
-        </a>
-        <div class="desc">This is a fucking cat. </div>
-    </div>
-
-    <div class="gallery">
-        <a target="_blank" href="whiskers.jpg">
-            <img src="whiskers.jpg" alt="Forest" width="300" height="200">
-        </a>
-        <div class="desc">This is a fucking cat. </div>
-    </div>
-
-
-    <div class="gallery">
-        <a target="_blank" href="whiskers.jpg">
-            <img src="whiskers.jpg" alt="Forest" width="300" height="200">
-        </a>
-        <div class="desc">This is a fucking cat. </div>
-    </div>
-
-    <div class="gallery">
-        <a target="_blank" href="whiskers.jpg">
-            <img src="whiskers.jpg" alt="Forest" width="300" height="200">
-        </a>
-        <div class="desc">This is a fucking cat. </div>
-    </div>
-
-    <div class="gallery">
-        <a target="_blank" href="whiskers.jpg">
-            <img src="whiskers.jpg" alt="Forest" width="300" height="200">
-        </a>
-        <div class="desc">This is a fucking cat. </div>
-    </div>
-
-    <div class="gallery">
-        <a target="_blank" href="whiskers.jpg">
-            <img src="whiskers.jpg" alt="Forest" width="300" height="200">
-        </a>
-        <div class="desc">This is a fucking cat. </div>
-    </div>
-
-    <div class="gallery">
-        <a target="_blank" href="whiskers.jpg">
-            <img src="whiskers.jpg" alt="Forest" width="300" height="200">
-        </a>
-        <div class="desc">This is a fucking cat. </div>
-    </div>
-
-    <script type="text/javascript">
-        
-        $("#search_button").click(function () {
-            console.log("search button was pressed");
-            
-        })
-        
-    </script>
-
+    <div id="gallery_placeholder"></div>
+    
+    <script src="/static/jquery-3.2.1.min.js"></script>
+    <script src="/static/myscript.js"></script>
 
       
 </body>
