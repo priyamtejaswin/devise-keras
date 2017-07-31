@@ -1,11 +1,18 @@
 import time
 from flask import render_template, jsonify, request
 from multiprocessing import Lock
+from keras.models import load_model
 
 from flask import Flask
 app = Flask(__name__)
 
+DUMMY_MODE=True
+MODEL_LOC="snapshots/epoch_x.hdf5"
+
 mutex = Lock()
+MODEL=None
+if DUMMY_MODE==False:
+	MODEL = load_model(MODEL_LOC)
 
 @app.route("/")
 @app.route("/index")
@@ -23,8 +30,13 @@ def run_model(query_string):
 	result = None
 	with mutex:
 		print "lock acquired, running model..."
-		time.sleep(10)
-		result = ["static/dog.jpg", "static/dog.jpg", "static/dog.jpg"]
+		if DUMMY_MODE:
+			time.sleep(10)
+			result = ["static/dog.jpg", "static/dog.jpg", "static/dog.jpg"]
+		else:
+			assert MODEL is not None, "not in dummy mode, but model did not load!"
+			# do something 
+			result = []
 		print '..over'
 	
 	if result is None:
@@ -44,3 +56,6 @@ def process_query():
 	}
 
 	return jsonify(result)
+
+if __name__ == '__main__':
+	app.run(threaded=True)
