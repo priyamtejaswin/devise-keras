@@ -37,6 +37,10 @@ function process_response(server_response){
         $(".errors").append("<p>Error. Server responded with rc : "+String(server_response.rc)+"</p>")
     }
 
+    // once query is over, enable searching
+    $('#search_button').prop("disabled", false);
+    $("#myquery").prop("disabled", false);
+
 }
 
 $("#search_button").click(function () {
@@ -44,9 +48,13 @@ $("#search_button").click(function () {
             // vars
             var MIN_QUERY_LENGTH = 10;
 
+            // Block user from searching anything else 
+            $('#search_button').prop("disabled",true);
+            $("#myquery").prop("disabled", true);
+
             // get the query
             query = String($("#myquery").val());
-            console.log(query);
+            console.log("user searched for: " + query);
 
             //basic checking 
             all_checks_ok = true;
@@ -61,8 +69,8 @@ $("#search_button").click(function () {
             // pass query to server
             if (all_checks_ok == true){
 
-                $.getJSON("/_process_query", { query: query}, process_response);    
+                $.getJSON("/_process_query", { query: query}, process_response);
+
             }
-            
             
         })
