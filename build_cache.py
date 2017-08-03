@@ -85,6 +85,10 @@ def main():
         assert len(embeddings_scores) = uix, "lenth of embeddings_scores MUST be == uix (which goes through entire dataset"
         embeddings_scores[lix:uix] = output
 
+    # CLOSE ALL H5
+    train_features_h5.close()
+    valid_features_h5.close()
+    cache_h5.close()
 
 
 
