@@ -9,6 +9,8 @@ from tqdm import *
 
 IMAGE_DIM = 4096
 WORD_DIM  = 300
+model_location = ""
+MAX_SEQUENCE_LENGTH = 20
 
 def dump_to_h5(names, scores ,hf):
     ''' Dump the list of names and the numpy array of scores 
@@ -45,6 +47,7 @@ def main():
     fnames_h5= cache_h5["data"].create_dataset("fnames", (0, 1), dtype=dt, maxshape=(None,1))
 
     # copy image feats+fnames from features.h5 to cache/data/features
+    print "Copying features from features.h5 to cache.h5"
     batch_size = 500
     for lix in tqdm(xrange(0, len(train_features_h5["data/features"]), batch_size)):
         uix = min(len(train_features_h5["data/features"]), lix + batch_size)
@@ -54,13 +57,36 @@ def main():
         dump_to_h5( names, train_features_h5["data/features"][lix:uix], cache_h5 )
 
     # copy image feats+fnames from validation_features.h5 to cache/data/features
+    print "Copying validation features from features.h5 to cache.h5"
     batch_size = 500
     for lix in tqdm(xrange(0, len(valid_features_h5["data/features"]), batch_size)):
         uix = min(len(valid_features_h5["data/features"]), lix + batch_size)
 
         names = valid_features_h5["data/fnames"][lix:uix]
         names = [n[0] for n in names]
-        dump_to_h5( names, valid_features_h5["data/features"][lix:uix], cache_h5 ) 
+        dump_to_h5( names, valid_features_h5["data/features"][lix:uix], cache_h5 )
+
+    # Load model 
+    from keras import load_model
+    print "..Loading model"
+    model = load_model(model_location)
+    
+    # Run image feats through model to get 300-dim embedding
+    embeddings_scores = cache_h5["data"].create_dataset("embeddings_scores", (0, WORD_DIM), maxshape=(None, WORD_DIM))
+    all_features = cache_h5["data/features"]
+    print "Running model on all features of size", all_features.shape
+    batch_size = 500
+    for lix in tqdm(xrange(0, len(all_features), batch_size)):
+        uix = min(len(all_features), lix + batch_size)
+        output = model.predict([ all_features[lix:uix, :], np.zeros((uix-lix, MAX_SEQUENCE_LENGTH))])[:, :WORD_DIM]
+
+        # add ^ output to embeddings_scores
+        embeddings_scores.resize((uix+1,WORD_DIM)) # expand size of embeddings_scores (NOTE the +1 because we want size of 500 not 499)
+        assert len(embeddings_scores) = uix, "lenth of embeddings_scores MUST be == uix (which goes through entire dataset"
+        embeddings_scores[lix:uix] = output
+
+
+
 
 
 
