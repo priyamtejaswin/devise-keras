@@ -13,10 +13,12 @@ MODEL_LOC="snapshots/epoch_x.hdf5"
 
 # VERY IMPORTANT VARIABLES
 mutex = Lock()
+MAX_SEQUENCE_LENGTH = 20
 MODEL=None
 DICT_word_index = None
 if DUMMY_MODE==False:
 	MODEL = load_model(MODEL_LOC)
+	print MODEL.summary()
 	assert os.path.isfile("DICT_word_index.TRAIN.pkl"), "Could not find DICT_word_index.TRAIN.pkl"	
 	with open("DICT_word_index.TRAIN.pkl","r") as f:
 		DICT_word_index = pickle.load(f)
@@ -43,7 +45,12 @@ def processing_query_string(query_string):
 	for word in words:
 		words_index.append(DICT_word_index[word])
 
-	return words_index
+	# pad to 20 words
+	if len(words_index) < MAX_SEQUENCE_LENGTH:
+		padding = [0 for _ in range(MAX_SEQUENCE_LENGTH - len(words_index))]
+		words_index += padding
+
+	return np.array(words_index).reshape((1,MAX_SEQUENCE_LENGTH))
 
 @app.route("/")
 @app.route("/index")
@@ -67,6 +74,7 @@ def run_model(query_string):
 		else:
 			assert MODEL is not None, "not in dummy mode, but model did not load!"
 			# do something 
+
 			result = []
 		print '..over'
 	
