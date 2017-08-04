@@ -72,7 +72,7 @@ def main():
     model = load_model(model_location)
     
     # Run image feats through model to get 300-dim embedding
-    embeddings_scores = cache_h5["data"].create_dataset("embeddings_scores", (0, WORD_DIM), maxshape=(None, WORD_DIM))
+    im_outs = cache_h5["data"].create_dataset("im_outs", (0, WORD_DIM), maxshape=(None, WORD_DIM))
     all_features = cache_h5["data/features"]
     print "Running model on all features of size", all_features.shape
     batch_size = 500
@@ -80,11 +80,11 @@ def main():
         uix = min(len(all_features), lix + batch_size)
         output = model.predict([ all_features[lix:uix, :], np.zeros((uix-lix, MAX_SEQUENCE_LENGTH))])[:, :WORD_DIM]
         output = output / np.linalg.norm(output, axis=1, keepdims=True)
-        
-        # add ^ output to embeddings_scores
-        embeddings_scores.resize((uix+1,WORD_DIM)) # expand size of embeddings_scores (NOTE the +1 because we want size of 500 not 499)
-        assert len(embeddings_scores) = uix, "lenth of embeddings_scores MUST be == uix (which goes through entire dataset"
-        embeddings_scores[lix:uix] = output
+
+        # add ^ output to im_outs
+        im_outs.resize((uix+1,WORD_DIM)) # expand size of im_outs (NOTE the +1 because we want size of 500 not 499)
+        assert len(im_outs) = uix, "lenth of im_outs MUST be == uix (which goes through entire dataset"
+        im_outs[lix:uix] = output
 
     # CLOSE ALL H5
     train_features_h5.close()
