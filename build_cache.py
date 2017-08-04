@@ -79,7 +79,8 @@ def main():
     for lix in tqdm(xrange(0, len(all_features), batch_size)):
         uix = min(len(all_features), lix + batch_size)
         output = model.predict([ all_features[lix:uix, :], np.zeros((uix-lix, MAX_SEQUENCE_LENGTH))])[:, :WORD_DIM]
-
+        output = output / np.linalg.norm(output, axis=1, keepdims=True)
+        
         # add ^ output to embeddings_scores
         embeddings_scores.resize((uix+1,WORD_DIM)) # expand size of embeddings_scores (NOTE the +1 because we want size of 500 not 499)
         assert len(embeddings_scores) = uix, "lenth of embeddings_scores MUST be == uix (which goes through entire dataset"
