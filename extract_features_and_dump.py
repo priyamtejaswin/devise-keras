@@ -26,13 +26,11 @@ WORD_DIM = 300
 
 
 def data_generator_coco(
-	path_to_h5py="processed_features/features.h5", 
-	path_to_caption_data="ARRAY_caption_data.pkl",
-	path_to_image_tokens="DICT_image_TO_tokens.pkl",
+	path_to_h5py="/something/processed_features/features.h5", 
+	path_to_image_tokens="/something/DICT_image_TO_tokens.pkl",
 	incorrect_batch=2):
 	''' Data generator for coco dataset ''' 
 
-	caption_data = pickle.load(open(path_to_caption_data))
 	image_to_tokens = pickle.load(open(path_to_image_tokens))
 
 	FP = h5py.File(path_to_h5py, 'r')
@@ -63,11 +61,10 @@ def data_generator_coco(
 			for k, img_idx in enumerate([true_image_ix]+false_image_ixs):
 				X_images[k] = VGGfeats[imageid_to_vggfeats[img_idx]]
 
-			# X_captions from caption_data
+			# X_captions from the tokens
 			X_captions = np.array([true_cap] + false_caps)
 
 			yield [X_images, X_captions], np.zeros(1+incorrect_batch)
-
 
 
 
