@@ -10,6 +10,7 @@ from tensorboard_logging import Logger
 from itertools import izip
 from tqdm import *
 import random
+import nltk
 
 class ValidCallBack(keras.callbacks.Callback):
 
@@ -49,6 +50,12 @@ class ValidCallBack(keras.callbacks.Callback):
 		self.len_cap_feats = len(self.val_to_caption)
 		self.mylogger = Logger("logs/top_{}".format(time()))
 		# ipdb.set_trace()
+
+		self.image_to_captions = image_to_captions
+
+	@staticmethod
+	def bleu_score(references, hypothesis):
+		return nltk.translate.bleu_score.sentence_bleu(references, hypothesis)
 
 	def on_epoch_end(self, epoch, logs={}):
 		BATCH_SIZE = 500 ## batch size for running forward passes.
@@ -104,6 +111,8 @@ class ValidCallBack(keras.callbacks.Callback):
 		TOP_K = 100
 		correct = 0.0
 		
+		bleu_topk = []
+
 		_indices_10k = random.sample( range(len(cap_out)) , 10000) # sample any 10k captions (use python's stdlib random)	
 		im_outs_10k = im_outs[[just_indices[i] for i in _indices_10k]] ## Select the appropriate 10k images.
 
@@ -117,9 +126,15 @@ class ValidCallBack(keras.callbacks.Callback):
 			if correct_index in top_k_indices: ## Check if that is in the topK positions.
 				correct += 1.0
 
+			bleu_topk.append(self.bleu_score(self.image_to_captions[just_indices[i]], just_captions[i]))
+
 		print "validation accuracy: ", correct / 10000
-		print "num correct : ", correct
-		self.mylogger.log_scalar(tag="top_K", value= correct , step = epoch)
+		print "num correct: ", correct
+		avg_bleu = np.mean(bleu_topk)
+		print "bleu_score:", avg_bleu
+
+		self.mylogger.log_scalar(tag="top_K", value=correct , step=epoch)
+		self.mylogger.log_scalar(tag="avg_bleu", value=avg_bleu, step=epoch)
 
 		# # REPEAT cap_out 
 		# cap_out_repeated = np.repeat( cap_out, repeats=len(im_outs), axis=0 )
