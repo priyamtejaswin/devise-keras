@@ -59,7 +59,8 @@ def query_string_to_word_indices(query_string):
 	all_words = DICT_word_index.keys()
 	for word in words:
 		if word not in all_words: 
-			raise("could not find word {} in all_words".format(word))
+			_err_msg = "could not find word  | {} | in server's dictionary".format(word)
+			raise ValueError(_err_msg)
 
 	# list of words -> list of indices
 	words_index = []
@@ -72,7 +73,7 @@ def query_string_to_word_indices(query_string):
 		words_index += padding
 
 	if len(words_index) != MAX_SEQUENCE_LENGTH:
-		raise("words_index is not {} numbers long".format(MAX_SEQUENCE_LENGTH))
+		raise ValueError("words_index is not {} numbers long".format(MAX_SEQUENCE_LENGTH))
 
 	return np.array(words_index).reshape((1,MAX_SEQUENCE_LENGTH))
 
@@ -102,6 +103,7 @@ def run_model(query_string):
 			try:
 				word_indices = query_string_to_word_indices(query_string)
 			except Exception, e:
+				print str(e)
 				return 2, str(e)
 
 			## multithread fix for keras/tf backend
@@ -139,9 +141,9 @@ def run_model(query_string):
 
 			
 		print '..over'
-	ipdb.set_trace()
-	if result is None:
-		return 1,"oops! something went wrong. Result is None, We should probably re-factor our code."
+	
+	if result is None or len(result)<2:
+		return 1,"oops! something went wrong. model prediction returned None. Note: We should probably re-factor our code."
 	else:
 		return 0,result_url
 
