@@ -120,14 +120,30 @@ def run_model(query_string):
 				# populate "results" with fnames of top_k_indices
 				result = []
 				for k in top_k_indices:
-					result.append(fnames[k])
+					result.append(fnames[k][0])
+
+				# Replace /var/coco/train2014_clean/COCO_train2014_000000364251.jpg with http://mscoco.org/images/364251
+				result_url = []
+				for r in result:
+					imname = r.split("/")[-1] # COCO_train2014_000000364251.jpg
+					imname = imname.split("_")[-1] # 000000364251.jpg
+					
+					i = 0
+					while imname[i] == "0":
+						i += 1
+					imname = imname[i:] # 364251.jpg
+					imname = imname.rstrip(".jpg") # 364251
+					imname = "http://mscoco.org/images/" + imname # http://mscoco.org/images/364251
+
+					result_url.append(imname) 
+
 			
 		print '..over'
 	ipdb.set_trace()
 	if result is None:
 		return 1,"oops! something went wrong. Result is None, We should probably re-factor our code."
 	else:
-		return 0,result
+		return 0,result_url
 
 @app.route("/_process_query")
 def process_query():
