@@ -23,6 +23,7 @@ import numpy as np
 from keras.models import load_model
 
 PATH_h5 = "/home/throwaway1akshaychawla/devise-keras/processed_features/features.h5"
+PATH_keras_embedding_layer = "/home/throwaway1akshaychawla/devise-keras/KERAS_embedding_layer.TRAIN.pkl"
 MARGIN = 0.2
 INCORRECT_BATCH = 32
 BATCH = INCORRECT_BATCH + 1
@@ -154,7 +155,7 @@ def build_model(image_features, caption_features):
 	image_output = BatchNormalization()(image_dense2)
 
 	# rnn model
-	embedding_matrix = pickle.load(open("KERAS_embedding_layer.TRAIN.pkl"))
+	embedding_matrix = pickle.load(open(PATH_keras_embedding_layer))
 
 	cap_embed = Embedding(
 		input_dim=embedding_matrix.shape[0],
