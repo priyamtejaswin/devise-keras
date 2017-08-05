@@ -185,8 +185,8 @@ def main():
 		caption_features = Input(shape=(MAX_SEQUENCE_LENGTH,), name="caption_feature_input")
 
 		# number of training images 
-		# _num_train = get_num_train_images(from_pkl=False)
-		_num_train = 6
+		_num_train = get_num_train_images(from_pkl=False)
+		# _num_train = 6
 
 		# Callbacks 
 		# remote_cb = RemoteMonitor(root='http://localhost:9000')
