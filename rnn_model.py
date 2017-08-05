@@ -21,6 +21,7 @@ import cv2
 import pickle
 import numpy as np
 from keras.models import load_model
+from extract_features_and_dump import COCO_SEQUENCE_OBJECT
 
 PATH_h5 = "/home/throwaway1akshaychawla/devise-keras/processed_features/features.h5"
 PATH_keras_embedding_layer = "/home/throwaway1akshaychawla/devise-keras/KERAS_embedding_layer.TRAIN.pkl"
@@ -202,7 +203,7 @@ def main():
 		steps_per_epoch = math.ceil(_num_train*1) ## Changed the factor to 1. This way it will see all images but not all captions. 
 		print "Steps per epoch i.e number of iterations: ",steps_per_epoch
 		
-		train_datagen = data_generator_coco(
+		train_datagen = COCO_SEQUENCE_OBJECT(
 			path_to_h5py=PATH_h5,
 			path_to_image_tokens="/home/throwaway1akshaychawla/devise-keras/DICT_image_TO_tokens.TRAIN.pkl",
 			incorrect_batch=INCORRECT_BATCH
