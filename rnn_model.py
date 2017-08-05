@@ -20,6 +20,7 @@ from validation_script import ValidCallBack
 import cv2
 import pickle
 import numpy as np
+from keras.models import load_model
 
 PATH_h5 = "processed_features/features.h5"
 MARGIN = 0.2
@@ -178,13 +179,9 @@ def build_model(image_features, caption_features):
 def main():
 	RUN_TIME = sys.argv[1]
 
-
 	if RUN_TIME == "TRAIN":
 		image_features = Input(shape=(4096,), name="image_feature_input")
 		caption_features = Input(shape=(MAX_SEQUENCE_LENGTH,), name="caption_feature_input")
-
-		model = build_model(image_features, caption_features)
-		print model.summary()
 
 		# number of training images 
 		_num_train = get_num_train_images(from_pkl=False)
@@ -203,19 +200,46 @@ def main():
 		steps_per_epoch = math.ceil(_num_train*1) ## Changed the factor to 1. This way it will see all images but not all captions. 
 		print "Steps per epoch i.e number of iterations: ",steps_per_epoch
 		
-		train_datagen = data_generator_coco(path_to_h5py="processed_features/features.h5",path_to_caption_data="ARRAY_caption_data.TRAIN.pkl",path_to_image_tokens="DICT_image_TO_tokens.TRAIN.pkl",incorrect_batch=INCORRECT_BATCH)
+		train_datagen = data_generator_coco(
+			path_to_h5py="processed_features/features.h5",
+			path_to_caption_data="ARRAY_caption_data.TRAIN.pkl",
+			path_to_image_tokens="DICT_image_TO_tokens.TRAIN.pkl",
+			incorrect_batch=INCORRECT_BATCH
+		)
+
+		RESUME = raw_input("\nResume training from snapshots?<y/n>")
+		if RESUME=='y':
+			print "\t--Loading model from snapshots--"
+			model = load_model("/home/throwaway1akshaychawla/devise-keras/snapshots/epoch_10.hdf5", 
+					custom_objects={'hinge_rank_loss': hinge_rank_loss})
+			initial_epoch = 11
+			print model.summary()
+
+		elif RESUME=='n':
+			print "\t--Creating model from scratch--"
+			model = build_model(image_features, caption_features)
+			initial_epoch = 0
+			print model.summary()
+
+		else:
+			sys.exit("--Did not enter valid response for RESUME. EXITING--")
+
 		history = model.fit_generator(
 				train_datagen,
 				steps_per_epoch=steps_per_epoch,
 				epochs=100,
-				callbacks=[tensorboard, epoch_cb, valid_cb]
+				callbacks=[tensorboard, epoch_cb, valid_cb],
+				initial_epoch=initial_epoch,
+				use_multiprocessing=True,
+				workers=2
 			)
+
 		print history.history.keys()
 
 
-	elif RUN_TIME == "TEST":
-		from keras.models import load_model 
-		model = load_model("snapshots/epoch_69.hdf5", custom_objects={"hinge_rank_loss":hinge_rank_loss})
+	elif RUN_TIME == "TEST": 
+		model = load_model("/home/throwaway1akshaychawla/devise-keras/snapshots/epoch_10.hdf5", 
+				custom_objects={'hinge_rank_loss': hinge_rank_loss})
 
 	hf = h5py.File("processed_features/features.h5","r")
 
