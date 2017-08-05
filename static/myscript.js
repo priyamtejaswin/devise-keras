@@ -2,12 +2,12 @@ function process_response(server_response){
 
     // check return response 
     var rc = server_response.rc;
-    console.log(rc)
+    //console.log(rc);
     
     if (rc==0) {
         
-        $("#gallery_placeholder").empty()
-        console.log(server_response.images)
+        $("#gallery_placeholder").empty();
+        //console.log(server_response.images);
 
         // append each of the images to gallery_placeholder
         for (var i = 0; i < server_response.images.length; i++) {
@@ -16,14 +16,13 @@ function process_response(server_response){
             var img_elem_to_append = 
             `<div class='gallery'> 
                 <a target='_blank' href='image_location_placeholder'> 
-                    <img src='image_location_placeholder' alt='Forest' width='300' height='200'>
+                    <img src='image_location_placeholder' alt='image' width='300' height='200'>
                 </a>
-                <div class='desc'>image_description_placeholder</div>
             </div>`;
 
             // specify image location in generic html
-            var img_elem_to_append = img_elem_to_append.replace("image_location_placeholder", server_response.images[i])
-            var img_elem_to_append = img_elem_to_append.replace("image_location_placeholder", server_response.images[i])
+            var img_elem_to_append = img_elem_to_append.replace("image_location_placeholder", server_response.images[i]);
+            var img_elem_to_append = img_elem_to_append.replace("image_location_placeholder", server_response.images[i]);
             //console.log(server_response.images[i])
             $("#gallery_placeholder").append(img_elem_to_append);
         }
@@ -32,10 +31,9 @@ function process_response(server_response){
     else {
 
         // something went wrong
-
-        $(".errors").empty();
-        console.log(server_response.images);
-        $(".errors").append("<p>Error. Server responded with rc : "+String(server_response.images)+"</p>")
+        $("#errors").empty();
+        //console.log(server_response.images);
+        $("#errors").append("<p>Error. Server responded with rc : "+String(server_response.images)+"</p>")
     }
 
     // once query is over, enable searching
@@ -61,9 +59,9 @@ $("#search_button").click(function () {
             all_checks_ok = true;
 
             // check length > MIN_QUERY_LENGTH
-            $(".errors").empty();
+            $("#errors").empty();
             if (query.length < MIN_QUERY_LENGTH) {
-                $(".errors").append("<p>Err. Please enter a search query >" + String(MIN_QUERY_LENGTH) + " characters.</p>")
+                $("#errors").append("<p>Err. Please enter a search query >" + String(MIN_QUERY_LENGTH) + " characters.</p>")
                 all_checks_ok = false;
             }
 
