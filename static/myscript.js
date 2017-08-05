@@ -24,7 +24,7 @@ function process_response(server_response){
             // specify image location in generic html
             var img_elem_to_append = img_elem_to_append.replace("image_location_placeholder", server_response.images[i])
             var img_elem_to_append = img_elem_to_append.replace("image_location_placeholder", server_response.images[i])
-            console.log(server_response.images[i])
+            //console.log(server_response.images[i])
             $("#gallery_placeholder").append(img_elem_to_append);
         }
         
@@ -34,6 +34,7 @@ function process_response(server_response){
         // something went wrong
 
         $(".errors").empty();
+        console.log(server_response.images);
         $(".errors").append("<p>Error. Server responded with rc : "+String(server_response.images)+"</p>")
     }
 
