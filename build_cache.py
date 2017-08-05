@@ -58,14 +58,14 @@ def main():
         dump_to_h5( names, train_features_h5["data/features"][lix:uix], cache_h5 )
 
     # copy image feats+fnames from validation_features.h5 to cache/data/features
-    print "Copying validation features from features.h5 to cache.h5"
-    batch_size = 500
-    for lix in tqdm(xrange(0, len(valid_features_h5["data/features"]), batch_size)):
-        uix = min(len(valid_features_h5["data/features"]), lix + batch_size)
+    # print "Copying validation features from features.h5 to cache.h5"
+    # batch_size = 500
+    # for lix in tqdm(xrange(0, len(valid_features_h5["data/features"]), batch_size)):
+    #     uix = min(len(valid_features_h5["data/features"]), lix + batch_size)
 
-        names = valid_features_h5["data/fnames"][lix:uix]
-        names = [n[0] for n in names]
-        dump_to_h5( names, valid_features_h5["data/features"][lix:uix], cache_h5 )
+    #     names = valid_features_h5["data/fnames"][lix:uix]
+    #     names = [n[0] for n in names]
+    #     dump_to_h5( names, valid_features_h5["data/features"][lix:uix], cache_h5 )
 
     # Load model 
     from keras.models import load_model
@@ -83,8 +83,8 @@ def main():
         output = output / np.linalg.norm(output, axis=1, keepdims=True)
 
         # add ^ output to im_outs
-        im_outs.resize((uix+1,WORD_DIM)) # expand size of im_outs (NOTE the +1 because we want size of 500 not 499)
-        assert len(im_outs) == uix, "lenth of im_outs MUST be == uix (which goes through entire dataset"
+        im_outs.resize((uix,WORD_DIM)) # expand size of im_outs (NOTE: we have uix and not uix+1 because uix=lix+batch)
+        assert len(im_outs) == uix-lix, "lenth of im_outs MUST be == uix (which goes through entire dataset"
         im_outs[lix:uix] = output
 
     # CLOSE ALL H5
