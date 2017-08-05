@@ -4,7 +4,7 @@
 
 The project uses the following python packages over the conda python stack:
 - tensorflow 1.1.0
-- keras 2.0.4
+- keras 2.0.6
 - tensorboard 1.0.0a6
 - opencv 3.2.0
 
