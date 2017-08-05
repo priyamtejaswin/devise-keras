@@ -26,6 +26,7 @@ class ValidCallBack(keras.callbacks.Callback):
 		print "I am here.."
 		self.F 			  = h5py.File(PATH_image_features, "r")
 		self.val_features = self.F["data/features"] ## ALERT - DO NOT LOAD EVERYTHING!
+                VGGnames = self.F["data/fnames"]
 		self.len_img_feats = self.val_features.shape[0]
 
 		# load word indices 
@@ -51,6 +52,8 @@ class ValidCallBack(keras.callbacks.Callback):
 		self.mylogger = Logger("logs/top_{}".format(time()))
 		# ipdb.set_trace()
 
+                self.imageid_to_vggfeats_loc = {int(name[0].split("_")[-1].split(".")[0]):i for i,name in enumerate(VGGnames)}
+
 		self.image_to_captions = image_to_captions
 
 	@staticmethod
@@ -58,13 +61,9 @@ class ValidCallBack(keras.callbacks.Callback):
 		return nltk.translate.bleu_score.sentence_bleu(references, hypothesis)
 
 	def on_epoch_end(self, epoch, logs={}):
-		self.len_img_feats = 1000
-		self.len_cap_feats = 2000
-		self.val_to_caption = self.val_to_caption[:2000]
-
 		print "--BEGIN on epoch end--"
 
-		BATCH_SIZE = 500 ## batch size for running forward passes.
+		BATCH_SIZE = 5000 ## batch size for running forward passes.
 
 		# running forward pass for image_feats + dummy captions
 		MAX_SEQUENCE_LENGTH = 20
@@ -81,13 +80,14 @@ class ValidCallBack(keras.callbacks.Callback):
 
 		preds = [
 			self.model.predict([self.val_features[lx:ux, :], np.zeros((ux-lx, MAX_SEQUENCE_LENGTH))])[:, :WORD_DIM]
-			for lx,ux in _img_ix_gen
+			for lx,ux in tqdm(_img_ix_gen)
 		]
 		im_outs = np.concatenate(preds, axis=0)
 
 		print "DONE images"
 
 		# runnign forward pass for dummy feats + actual captions 
+                BATCH_SIZE = BATCH_SIZE*2
 		
 		_cap_ix_gen = zip(
 			range(0, self.len_cap_feats, BATCH_SIZE),
@@ -106,13 +106,13 @@ class ValidCallBack(keras.callbacks.Callback):
 
 		preds = [
 			self.model.predict([np.zeros((ux-lx, 4096)), np.array(just_captions[lx:ux])])[:, WORD_DIM:]
-			for lx,ux in _cap_ix_gen
+			for lx,ux in tqdm(_cap_ix_gen)
 		]
 		cap_out = np.concatenate(preds, axis=0)
 
 		print "DONE captions"
 
-		ipdb.set_trace()
+		# ipdb.set_trace()
 
 		# normalize the outputs
 		im_outs = im_outs / np.linalg.norm(im_outs, axis=1, keepdims=True)
@@ -123,13 +123,15 @@ class ValidCallBack(keras.callbacks.Callback):
 		
 		bleu_topk = []
 
-		_indices_10k = random.sample( range(len(cap_out)) , 60) # sample any 10k captions (use python's stdlib random)	
-		#im_outs_10k = im_outs[[just_indices[i] for i in _indices_10k]] ## Select the appropriate 10k images.
-		im_outs_10k = im_outs[:60]
+		_indices_10k = random.sample( range(len(cap_out)) , 10000) # sample any 10k captions (use python's stdlib random)	
 
-		ipdb.set_trace()
+                # ipdb.set_trace()
 
-		for index_i, i in tqdm(list(enumerate(_indices_10k[:50]))):
+		im_outs_10k = im_outs[[self.imageid_to_vggfeats_loc[just_indices[i]] for i in _indices_10k]] ## Select the appropriate 10k images.
+
+		# ipdb.set_trace()
+
+		for index_i, i in tqdm(list(enumerate(_indices_10k))):
 
 			diff = im_outs_10k - cap_out[i] 
 			diff = np.linalg.norm(diff, axis=1)
