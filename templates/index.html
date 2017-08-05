@@ -16,15 +16,16 @@
         }
 
         div.gallery img {
-            width: 100%;
+            width: auto;
             height: auto;
         }
 
-        div.desc {
-            padding: 15px;
-            text-align: center;
-            font-size: 9px;
+        #errors {
+            font-size: 5px;
+            color: red
         }
+
+        
 
     </style>
 </head>
@@ -37,7 +38,7 @@
     <div id="Search_Query">
     <input type="text" name="query" id="myquery">
     <button type="button" id="search_button">Search</button> 
-    <div class="errors"></div>        
+    <div id="errors"></div>        
     </div>
 
     <br>
