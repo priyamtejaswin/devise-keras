@@ -58,6 +58,10 @@ class ValidCallBack(keras.callbacks.Callback):
 		return nltk.translate.bleu_score.sentence_bleu(references, hypothesis)
 
 	def on_epoch_end(self, epoch, logs={}):
+                self.len_img_feats = 1000
+                self.len_cap_feats = 1000
+                print "--BEGIN on epoch end--"
+
 		BATCH_SIZE = 500 ## batch size for running forward passes.
 
 		# running forward pass for image_feats + dummy captions
@@ -78,6 +82,8 @@ class ValidCallBack(keras.callbacks.Callback):
 			for lx,ux in _img_ix_gen
 		]
 		im_outs = np.concatenate(preds, axis=0)
+
+                print "DONE images"
 
 		# runnign forward pass for dummy feats + actual captions 
 		
@@ -102,7 +108,9 @@ class ValidCallBack(keras.callbacks.Callback):
 		]
 		cap_out = np.concatenate(preds, axis=0)
 
-		#ipdb.set_trace()
+                print "DONE captions"
+
+		ipdb.set_trace()
 
 		# normalize the outputs
 		im_outs = im_outs / np.linalg.norm(im_outs, axis=1, keepdims=True)
@@ -113,10 +121,13 @@ class ValidCallBack(keras.callbacks.Callback):
 		
 		bleu_topk = []
 
-		_indices_10k = random.sample( range(len(cap_out)) , 10000) # sample any 10k captions (use python's stdlib random)	
-		im_outs_10k = im_outs[[just_indices[i] for i in _indices_10k]] ## Select the appropriate 10k images.
+		_indices_10k = random.sample( range(len(cap_out)) , 60) # sample any 10k captions (use python's stdlib random)	
+		#im_outs_10k = im_outs[[just_indices[i] for i in _indices_10k]] ## Select the appropriate 10k images.
+                im_outs_10k = im_outs[:60]
 
-		for index_i, i in enumerate(_indices_10k):
+                ipdb.set_trace()
+
+                for index_i, i in tqdm(list(enumerate(_indices_10k[:50]))):
 
 			diff = im_outs_10k - cap_out[i] 
 			diff = np.linalg.norm(diff, axis=1)
