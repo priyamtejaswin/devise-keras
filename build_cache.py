@@ -6,10 +6,11 @@ pass through rnn model (50-dim)
 import h5py 
 import numpy as np
 from tqdm import *
+from rnn_model import hinge_rank_loss
 
 IMAGE_DIM = 4096
 WORD_DIM  = 300
-model_location = ""
+model_location = "/home/throwaway1akshaychawla/cache_ui/epoch_10.hdf5"
 MAX_SEQUENCE_LENGTH = 20
 
 def dump_to_h5(names, scores ,hf):
@@ -33,9 +34,9 @@ def dump_to_h5(names, scores ,hf):
 
 def main():
 
-    validation_features_loc = ""
-    training_features_loc = ""
-
+    validation_features_loc = "processed_features/validation_features.h5"
+    training_features_loc = "processed_features/features.h5"
+    import ipdb; ipdb.set_trace()
     train_features_h5 = h5py.File(training_features_loc, "r")
     valid_features_h5 = h5py.File(validation_features_loc, "r")
 
@@ -67,9 +68,9 @@ def main():
         dump_to_h5( names, valid_features_h5["data/features"][lix:uix], cache_h5 )
 
     # Load model 
-    from keras import load_model
+    from keras.models import load_model
     print "..Loading model"
-    model = load_model(model_location)
+    model = load_model(model_location, custom_objects={"hinge_rank_loss":hinge_rank_loss})
     
     # Run image feats through model to get 300-dim embedding
     im_outs = cache_h5["data"].create_dataset("im_outs", (0, WORD_DIM), maxshape=(None, WORD_DIM))
@@ -83,18 +84,13 @@ def main():
 
         # add ^ output to im_outs
         im_outs.resize((uix+1,WORD_DIM)) # expand size of im_outs (NOTE the +1 because we want size of 500 not 499)
-        assert len(im_outs) = uix, "lenth of im_outs MUST be == uix (which goes through entire dataset"
+        assert len(im_outs) == uix, "lenth of im_outs MUST be == uix (which goes through entire dataset"
         im_outs[lix:uix] = output
 
     # CLOSE ALL H5
     train_features_h5.close()
     valid_features_h5.close()
     cache_h5.close()
-
-
-
-
-
 
 
 if __name__ == '__main__':
