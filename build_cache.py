@@ -73,8 +73,8 @@ def main():
     model = load_model(model_location, custom_objects={"hinge_rank_loss":hinge_rank_loss})
     
     # Run image feats through model to get 300-dim embedding
-    im_outs = cache_h5["data"].create_dataset("im_outs", (0, WORD_DIM), maxshape=(None, WORD_DIM))
     all_features = cache_h5["data/features"]
+    im_outs = cache_h5["data"].create_dataset("im_outs", (len(all_features), WORD_DIM))
     print "Running model on all features of size", all_features.shape
     batch_size = 500
     for lix in tqdm(xrange(0, len(all_features), batch_size)):
@@ -83,8 +83,6 @@ def main():
         output = output / np.linalg.norm(output, axis=1, keepdims=True)
 
         # add ^ output to im_outs
-        im_outs.resize((uix,WORD_DIM)) # expand size of im_outs (NOTE: we have uix and not uix+1 because uix=lix+batch)
-        assert len(im_outs) == uix-lix, "lenth of im_outs MUST be == uix (which goes through entire dataset"
         im_outs[lix:uix] = output
 
     # CLOSE ALL H5
