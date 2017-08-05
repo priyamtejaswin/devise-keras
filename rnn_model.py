@@ -228,11 +228,11 @@ def main():
 		history = model.fit_generator(
 				train_datagen,
 				steps_per_epoch=steps_per_epoch,
-				epochs=10,
+				epochs=15,
 				callbacks=[tensorboard, epoch_cb, valid_cb],
 				initial_epoch=initial_epoch,
-				use_multiprocessing=True,
-				workers=2
+				# use_multiprocessing=True, ## Removing due to thread-safety issues.
+				# workers=2 ## ## Removing due to thread-safety issues
 			)
 
 		print history.history.keys()
