@@ -15,9 +15,9 @@ import nltk
 class ValidCallBack(keras.callbacks.Callback):
 
 	def __init__(self,
-		PATH_image_to_captions="DICT_image_TO_tokens.VAL.pkl",
-		PATH_image_features="processed_features/validation_features.h5",
-		PATH_word_index="DICT_word_index.pkl"
+		PATH_image_to_tokens="/something/DICT_image_TO_tokens.VAL.pkl",
+		PATH_image_features="/something/processed_features/validation_features.h5",
+		PATH_word_index="/something/DICT_word_index.pkl"
 		):
 
 		super(ValidCallBack, self).__init__()
@@ -36,7 +36,7 @@ class ValidCallBack(keras.callbacks.Callback):
 		
 		# ipdb.set_trace()
 		# Load ALL caption data 
-		image_to_captions = pickle.load(open(PATH_image_to_captions))
+		image_to_captions = pickle.load(open(PATH_image_to_tokens))
 
 		# filter out the validation captions from "all_captions"
 		self.val_to_caption = []
