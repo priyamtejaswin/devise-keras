@@ -185,17 +185,17 @@ def main():
 		caption_features = Input(shape=(MAX_SEQUENCE_LENGTH,), name="caption_feature_input")
 
 		# number of training images 
-		_num_train = get_num_train_images(from_pkl=False)
-		# _num_train = 6
+		# _num_train = get_num_train_images(from_pkl=False)
+		_num_train = 6
 
 		# Callbacks 
 		# remote_cb = RemoteMonitor(root='http://localhost:9000')
 		tensorboard = TensorBoard(log_dir="logs/{}".format(time()))
 		epoch_cb    = EpochCheckpoint(folder="./snapshots/")
 		valid_cb    = ValidCallBack(
-				PATH_image_to_tokens="/home/throwaway1akshaychawla/devise-keras/DICT_image_TO_tokens.VAL.pkl", 
+				PATH_image_to_tokens="/home/tejaswin.p/devise-keras/COPY_OF_PICKLES/DICT_image_TO_tokens.VAL.pkl", 
 				PATH_image_features="/home/throwaway1akshaychawla/devise-keras/processed_features/validation_features.h5", 
-				PATH_word_index="/home/throwaway1akshaychawla/devise-keras/DICT_word_index.VAL.pkl"
+				PATH_word_index="/home/tejaswin.p/devise-keras/COPY_OF_PICKLES/DICT_word_index.VAL.pkl"
 		)
 
 		# fit generator
@@ -204,16 +204,16 @@ def main():
 		
 		train_datagen = data_generator_coco(
 			path_to_h5py=PATH_h5,
-			path_to_image_tokens="/home/throwaway1akshaychawla/devise-keras/DICT_image_TO_tokens.TRAIN.pkl",
+			path_to_image_tokens="/home/tejaswin.p/devise-keras/COPY_OF_PICKLES/DICT_image_TO_tokens.TRAIN.pkl",
 			incorrect_batch=INCORRECT_BATCH
 		)
 
 		RESUME = raw_input("\nResume training from snapshots?<y/n>")
 		if RESUME=='y':
 			print "\t--Loading model from snapshots--"
-			model = load_model("/home/throwaway1akshaychawla/devise-keras/snapshots/epoch_10.hdf5", 
+			model = load_model("/home/tejaswin.p/devise-keras/snapshots/epoch_0.hdf5", 
 					custom_objects={'hinge_rank_loss': hinge_rank_loss})
-			initial_epoch = 11
+			initial_epoch = 1
 			print model.summary()
 
 		elif RESUME=='n':
