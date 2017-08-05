@@ -18,11 +18,55 @@ import os, sys, ipdb
 import cPickle as pickle
 from tqdm import *
 import random
+from keras.utils.data_utils import Sequence
 
 np.random.seed(123)
 
 IMAGE_DIM = 4096
 WORD_DIM = 300
+
+class COCO_SEQUENCE_OBJECT(Sequence):
+	def __init__(self, 
+		path_to_h5py="/something/processed_features/features.h5", 
+		path_to_image_tokens="/something/DICT_image_TO_tokens.pkl",
+		incorrect_batch=2):
+
+		self.image_to_tokens = pickle.load(open(path_to_image_tokens))
+
+		FP = h5py.File(path_to_h5py, 'r')
+		self.VGGfeats = FP["data/features"]
+		VGGnames = FP["data/fnames"][:]
+		self.imageid_to_vggfeats = {int(name[0].split("_")[-1].split(".")[0]):i for i,name in enumerate(VGGnames)}
+
+		self.all_imageids = self.imageid_to_vggfeats.keys()
+
+		self.batch_size = incorrect_batch
+
+	def __len__(self):
+		return len(self.all_imageids)
+
+	def __getitem__(self, i):
+		# pick one true index
+		true_image_ix   = self.all_imageids[i] 
+
+		# pick self.batch_size number of indices (which are not true batch)
+		false_image_ixs = np.random.choice(self.all_imageids[:i] + self.all_imageids[i+1:], self.batch_size, replace=False).tolist() 
+
+		# pick 1 caption for 1 true image  
+		true_cap = random.choice(image_to_tokens[true_image_ix])
+
+		# pick 1 caption for self.batch_size false images
+		false_caps = [random.choice(image_to_tokens[ix]) for ix in false_image_ixs]
+
+		# X_images from VGGfeats
+		X_images = np.zeros((self.batch_size+1, IMAGE_DIM))
+		for k, img_idx in enumerate([true_image_ix]+false_image_ixs):
+			X_images[k] = self.VGGfeats[self.imageid_to_vggfeats[img_idx]]
+
+		# X_captions from the tokens
+		X_captions = np.array([true_cap] + false_caps)
+
+		return [X_images, X_captions], np.zeros(1+self.batch_size)
 
 
 def data_generator_coco(
