@@ -7,11 +7,16 @@ import os, sys
 import pickle
 import h5py
 from rnn_model import hinge_rank_loss
+import ipdb
+import numpy as np
 from flask import Flask
+import tensorflow as tf
+
 app = Flask(__name__)
 
 DUMMY_MODE=False
 MODEL_LOC="/home/throwaway1akshaychawla/cache_ui/epoch_10.hdf5"
+WORD_DIM=300
 
 # VERY IMPORTANT VARIABLES
 mutex = Lock()
@@ -21,6 +26,8 @@ DICT_word_index = None
 if DUMMY_MODE==False:
 	
 	MODEL = load_model(MODEL_LOC, custom_objects={"hinge_rank_loss":hinge_rank_loss})
+	graph = tf.get_default_graph()
+	
 	print MODEL.summary()
 	
 	assert os.path.isfile("DICT_word_index.TRAIN.pkl"), "Could not find DICT_word_index.TRAIN.pkl"	
@@ -50,6 +57,7 @@ def query_string_to_word_indices(query_string):
 
 	# check if words in dictionary
 	all_words = DICT_word_index.keys()
+	ipdb.set_trace()
 	for word in words:
 		assert word in all_words, "could not find word {} in all_words".format(word)
 
@@ -86,24 +94,28 @@ def run_model(query_string):
 			result = ["static/dog.jpg", "static/dog.jpg", "static/dog.jpg"]
 		else:
 			assert MODEL is not None, "not in dummy mode, but model did not load!"
-			
-			# forward pass 
-			output = MODEL.predict([ np.zeros(1,4096) , query_string_to_word_indices(query_string) ])[:, WORD_DIM: ]
-			output = output / np.linalg.norm(output, axis=1, keepdims=True)
-			
-			# compare with im_outs
-			TOP_K = 50
-			diff = im_outs - output 
-			diff = np.linalg.norm(diff, axis=1)
-			top_k_indices = np.argsort(diff)[:TOP_K].tolist()
 
-			# populate "results" with fnames of top_k_indices
-			result = []
-			for k in top_k_indices:
-				result.append(fnames[k])
+			## multithread fix for keras/tf backend
+			global graph
+			with graph.as_default():
+				# forward pass 
+				output = MODEL.predict([ np.zeros((1,4096)) , query_string_to_word_indices(query_string) ])[:, WORD_DIM: ]
+				output = output / np.linalg.norm(output, axis=1, keepdims=True)
+			
+				# compare with im_outs
+				TOP_K = 50
+				diff = im_outs - output 
+				diff = np.linalg.norm(diff, axis=1)
+				top_k_indices = np.argsort(diff)[:TOP_K].tolist()
+
+				# populate "results" with fnames of top_k_indices
+				result = []
+				for k in top_k_indices:
+					result.append(fnames[k])
 			
 		print '..over'
 	
+	ipdb.set_trace()
 	if result is None:
 		return 1,[]
 	else:
@@ -113,8 +125,10 @@ def run_model(query_string):
 def process_query():
 
 	query_string  	= request.args.get('query', type=str)
-	rc, images 		= run_model(query_string) 
+	ipdb.set_trace()
+        rc, images 		= run_model(query_string) 
 
+        
 	result = {
 		"rc":rc,
 		"images": images
