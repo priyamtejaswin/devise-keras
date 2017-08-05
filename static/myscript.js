@@ -15,13 +15,10 @@ function process_response(server_response){
             // generic html
             var img_elem_to_append = 
             `<div class='gallery'> 
-                <a target='_blank' href='image_location_placeholder'> 
-                    <img src='image_location_placeholder' alt='image' width='300' height='200'>
-                </a>
+                <img src='image_location_placeholder' alt='image' width=245 height=150>
             </div>`;
 
             // specify image location in generic html
-            var img_elem_to_append = img_elem_to_append.replace("image_location_placeholder", server_response.images[i]);
             var img_elem_to_append = img_elem_to_append.replace("image_location_placeholder", server_response.images[i]);
             //console.log(server_response.images[i])
             $("#gallery_placeholder").append(img_elem_to_append);
