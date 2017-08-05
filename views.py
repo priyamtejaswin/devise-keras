@@ -6,11 +6,12 @@ from keras.preprocessing.text import text_to_word_sequence
 import os, sys
 import pickle
 import h5py
+from rnn_model import hinge_rank_loss
 from flask import Flask
 app = Flask(__name__)
 
-DUMMY_MODE=True
-MODEL_LOC="snapshots/epoch_x.hdf5"
+DUMMY_MODE=False
+MODEL_LOC="/home/throwaway1akshaychawla/cache_ui/epoch_10.hdf5"
 
 # VERY IMPORTANT VARIABLES
 mutex = Lock()
@@ -19,7 +20,7 @@ MODEL=None
 DICT_word_index = None
 if DUMMY_MODE==False:
 	
-	MODEL = load_model(MODEL_LOC)
+	MODEL = load_model(MODEL_LOC, custom_objects={"hinge_rank_loss":hinge_rank_loss})
 	print MODEL.summary()
 	
 	assert os.path.isfile("DICT_word_index.TRAIN.pkl"), "Could not find DICT_word_index.TRAIN.pkl"	
