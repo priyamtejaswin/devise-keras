@@ -34,7 +34,7 @@ function process_response(server_response){
         // something went wrong
 
         $(".errors").empty();
-        $(".errors").append("<p>Error. Server responded with rc : "+String(server_response.rc)+"</p>")
+        $(".errors").append("<p>Error. Server responded with rc : "+String(server_response.images)+"</p>")
     }
 
     // once query is over, enable searching

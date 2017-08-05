@@ -57,9 +57,9 @@ def query_string_to_word_indices(query_string):
 
 	# check if words in dictionary
 	all_words = DICT_word_index.keys()
-	ipdb.set_trace()
 	for word in words:
-		assert word in all_words, "could not find word {} in all_words".format(word)
+		if word not in all_words: 
+			raise("could not find word {} in all_words".format(word))
 
 	# list of words -> list of indices
 	words_index = []
@@ -70,6 +70,9 @@ def query_string_to_word_indices(query_string):
 	if len(words_index) < MAX_SEQUENCE_LENGTH:
 		padding = [0 for _ in range(MAX_SEQUENCE_LENGTH - len(words_index))]
 		words_index += padding
+
+	if len(words_index) != MAX_SEQUENCE_LENGTH:
+		raise("words_index is not {} numbers long".format(MAX_SEQUENCE_LENGTH))
 
 	return np.array(words_index).reshape((1,MAX_SEQUENCE_LENGTH))
 
@@ -95,11 +98,17 @@ def run_model(query_string):
 		else:
 			assert MODEL is not None, "not in dummy mode, but model did not load!"
 
+			# convert query string to word_index
+			try:
+				word_indices = query_string_to_word_indices(query_string)
+			except Exception, e:
+				return 2, str(e)
+
 			## multithread fix for keras/tf backend
 			global graph
 			with graph.as_default():
 				# forward pass 
-				output = MODEL.predict([ np.zeros((1,4096)) , query_string_to_word_indices(query_string) ])[:, WORD_DIM: ]
+				output = MODEL.predict([ np.zeros((1,4096)) , word_indices ])[:, WORD_DIM: ]
 				output = output / np.linalg.norm(output, axis=1, keepdims=True)
 			
 				# compare with im_outs
@@ -114,21 +123,19 @@ def run_model(query_string):
 					result.append(fnames[k])
 			
 		print '..over'
-	
 	ipdb.set_trace()
 	if result is None:
-		return 1,[]
+		return 1,"oops! something went wrong. Result is None, We should probably re-factor our code."
 	else:
 		return 0,result
 
 @app.route("/_process_query")
 def process_query():
 
-	query_string  	= request.args.get('query', type=str)
-	ipdb.set_trace()
-        rc, images 		= run_model(query_string) 
+	query_string = request.args.get('query', type=str)
+	rc, images = run_model(query_string) 
 
-        
+		
 	result = {
 		"rc":rc,
 		"images": images
