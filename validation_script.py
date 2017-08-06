@@ -87,7 +87,7 @@ class ValidCallBack(keras.callbacks.Callback):
 		print "DONE images"
 
 		# runnign forward pass for dummy feats + actual captions 
-				BATCH_SIZE = BATCH_SIZE*2
+		BATCH_SIZE = BATCH_SIZE*2
 		
 		_cap_ix_gen = zip(
 			range(0, self.len_cap_feats, BATCH_SIZE),
