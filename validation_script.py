@@ -142,7 +142,7 @@ class ValidCallBack(keras.callbacks.Callback):
 				correct += 1.0
 
 			## Get top5 captions for bleu score
-			top5_indices_10k = _indices_10k[top_k_indices[:5]]
+			top5_indices_10k = [_indices_10k[z] for z in top_k_indices[:5]]
 			top5_captions = [just_captions[j] for j in top5_indices_10k]
 
 			bleu_topk.append(self.bleu_score(top5_captions, just_captions[i]))
