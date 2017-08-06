@@ -143,9 +143,13 @@ class ValidCallBack(keras.callbacks.Callback):
 
 			## Get top5 captions for bleu score
 			top5_indices_10k = [_indices_10k[z] for z in top_k_indices[:5]]
-			top5_captions = [just_captions[j] for j in top5_indices_10k]
+			top5_captions = [just_captions[j].tolist() for j in top5_indices_10k]
 
-			bleu_topk.append(self.bleu_score(top5_captions, just_captions[i]))
+			# strip out padding from top5_captions and just_captions[i]
+			top5_captions = [list(filter(lambda x: x==0, c)) for c in top5_captions]
+			correct_caption = list(filter(lambda x: x==0, just_captions[i])) 			
+
+			bleu_topk.append(self.bleu_score(top5_captions, correct_caption))
 
 		print "validation accuracy: ", correct / 10000
 		print "num correct: ", correct
