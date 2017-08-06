@@ -131,7 +131,7 @@ class ValidCallBack(keras.callbacks.Callback):
 
 		# ipdb.set_trace()
 
-		for index_i, i in tqdm(list(enumerate(_indices_10k[:100]))): # WARNING! [:100] should be removed for production runs
+		for index_i, i in tqdm(list(enumerate(_indices_10k))): # WARNING! [:100] should be removed for production runs
 
 			diff = im_outs_10k - cap_out[i] 
 			diff = np.linalg.norm(diff, axis=1)
