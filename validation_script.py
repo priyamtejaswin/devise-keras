@@ -146,8 +146,8 @@ class ValidCallBack(keras.callbacks.Callback):
 			top5_captions = [just_captions[j].tolist() for j in top5_indices_10k]
 
 			# strip out padding from top5_captions and just_captions[i]
-			top5_captions = [list(filter(lambda x: x==0, c)) for c in top5_captions]
-			correct_caption = list(filter(lambda x: x==0, just_captions[i])) 			
+			top5_captions = [filter(lambda x: x!=0, c) for c in top5_captions]
+			correct_caption = filter(lambda x: x==0, just_captions[i]) 			
 
 			bleu_topk.append(self.bleu_score(top5_captions, correct_caption))
 
