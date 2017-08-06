@@ -24,9 +24,9 @@ class ValidCallBack(keras.callbacks.Callback):
 		
 		# h5py file containing validation features and validation word embeddings
 		print "I am here.."
-		self.F 			  = h5py.File(PATH_image_features, "r")
+		self.F            = h5py.File(PATH_image_features, "r")
 		self.val_features = self.F["data/features"] ## ALERT - DO NOT LOAD EVERYTHING!
-                VGGnames = self.F["data/fnames"]
+				VGGnames = self.F["data/fnames"]
 		self.len_img_feats = self.val_features.shape[0]
 
 		# load word indices 
@@ -52,7 +52,7 @@ class ValidCallBack(keras.callbacks.Callback):
 		self.mylogger = Logger("logs/top_{}".format(time()))
 		# ipdb.set_trace()
 
-                self.imageid_to_vggfeats_loc = {int(name[0].split("_")[-1].split(".")[0]):i for i,name in enumerate(VGGnames)}
+		self.imageid_to_vggfeats_loc = {int(name[0].split("_")[-1].split(".")[0]):i for i,name in enumerate(VGGnames)}
 
 		self.image_to_captions = image_to_captions
 
@@ -87,7 +87,7 @@ class ValidCallBack(keras.callbacks.Callback):
 		print "DONE images"
 
 		# runnign forward pass for dummy feats + actual captions 
-                BATCH_SIZE = BATCH_SIZE*2
+				BATCH_SIZE = BATCH_SIZE*2
 		
 		_cap_ix_gen = zip(
 			range(0, self.len_cap_feats, BATCH_SIZE),
@@ -118,20 +118,20 @@ class ValidCallBack(keras.callbacks.Callback):
 		im_outs = im_outs / np.linalg.norm(im_outs, axis=1, keepdims=True)
 		cap_out = cap_out / np.linalg.norm(cap_out, axis=1, keepdims=True)
 
-		TOP_K = 100
+		TOP_K = 50
 		correct = 0.0
 		
 		bleu_topk = []
 
-		_indices_10k = random.sample( range(len(cap_out)) , 10000) # sample any 10k captions (use python's stdlib random)	
+		_indices_10k = random.sample( range(len(cap_out)) , 10000) # sample any 10k captions (use python's stdlib random)   
 
-                # ipdb.set_trace()
+				# ipdb.set_trace()
 
 		im_outs_10k = im_outs[[self.imageid_to_vggfeats_loc[just_indices[i]] for i in _indices_10k]] ## Select the appropriate 10k images.
 
 		# ipdb.set_trace()
 
-		for index_i, i in tqdm(list(enumerate(_indices_10k))):
+		for index_i, i in tqdm(list(enumerate(_indices_10k[:100]))): # WARNING! [:100] should be removed for production runs
 
 			diff = im_outs_10k - cap_out[i] 
 			diff = np.linalg.norm(diff, axis=1)
@@ -141,7 +141,11 @@ class ValidCallBack(keras.callbacks.Callback):
 			if correct_index in top_k_indices: ## Check if that is in the topK positions.
 				correct += 1.0
 
-			bleu_topk.append(self.bleu_score(self.image_to_captions[just_indices[i]], just_captions[i]))
+			## Get top5 captions for bleu score
+			top5_indices_10k = _indices_10k[top_k_indices[:5]]
+			top5_captions = [just_captions[j] for j in top5_indices_10k]
+
+			bleu_topk.append(self.bleu_score(top5_captions, just_captions[i]))
 
 		print "validation accuracy: ", correct / 10000
 		print "num correct: ", correct
@@ -168,12 +172,12 @@ class ValidCallBack(keras.callbacks.Callback):
 		# correct = 0.0
 		# for i in range(len(cap_out)):
 
-		# 	diff_for_that_caption = diff[ i*len(im_outs) : i*len(im_outs) + len(im_outs) ]
-		# 	top_k_indices = np.argsort(diff_for_that_caption)[:TOP_K].tolist()
+		#   diff_for_that_caption = diff[ i*len(im_outs) : i*len(im_outs) + len(im_outs) ]
+		#   top_k_indices = np.argsort(diff_for_that_caption)[:TOP_K].tolist()
 
-		# 	correct_index = just_indices[i]
-		# 	if correct_index in top_k_indices:
-		# 		correct += 1
+		#   correct_index = just_indices[i]
+		#   if correct_index in top_k_indices:
+		#       correct += 1
 		
 		# # calculate TOP_K accuracy 
 		# accuracy_top_k = correct / len(self.val_to_caption)
@@ -209,15 +213,15 @@ class LoadValidationData(): # DEPRECATED #
 	def __init__(self):
 		# DEPRECATED #
 		# validation features (200x4096) and its true class (cat, dog, aeroplane.. 200)
-		F 					= h5py.File("./processed_features/validation_features.h5", "r")
-		self.val_features 	= F["data/features"][:]
-		self.image_fnames 	= map(lambda a:a[0], F["data/fnames"][:])
-		self.image_GT  		= [fname.split("/")[-2] for fname in self.image_fnames]
+		F                   = h5py.File("./processed_features/validation_features.h5", "r")
+		self.val_features   = F["data/features"][:]
+		self.image_fnames   = map(lambda a:a[0], F["data/fnames"][:])
+		self.image_GT       = [fname.split("/")[-2] for fname in self.image_fnames]
 		F.close()
 
 		# embeddings (400000xWORD_DIM) 
 		wordF = h5py.File("./processed_features/embeddings.h5", 'r')
-		self.word_embed	= wordF["data/word_embeddings"][:,:] 
+		self.word_embed = wordF["data/word_embeddings"][:,:] 
 		self.word_names  = map(lambda a:a[0], wordF["data/word_names"][:])
 		wordF.close()
 
@@ -235,8 +239,8 @@ class LoadValidationData(): # DEPRECATED #
 		for cl in self.image_GT:
 			self.image_GT_indices.append(self.unique_classes.index(cl))
 
-		assert len(self.image_GT_indices) 	== len(self.val_features)
-		assert len(self.image_GT) 			== len(self.val_features)
+		assert len(self.image_GT_indices)   == len(self.val_features)
+		assert len(self.image_GT)           == len(self.val_features)
 
 	def get_data(self):
 		return self.val_features, np.array(self.image_GT_indices)[:, np.newaxis]
