@@ -26,7 +26,7 @@ class ValidCallBack(keras.callbacks.Callback):
 		print "I am here.."
 		self.F            = h5py.File(PATH_image_features, "r")
 		self.val_features = self.F["data/features"] ## ALERT - DO NOT LOAD EVERYTHING!
-				VGGnames = self.F["data/fnames"]
+		VGGnames = self.F["data/fnames"]
 		self.len_img_feats = self.val_features.shape[0]
 
 		# load word indices 
@@ -125,7 +125,7 @@ class ValidCallBack(keras.callbacks.Callback):
 
 		_indices_10k = random.sample( range(len(cap_out)) , 10000) # sample any 10k captions (use python's stdlib random)   
 
-				# ipdb.set_trace()
+		# ipdb.set_trace()
 
 		im_outs_10k = im_outs[[self.imageid_to_vggfeats_loc[just_indices[i]] for i in _indices_10k]] ## Select the appropriate 10k images.
 
