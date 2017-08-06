@@ -48,24 +48,24 @@ def main():
     fnames_h5= cache_h5["data"].create_dataset("fnames", (0, 1), dtype=dt, maxshape=(None,1))
 
     # copy image feats+fnames from features.h5 to cache/data/features
-    print "Copying features from features.h5 to cache.h5"
-    batch_size = 500
-    for lix in tqdm(xrange(0, len(train_features_h5["data/features"]), batch_size)):
-        uix = min(len(train_features_h5["data/features"]), lix + batch_size)
+    # print "Copying features from features.h5 to cache.h5"
+    # batch_size = 500
+    # for lix in tqdm(xrange(0, len(train_features_h5["data/features"]), batch_size)):
+    #     uix = min(len(train_features_h5["data/features"]), lix + batch_size)
 
-        names = train_features_h5["data/fnames"][lix:uix]
-        names = [n[0] for n in names]
-        dump_to_h5( names, train_features_h5["data/features"][lix:uix], cache_h5 )
+    #     names = train_features_h5["data/fnames"][lix:uix]
+    #     names = [n[0] for n in names]
+    #     dump_to_h5( names, train_features_h5["data/features"][lix:uix], cache_h5 )
 
     # copy image feats+fnames from validation_features.h5 to cache/data/features
-    # print "Copying validation features from features.h5 to cache.h5"
-    # batch_size = 500
-    # for lix in tqdm(xrange(0, len(valid_features_h5["data/features"]), batch_size)):
-    #     uix = min(len(valid_features_h5["data/features"]), lix + batch_size)
+    print "Copying validation features from features.h5 to cache.h5"
+    batch_size = 500
+    for lix in tqdm(xrange(0, len(valid_features_h5["data/features"]), batch_size)):
+        uix = min(len(valid_features_h5["data/features"]), lix + batch_size)
 
-    #     names = valid_features_h5["data/fnames"][lix:uix]
-    #     names = [n[0] for n in names]
-    #     dump_to_h5( names, valid_features_h5["data/features"][lix:uix], cache_h5 )
+        names = valid_features_h5["data/fnames"][lix:uix]
+        names = [n[0] for n in names]
+        dump_to_h5( names, valid_features_h5["data/features"][lix:uix], cache_h5 )
 
     # Load model 
     from keras.models import load_model

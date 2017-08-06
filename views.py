@@ -30,7 +30,7 @@ if DUMMY_MODE==False:
 	
 	print MODEL.summary()
 	
-	assert os.path.isfile("DICT_word_index.TRAIN.pkl"), "Could not find DICT_word_index.TRAIN.pkl"	
+	assert os.path.isfile("DICT_word_index.VAL.pkl"), "Could not find DICT_word_index.TRAIN.pkl"	
 	
 	with open("DICT_word_index.TRAIN.pkl","r") as f:
 		DICT_word_index = pickle.load(f)
