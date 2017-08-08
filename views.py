@@ -11,12 +11,24 @@ import ipdb
 import numpy as np
 from flask import Flask
 import tensorflow as tf
+import argparse
+
+
+parser = argparse.ArgumentParser(description='server')
+parser.add_argument('-word_index', type=str, help="location of the DICT_word_index.VAL/TRAIN.pkl", required=True)
+parser.add_argument("-cache", type=str, help="location of the cache.h5 file", required=True)
+parser.add_argument("-model", type=str, help="location of the model.hdf5 snapshot", required=True)
+parser.add_argument("-threaded", type=bool, help="Run flask server in multi-threaded/single-threaded mode", required=True)
+parser.add_argument("-host", type=str, help="flask server host in app.run()", required=True)
+parser.add_argument("-port", type=int, help="port on which the server will be run", required=True)
+parser.add_argument("-dummy", type=bool, help="run server in dummy mode for testing js/html/css etc.", required=True)
+args = parser.parse_args()
 
 app = Flask(__name__)
 
-DUMMY_MODE=False
-MODEL_LOC="/home/throwaway1akshaychawla/cache_ui/epoch_10.hdf5"
-WORD_DIM=300
+DUMMY_MODE = args.dummy
+MODEL_LOC = args.model
+WORD_DIM = 300
 
 # VERY IMPORTANT VARIABLES
 mutex = Lock()
@@ -30,15 +42,15 @@ if DUMMY_MODE==False:
 	
 	print MODEL.summary()
 	
-	assert os.path.isfile("DICT_word_index.VAL.pkl"), "Could not find DICT_word_index.TRAIN.pkl"	
+	assert os.path.isfile(args.word_index), "Could not find {}".format(args.word_index)	
 	
-	with open("DICT_word_index.TRAIN.pkl","r") as f:
+	with open(args.word_index,"r") as f:
 		DICT_word_index = pickle.load(f)
 	assert DICT_word_index is not None, "Could not load dictionary that maps word to index"
 
 	im_outs = None 
 	fnames = None
-	with h5py.File("cache.h5") as F:
+	with h5py.File(args.cache) as F:
 		im_outs = F["data/im_outs"][:]
 		fnames  = F["data/fnames"][:]
 	assert im_outs is not None, "Could not load im_outs from cache.h5"
@@ -137,7 +149,8 @@ def run_model(query_string):
 					imname = imname.rstrip(".jpg") # 364251
 					imname = "http://mscoco.org/images/" + imname # http://mscoco.org/images/364251
 
-					result_url.append(imname) 
+					result_url.append(imname)
+				result = result_url 
 
 			
 		print '..over'
@@ -145,7 +158,7 @@ def run_model(query_string):
 	if result is None or len(result)<2:
 		return 1,"oops! something went wrong. model prediction returned None. Note: We should probably re-factor our code."
 	else:
-		return 0,result_url
+		return 0,result
 
 @app.route("/_process_query")
 def process_query():
@@ -162,4 +175,4 @@ def process_query():
 	return jsonify(result)
 
 if __name__ == '__main__':
-	app.run(threaded=True, host="0.0.0.0")
+	app.run(threaded=args.threaded, host=args.host, port=args.port)
