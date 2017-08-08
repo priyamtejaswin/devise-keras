@@ -7,10 +7,18 @@ import h5py
 import numpy as np
 from tqdm import *
 from rnn_model import hinge_rank_loss
+import argparse
+
+parser = argparse.ArgumentParser(description='server')
+parser.add_argument("-cache", type=str, help="location of the cache.h5 file", required=True)
+parser.add_argument("-model", type=str, help="location of the model.hdf5 snapshot", required=True)
+parser.add_argument("-use_train_images", type=bool, help="use training images for image retrieval", required=True)
+parser.add_argument("-use_valid_images", type=bool, help="use validation images for image retrieval", required=True)
+args = parser.parse_args()
 
 IMAGE_DIM = 4096
 WORD_DIM  = 300
-model_location = "/home/throwaway1akshaychawla/cache_ui/epoch_10.hdf5"
+model_location = args.model
 MAX_SEQUENCE_LENGTH = 20
 
 def dump_to_h5(names, scores ,hf):
@@ -40,7 +48,7 @@ def main():
     train_features_h5 = h5py.File(training_features_loc, "r")
     valid_features_h5 = h5py.File(validation_features_loc, "r")
 
-    cache_h5 = h5py.File("cache.h5","w")
+    cache_h5 = h5py.File(args.cache,"w")
     cache_h5.create_group("data")
 
     data_h5 = cache_h5["data"].create_dataset("features", (0, IMAGE_DIM), maxshape=(None,IMAGE_DIM))
@@ -48,24 +56,26 @@ def main():
     fnames_h5= cache_h5["data"].create_dataset("fnames", (0, 1), dtype=dt, maxshape=(None,1))
 
     # copy image feats+fnames from features.h5 to cache/data/features
-    # print "Copying features from features.h5 to cache.h5"
-    # batch_size = 500
-    # for lix in tqdm(xrange(0, len(train_features_h5["data/features"]), batch_size)):
-    #     uix = min(len(train_features_h5["data/features"]), lix + batch_size)
+    if args.use_train_images:
+        print "Copying features from features.h5 to cache.h5"
+        batch_size = 500
+        for lix in tqdm(xrange(0, len(train_features_h5["data/features"]), batch_size)):
+            uix = min(len(train_features_h5["data/features"]), lix + batch_size)
 
-    #     names = train_features_h5["data/fnames"][lix:uix]
-    #     names = [n[0] for n in names]
-    #     dump_to_h5( names, train_features_h5["data/features"][lix:uix], cache_h5 )
+            names = train_features_h5["data/fnames"][lix:uix]
+            names = [n[0] for n in names]
+            dump_to_h5( names, train_features_h5["data/features"][lix:uix], cache_h5 )
 
     # copy image feats+fnames from validation_features.h5 to cache/data/features
-    print "Copying validation features from features.h5 to cache.h5"
-    batch_size = 500
-    for lix in tqdm(xrange(0, len(valid_features_h5["data/features"]), batch_size)):
-        uix = min(len(valid_features_h5["data/features"]), lix + batch_size)
+    if args.use_valid_images:
+        print "Copying validation features from features.h5 to cache.h5"
+        batch_size = 500
+        for lix in tqdm(xrange(0, len(valid_features_h5["data/features"]), batch_size)):
+            uix = min(len(valid_features_h5["data/features"]), lix + batch_size)
 
-        names = valid_features_h5["data/fnames"][lix:uix]
-        names = [n[0] for n in names]
-        dump_to_h5( names, valid_features_h5["data/features"][lix:uix], cache_h5 )
+            names = valid_features_h5["data/fnames"][lix:uix]
+            names = [n[0] for n in names]
+            dump_to_h5( names, valid_features_h5["data/features"][lix:uix], cache_h5 )
 
     # Load model 
     from keras.models import load_model
