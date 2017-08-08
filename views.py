@@ -18,15 +18,15 @@ parser = argparse.ArgumentParser(description='server')
 parser.add_argument('-word_index', type=str, help="location of the DICT_word_index.VAL/TRAIN.pkl", required=True)
 parser.add_argument("-cache", type=str, help="location of the cache.h5 file", required=True)
 parser.add_argument("-model", type=str, help="location of the model.hdf5 snapshot", required=True)
-parser.add_argument("-threaded", type=bool, help="Run flask server in multi-threaded/single-threaded mode", required=True)
+parser.add_argument("-threaded", type=int, help="Run flask server in multi-threaded/single-threaded mode", required=True)
 parser.add_argument("-host", type=str, help="flask server host in app.run()", required=True)
 parser.add_argument("-port", type=int, help="port on which the server will be run", required=True)
-parser.add_argument("-dummy", type=bool, help="run server in dummy mode for testing js/html/css etc.", required=True)
+parser.add_argument("-dummy", type=int, help="run server in dummy mode for testing js/html/css etc.", required=True)
 args = parser.parse_args()
 
 app = Flask(__name__)
 
-DUMMY_MODE = args.dummy
+DUMMY_MODE = bool(args.dummy)
 MODEL_LOC = args.model
 WORD_DIM = 300
 
@@ -175,4 +175,4 @@ def process_query():
 	return jsonify(result)
 
 if __name__ == '__main__':
-	app.run(threaded=args.threaded, host=args.host, port=args.port)
+	app.run(threaded=bool(args.threaded), host=args.host, port=args.port)

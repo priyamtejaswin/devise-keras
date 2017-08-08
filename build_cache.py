@@ -12,8 +12,8 @@ import argparse
 parser = argparse.ArgumentParser(description='server')
 parser.add_argument("-cache", type=str, help="location of the cache.h5 file", required=True)
 parser.add_argument("-model", type=str, help="location of the model.hdf5 snapshot", required=True)
-parser.add_argument("-use_train_images", type=bool, help="use training images for image retrieval", required=True)
-parser.add_argument("-use_valid_images", type=bool, help="use validation images for image retrieval", required=True)
+parser.add_argument("-use_train_images", type=int, help="use training images for image retrieval", required=True)
+parser.add_argument("-use_valid_images", type=int, help="use validation images for image retrieval", required=True)
 args = parser.parse_args()
 
 IMAGE_DIM = 4096
