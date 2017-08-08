@@ -21,6 +21,19 @@
             color: red
         }
 
+        h2 {
+            font-size: 30px;
+        }
+
+        .sample_queries {
+            font-style: italic;
+            font-size: 15px;
+        }
+
+        #byline {
+            font-size: 15px;
+        }
+
         
 
     </style>
@@ -31,6 +44,21 @@
     <!-- Search query -->
 
     <h2>Image Search Engine</h2>
+    <div>
+        
+        <p id="byline">Built in spare time by Priyam Tejaswin & Akshay Chawla | An extension of Google's <a href="https://research.google.com/pubs/pub41869.html">DeViSE: A Deep Visual-Semantic Embedding Model</a> research | <a href="https://github.com/priyamtejaswin/devise-keras">GitHub</a> </p>
+        
+        <p class="sample_queries">some sample queries you can try:</p>
+        <ul class="sample_queries">
+            <li>dog playing with a ball in the park</li>
+            <li>cutting vegetables</li>
+            <li>cooking vegetables</li>
+            <li>buying fruit</li>
+            <li>eating pizza at home</li>
+        </ul>
+    
+    </div>
+
     <div id="Search_Query">
     <input type="text" name="query" id="myquery">
     <button type="button" id="search_button">Search</button> 
