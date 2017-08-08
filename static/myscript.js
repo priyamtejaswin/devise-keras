@@ -33,7 +33,7 @@ function process_response(server_response){
         $("#errors").append("<p>Error. Server responded with rc : "+String(server_response.images)+"</p>")
     }
 
-    // once query is over, enable searching
+    // enable the search bar
     $('#search_button').prop("disabled", false);
     $("#myquery").prop("disabled", false);
 
@@ -68,5 +68,9 @@ $("#search_button").click(function () {
                 $.getJSON("/_process_query", { query: query}, process_response);
 
             }
+
+            // enable the search bar 
+            $('#search_button').prop("disabled", false);
+            $("#myquery").prop("disabled", false);
             
         })
