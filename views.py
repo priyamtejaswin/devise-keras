@@ -11,6 +11,7 @@ import ipdb
 import numpy as np
 from flask import Flask
 import tensorflow as tf
+import random
 import argparse
 
 
@@ -22,6 +23,8 @@ parser.add_argument("-threaded", type=int, help="Run flask server in multi-threa
 parser.add_argument("-host", type=str, help="flask server host in app.run()", required=True)
 parser.add_argument("-port", type=int, help="port on which the server will be run", required=True)
 parser.add_argument("-dummy", type=int, help="run server in dummy mode for testing js/html/css etc.", required=True)
+parser.add_argument("-captions_train", type=str, help="location of string captions of training images", required=True)
+parser.add_argument("-captions_valid", type=str, help="location of string captions of validation images", required=True)
 args = parser.parse_args()
 
 app = Flask(__name__)
@@ -55,6 +58,31 @@ if DUMMY_MODE==False:
 		fnames  = F["data/fnames"][:]
 	assert im_outs is not None, "Could not load im_outs from cache.h5"
 	assert fnames is not None, "Could not load fnames from cache.h5"
+
+	# load the string captions from .json file 
+
+	from pycocotools.coco import COCO
+	train_caps = COCO(args.captions_train)
+	valid_caps = COCO(args.captions_valid)
+
+
+def get_string_captions(results_url):
+	''' input -> results_url (https://mscoco.org/3456) 
+		output -> string_captions corresponding to each result in result_url 
+	'''
+	result_captions = []
+	for result in result_url:
+		
+		annIds = cocoObj.train_caps(imgIds=int(result.split("/")[-1])) # try and find image in train_caps
+		if len(annIds) == 0:
+			annIds = cocoObj.valid_caps(imgIds=int(result.split("/")[-1]))	# if you can't, find it in valid_caps
+		assert len(annIds) > 0, "Something wrong here, could not find any caption for given image"
+		
+		anns = coco_caps.loadAnns(annIds)
+		ann  = str(random.choice(anns)["caption"])
+		result_captions.append(ann)
+
+	return result_captions
 
 # Query string -> word index list 
 def query_string_to_word_indices(query_string):
