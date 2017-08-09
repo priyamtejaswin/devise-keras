@@ -44,7 +44,7 @@ def main():
 
     validation_features_loc = "processed_features/validation_features.h5"
     training_features_loc = "processed_features/features.h5"
-    import ipdb; ipdb.set_trace()
+    
     train_features_h5 = h5py.File(training_features_loc, "r")
     valid_features_h5 = h5py.File(validation_features_loc, "r")
 
