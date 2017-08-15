@@ -70,8 +70,8 @@ def get_string_captions(results_url):
 	''' input -> results_url (https://mscoco.org/3456) 
 		output -> string_captions corresponding to each result in result_url 
 	'''
-	result_captions = []
-	for result in result_url:
+	results_captions = []
+	for result in results_url:
 		
 		annIds = cocoObj.train_caps(imgIds=int(result.split("/")[-1])) # try and find image in train_caps
 		if len(annIds) == 0:
@@ -80,9 +80,9 @@ def get_string_captions(results_url):
 		
 		anns = coco_caps.loadAnns(annIds)
 		ann  = str(random.choice(anns)["caption"])
-		result_captions.append(ann)
+		results_captions.append(ann)
 
-	return result_captions
+	return results_captions
 
 # Query string -> word index list 
 def query_string_to_word_indices(query_string):
@@ -134,8 +134,18 @@ def run_model(query_string):
 	with mutex:
 		print "lock acquired, running model..."
 		if DUMMY_MODE:
-			time.sleep(10)
-			result = ["static/dog.jpg", "static/dog.jpg", "static/dog.jpg"]
+			
+			time.sleep(2)
+			
+			result = ["static/dog.jpg", "static/dog.jpg", "static/dog.jpg", "static/dog.jpg", "static/dog.jpg", "static/dog.jpg", "static/dog.jpg", "static/dog.jpg", "static/dog.jpg", "static/dog.jpg"]
+			
+			captions = ["the quick brown fox jumps over the lazy dog."]
+			import copy 
+			captions = copy.deepcopy(captions) + copy.deepcopy(captions) + copy.deepcopy(captions) + copy.deepcopy(captions) + copy.deepcopy(captions) # each image has 5 captions  
+			captions = [ copy.deepcopy(captions) for i in range(10)]                       # we have 10 images, each with 5 captions
+			
+			assert len(captions) == len(result), " #results != #captions"
+						
 		else:
 			assert MODEL is not None, "not in dummy mode, but model did not load!"
 
@@ -144,7 +154,7 @@ def run_model(query_string):
 				word_indices = query_string_to_word_indices(query_string)
 			except Exception, e:
 				print str(e)
-				return 2, str(e)
+				return 2, str(e), []
 
 			## multithread fix for keras/tf backend
 			global graph
@@ -178,26 +188,27 @@ def run_model(query_string):
 					imname = "http://mscoco.org/images/" + imname # http://mscoco.org/images/364251
 
 					result_url.append(imname)
-				result = result_url 
-
-			
+				result = result_url
+				# captions = get_string_captions(result)
+				captions = [] 
+							
 		print '..over'
 	
 	if result is None or len(result)<2:
-		return 1,"oops! something went wrong. model prediction returned None. Note: We should probably re-factor our code."
+		return 1,"Err. Model prediction returned None. If you're seeing this, something went horribly wrong at our end.", []
 	else:
-		return 0,result
+		return 0,result,captions
 
 @app.route("/_process_query")
 def process_query():
 
 	query_string = request.args.get('query', type=str)
-	rc, images = run_model(query_string) 
-
-		
+	rc, images, captions = run_model(query_string) 
+	
 	result = {
 		"rc":rc,
-		"images": images
+		"images": images,
+		"captions": captions
 	}
 
 	return jsonify(result)
