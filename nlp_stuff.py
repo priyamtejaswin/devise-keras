@@ -5,6 +5,8 @@ import string
 class QueryParser(object):
 	"""
 	Collection of utils for parsing the query.
+	Loading spaCy and the english language model for the
+	dependency parser takes a while. Load it ONCE globally.
 	"""
 	def __init__(self):
 		## Create spaCy model.
@@ -21,15 +23,13 @@ class QueryParser(object):
 		"""
 		assert isinstance(uni_string, unicode), "--The string is not unicode. Have you passed it through clean_string??--"
 
-# nlp = spacy.load("en")
+		doc = self.nlp(uni_string)
+		root = [w for w in doc if w.head is w][0]
+		noun_chunks = [tok.text for tok in doc.noun_chunks]
 
-# ## Get spacy doc.
-# text = "cooking pizza in a pan"
-# doc = nlp(unicode(text))
+		## Merge chunks.
+		for ph in doc.noun_chunks:
+			ph.merge(ph.root.tag_, ph.text, ph.root.ent_type_)
 
-# ## Get the root.
-# root = [w for w in doc if w.head is w][0]
-
-# ## Collapse the phrases into single entities.
-# for _nc in doc.noun_chunks:
-# 	print _nc, _nc.root, _nc.root.tag
+		## Find all parent nodes.
+		parents = [tok for tok in doc if len(list(tok.children))!=0]
