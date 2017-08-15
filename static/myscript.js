@@ -16,12 +16,25 @@ function process_response(server_response){
             var img_elem_to_append = 
             `<div class='gallery'> 
                 <img src='image_location_placeholder' alt='image' width=245 height=150>
+                <div id='true_captions_xx'>
+                   
+                </div>
             </div>`;
 
             // specify image location in generic html
             var img_elem_to_append = img_elem_to_append.replace("image_location_placeholder", server_response.images[i]);
+            var img_elem_to_append = img_elem_to_append.replace("xx", String(i)); // replace true_caption_xx with true_caption_{integer value}
+            
             //console.log(server_response.images[i])
             $("#gallery_placeholder").append(img_elem_to_append);
+
+            // find the correct true_captions_xx 
+            true_cap_div = $("#true_captions_"+String(i))
+
+            // append returned true captions to #true_captions_{Integer value} div
+            for (var k = 0; k < server_response.captions[i].length; k++) {
+                true_cap_div.append("<p>"+server_response.captions[i][k]+"</p>"); // append the caption in the correct image ; refer using true_caption_{integer value}
+            }
         }
         
     }
