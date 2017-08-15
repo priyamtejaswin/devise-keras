@@ -34,10 +34,32 @@ class QueryParser(object):
 		## Find all parent nodes.
 		parents = [tok for tok in doc if len(list(tok.children))!=0]
 
-		# ipdb.set_trace()
+		## For every parent, extract the dependency paths.
+		node_paths = [(n, self.getPath(n, master=[], how="right")) for n in parents]
 
+		ipdb.set_trace()
+
+	@staticmethod
+	def getPath(node, master=[], how="right"):
+		"""
+		Recursive function to extract the dependency paths.
+		"""
+		assert how in ("right", "left"), "--How to add node is not clear.--"
+		if how=="right":
+			master.append(node)
+		else:
+			master = [node] + master
 		
+		if len(list(node.children))==0:
+			return master
+		
+		lefts = list(node.lefts)
+		rights = list(node.rights)
 
+		## For every node in a parent's children, the next path has to be appened to a "new" master.
+		## Hence the list(master) - this is to remove dependency from the existing master list.
+		## i.e. for every new child, the existing master is "replicated" and used for independent dependency paths.
+		return [QueryParser.getPath(child, list(master), "right" if child in rights else "left") for child in node.children]
 
 if __name__ == '__main__':
 	QPObj = QueryParser()
