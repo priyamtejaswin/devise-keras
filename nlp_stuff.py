@@ -37,7 +37,28 @@ class QueryParser(object):
 		## For every parent, extract the dependency paths.
 		node_paths = [(n, self.getPath(n, master=[], how="right")) for n in parents]
 
-		ipdb.set_trace()
+		## Now clean the paths - unwrap lists and get the text for tokens.
+		node_paths = [( n, [QueryParser.unwrapList(path) for path in lol] ) for n,lol in node_paths]
+		node_paths = [( n.text, [map(lambda x:x.text, l) for l in lol] ) for n,lol in node_paths]
+
+		return {
+		"root": root,
+		"doc": doc,
+		"noun_chunks": noun_chunks,
+		"node_paths": node_paths
+		}
+
+		# print "--DEBUG--"
+		# ipdb.set_trace()
+
+	@staticmethod
+	def unwrapList(some_list):
+		"""
+		Recursive function to unwrap nested lists.
+		"""
+		if not isinstance(some_list[0], list):
+			return some_list
+		return QueryParser.unwrapList(some_list[0])
 
 	@staticmethod
 	def getPath(node, master=[], how="right"):
@@ -66,4 +87,7 @@ if __name__ == '__main__':
 
 	qString = "cooking pizza in a pan"
 	cleanString = QPObj.clean_string(qString)
-	QPObj.parse_the_string(cleanString)
+	parse_dict = QPObj.parse_the_string(cleanString)
+
+	print parse_dict
+	ipdb.set_trace()
