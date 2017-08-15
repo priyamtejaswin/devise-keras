@@ -33,3 +33,15 @@ class QueryParser(object):
 
 		## Find all parent nodes.
 		parents = [tok for tok in doc if len(list(tok.children))!=0]
+
+		# ipdb.set_trace()
+
+		
+
+
+if __name__ == '__main__':
+	QPObj = QueryParser()
+
+	qString = "cooking pizza in a pan"
+	cleanString = QPObj.clean_string(qString)
+	QPObj.parse_the_string(cleanString)
