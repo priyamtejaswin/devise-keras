@@ -73,14 +73,14 @@ def get_string_captions(results_url):
 	results_captions = []
 	for result in results_url:
 		
-		annIds = cocoObj.train_caps(imgIds=int(result.split("/")[-1])) # try and find image in train_caps
+		annIds = train_caps.getAnnIds(int(result.split("/")[-1])) # try and find image in train_caps
 		if len(annIds) == 0:
-			annIds = cocoObj.valid_caps(imgIds=int(result.split("/")[-1]))	# if you can't, find it in valid_caps
+			annIds = valid_caps.getAnnIds(int(result.split("/")[-1]))	# if you can't, find it in valid_caps
 		assert len(annIds) > 0, "Something wrong here, could not find any caption for given image"
 		
-		anns = coco_caps.loadAnns(annIds)
-		ann  = str(random.choice(anns)["caption"])
-		results_captions.append(ann)
+		anns = valid_caps.loadAnns(annIds)
+		anns = [ c["caption"] for c in anns ]
+		results_captions.append(anns)
 
 	return results_captions
 
@@ -189,8 +189,7 @@ def run_model(query_string):
 
 					result_url.append(imname)
 				result = result_url
-				# captions = get_string_captions(result)
-				captions = [] 
+				captions = get_string_captions(result)	
 							
 		print '..over'
 	
