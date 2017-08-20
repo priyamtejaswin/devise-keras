@@ -127,8 +127,11 @@ def get_full_model(vgg_wts_path, rnn_wts_path):
 
 
 def TEST():
-
-	full_model = get_full_model(vgg_wts_path="./vgg16_weights_th_dim_ordering_th_kernels.h5", rnn_wts_path="/Users/tejaswin.p/Downloads/epoch_9.hdf5")
+	vgg_path = sys.argv[1] 
+	rnn_path = sys.argv[2]
+	full_model = get_full_model(vgg_wts_path=vgg_path, rnn_wts_path=rnn_path)
+	rnn_model  = load_model(rnn_path)
+	import ipdb; ipdb.set_trace()
 	K.clear_session()
 
 if __name__ == '__main__':
