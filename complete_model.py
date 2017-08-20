@@ -130,12 +130,33 @@ def TEST():
 	vgg_path = sys.argv[1] 
 	rnn_path = sys.argv[2]
 	full_model = get_full_model(vgg_wts_path=vgg_path, rnn_wts_path=rnn_path)
-	rnn_model  = load_model(rnn_path)
+	rnn_model  = load_model(rnn_path, custom_objects={"hinge_rank_loss":hinge_rank_loss})
 	import ipdb; ipdb.set_trace()
+
+	# check if wts were copied sucessfully 
+	full_layer_names = [layer.name for layer in full_model.layers]
+	rnn_layer_names  = [layer.name for layer in rnn_model.layers]
+
+	common_layers = set(full_layer_names).intersection(set(rnn_layer_names))
+	print "\nCommon layers: ", common_layers
+
+	for layer in common_layers:
+		print "layer: ", layer
+
+		assert len(full_model.get_layer(layer).get_weights()) == len(rnn_model.get_layer(layer).get_weights()), "different number of weights" 
+
+		if len(full_model.get_layer(layer).get_weights()) > 0:
+			rnn_params = rnn_model.get_layer(layer).get_weights()
+			full_params = full_model.get_layer(layer).get_weights()
+			for rp, fp in zip(rnn_params, full_params):
+				assert np.allclose(rp, fp), "Values were not equal!"
+				
+
+
 	K.clear_session()
 
 if __name__ == '__main__':
-	# TEST()
+	TEST()
 
 	y_true = K.variable(np.zeros(1))
 	y_pred = K.variable(np.random.rand(1, 600))
