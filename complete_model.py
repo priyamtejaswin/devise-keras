@@ -5,6 +5,7 @@ from rnn_model import hinge_rank_loss
 import keras 
 from keras.models import Model, load_model 
 from keras.layers import Input, Dense, BatchNormalization, Activation, Dropout, Embedding, LSTM, concatenate
+import keras.backend as K
 
 # globals 
 MAX_SEQUENCE_LENGTH = 20
@@ -53,7 +54,10 @@ def get_full_model(vgg_wts_path, rnn_wts_path):
 		
 	full_model       = build_model(vgg.output, caption_features, embedding_matrix=embedding_matrix) # caption+4096Feats -> loss function 
 	
-	completeModel    = Model(inputs=[vgg.input, caption_features], outputs=full_model.output)
+	# import ipdb
+	# ipdb.set_trace()
+
+	completeModel    = Model(inputs=[vgg.input, caption_features], outputs=full_model)
 	completeModel.load_weights(rnn_wts_path, by_name=True) # load up the rnn part weights
 
 	return completeModel
@@ -61,7 +65,8 @@ def get_full_model(vgg_wts_path, rnn_wts_path):
 
 def TEST():
 
-	full_model = get_full_model(vgg_wts_path="./vgg16_weights_th_dim_ordering_th_kernels.h5", rnn_wts_path="/home/throwaway1akshaychawla/cache_data/epoch_13.hdf5")
+	full_model = get_full_model(vgg_wts_path="./vgg16_weights_th_dim_ordering_th_kernels.h5", rnn_wts_path="/Users/tejaswin.p/Downloads/epoch_9.hdf5")
+	K.clear_session()
 
 if __name__ == '__main__':
 	TEST()
