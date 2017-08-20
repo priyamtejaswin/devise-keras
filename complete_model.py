@@ -7,6 +7,7 @@ from keras.models import Model, load_model
 from keras.layers import Input, Dense, BatchNormalization, Activation, Dropout, Embedding, LSTM, concatenate
 import keras.backend as K
 from keras.layers import Lambda
+import sys, os 
 
 # globals 
 MAX_SEQUENCE_LENGTH = 20
@@ -113,7 +114,7 @@ def get_full_model(vgg_wts_path, rnn_wts_path):
 	vgg              = define_model(vgg_wts_path) # get image->4096 model
 	
 	caption_features = Input(shape=(MAX_SEQUENCE_LENGTH,), name="caption_feature_input") # the caption input 
-	embedding_matrix = pickle.load(open("/Users/tejaswin.p/projects/devise-keras/KERAS_embedding_layer.TRAIN.pkl"))
+	embedding_matrix = pickle.load(open("./KERAS_embedding_layer.TRAIN.pkl"))
 		
 	full_model       = build_model(vgg.output, caption_features, embedding_matrix=embedding_matrix) # caption+4096Feats -> loss function 
 	
@@ -150,6 +151,7 @@ def TEST():
 			full_params = full_model.get_layer(layer).get_weights()
 			for rp, fp in zip(rnn_params, full_params):
 				assert np.allclose(rp, fp), "Values were not equal!"
+			print " .. OK"
 				
 
 
