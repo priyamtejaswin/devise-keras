@@ -1,9 +1,10 @@
-import numpy as np 
+import numpy as np
+import pickle 
 from extract_features_and_dump import define_model
 from rnn_model import hinge_rank_loss
 import keras 
 from keras.models import Model, load_model 
-from keras.layers import Input
+from keras.layers import Input, Dense, BatchNormalization, Activation, Dropout, Embedding, LSTM, concatenate
 
 # globals 
 MAX_SEQUENCE_LENGTH = 20 
