@@ -13,6 +13,9 @@ from flask import Flask
 import tensorflow as tf
 import random
 import argparse
+import urllib
+import cSringIO
+from PIL import Image
 
 
 parser = argparse.ArgumentParser(description='server')
@@ -164,7 +167,7 @@ def run_model(query_string):
 				output = output / np.linalg.norm(output, axis=1, keepdims=True)
 			
 				# compare with im_outs
-				TOP_K = 50
+				TOP_K = 5
 				diff = im_outs - output 
 				diff = np.linalg.norm(diff, axis=1)
 				top_k_indices = np.argsort(diff)[:TOP_K].tolist()
@@ -186,6 +189,10 @@ def run_model(query_string):
 					imname = imname[i:] # 364251.jpg
 					imname = imname.rstrip(".jpg") # 364251
 					imname = "http://mscoco.org/images/" + imname # http://mscoco.org/images/364251
+
+					# Retrieve the image for LIME
+					im_file = cStringIO.StringIO(urllib.urlopen(imname).read())
+					# Run LIME in a separate thread??
 
 					result_url.append(imname)
 				result = result_url
