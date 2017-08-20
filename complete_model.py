@@ -5,6 +5,8 @@ import keras
 from keras.models import Model, load_model 
 from keras.layers import Input
 
+# globals 
+MAX_SEQUENCE_LENGTH = 20 
 
 def build_model(image_features, caption_features, embedding_matrix):
 	
@@ -46,10 +48,18 @@ def get_full_model(vgg_wts_path, rnn_wts_path):
 	
 	caption_features = Input(shape=(MAX_SEQUENCE_LENGTH,), name="caption_feature_input") # the caption input 
 	embedding_matrix = pickle.load(open("KERAS_embedding_layer.TRAIN.pkl"))
-	
+	import ipdb; ipdb.set_trace()  # breakpoint f47cbdcd //
+		
 	full_model       = build_model(vgg.output, caption_features, embedding_matrix=embedding_matrix) # caption+4096Feats -> loss function 
 	
 	completeModel    = Model(inputs=[vgg.input, caption_features], outputs=full_model.output)
 
 	return full_model 
 
+
+def TEST():
+
+	full_model = get_full_model(vgg_wts_path="./vgg16_weights_th_dim_ordering_th_kernels.h5", rnn_wts_path="/home/throwaway1akshaychawla/cache_data/epoch_13.hdf5")
+
+if __name__ == '__main__':
+	TEST()
