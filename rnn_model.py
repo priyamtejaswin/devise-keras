@@ -20,8 +20,10 @@ from validation_script import ValidCallBack
 import cv2
 import pickle
 import numpy as np
+from keras.models import load_model
 
-PATH_h5 = "processed_features/features.h5"
+PATH_h5 = "/home/throwaway1akshaychawla/devise-keras/processed_features/features.h5"
+PATH_keras_embedding_layer = "/home/throwaway1akshaychawla/devise-keras/KERAS_embedding_layer.TRAIN.pkl"
 MARGIN = 0.2
 INCORRECT_BATCH = 32
 BATCH = INCORRECT_BATCH + 1
@@ -49,7 +51,7 @@ class EpochCheckpoint(keras.callbacks.Callback):
 
 def get_num_train_images(from_pkl=False):
 	'''
-        if path_to_pkl is NOT False: get it from the pickle. else
+	if path_to_pkl is NOT False: get it from the pickle. else
 	get the number of training images in processed_features/features.h5
 	'''
         if from_pkl is not False:
@@ -153,7 +155,7 @@ def build_model(image_features, caption_features):
 	image_output = BatchNormalization()(image_dense2)
 
 	# rnn model
-	embedding_matrix = pickle.load(open("KERAS_embedding_layer.TRAIN.pkl"))
+	embedding_matrix = pickle.load(open(PATH_keras_embedding_layer))
 
 	cap_embed = Embedding(
 		input_dim=embedding_matrix.shape[0],
@@ -178,13 +180,9 @@ def build_model(image_features, caption_features):
 def main():
 	RUN_TIME = sys.argv[1]
 
-
 	if RUN_TIME == "TRAIN":
 		image_features = Input(shape=(4096,), name="image_feature_input")
 		caption_features = Input(shape=(MAX_SEQUENCE_LENGTH,), name="caption_feature_input")
-
-		model = build_model(image_features, caption_features)
-		print model.summary()
 
 		# number of training images 
 		_num_train = get_num_train_images(from_pkl=False)
@@ -195,55 +193,82 @@ def main():
 		tensorboard = TensorBoard(log_dir="logs/{}".format(time()))
 		epoch_cb    = EpochCheckpoint(folder="./snapshots/")
 		valid_cb    = ValidCallBack(
-				PATH_image_to_captions="DICT_image_TO_tokens.VAL.pkl", 
-				PATH_image_features="processed_features/validation_features.h5", 
-				PATH_word_index="DICT_word_index.TRAIN.pkl")
+				PATH_image_to_tokens="/home/tejaswin.p/devise-keras/COPY_OF_PICKLES/DICT_image_TO_tokens.VAL.pkl", 
+				PATH_image_features="/home/throwaway1akshaychawla/devise-keras/processed_features/validation_features.h5", 
+				PATH_word_index="/home/tejaswin.p/devise-keras/COPY_OF_PICKLES/DICT_word_index.VAL.pkl"
+		)
 
 		# fit generator
 		steps_per_epoch = math.ceil(_num_train*1) ## Changed the factor to 1. This way it will see all images but not all captions. 
 		print "Steps per epoch i.e number of iterations: ",steps_per_epoch
 		
-		train_datagen = data_generator_coco(path_to_h5py="processed_features/features.h5",path_to_caption_data="ARRAY_caption_data.TRAIN.pkl",path_to_image_tokens="DICT_image_TO_tokens.TRAIN.pkl",incorrect_batch=INCORRECT_BATCH)
+		train_datagen = data_generator_coco(
+			path_to_h5py=PATH_h5,
+			path_to_image_tokens="/home/tejaswin.p/devise-keras/COPY_OF_PICKLES/DICT_image_TO_tokens.TRAIN.pkl",
+			incorrect_batch=INCORRECT_BATCH
+		)
+
+		RESUME = raw_input("\nResume training from snapshots?<y/n>")
+		if RESUME=='y':
+			print "\t--Loading model from snapshots--"
+			model = load_model("/home/tejaswin.p/devise-keras/snapshots/epoch_0.hdf5", 
+					custom_objects={'hinge_rank_loss': hinge_rank_loss})
+			initial_epoch = 1
+			print model.summary()
+
+		elif RESUME=='n':
+			print "\t--Creating model from scratch--"
+			model = build_model(image_features, caption_features)
+			initial_epoch = 0
+			print model.summary()
+
+		else:
+			sys.exit("--Did not enter valid response for RESUME. EXITING--")
+
 		history = model.fit_generator(
 				train_datagen,
 				steps_per_epoch=steps_per_epoch,
-				epochs=100,
-				callbacks=[tensorboard, epoch_cb, valid_cb]
+				epochs=15,
+				callbacks=[tensorboard, epoch_cb, valid_cb],
+				initial_epoch=initial_epoch,
+				# use_multiprocessing=True, ## Removing due to thread-safety issues.
+				# workers=2 ## ## Removing due to thread-safety issues
 			)
+
 		print history.history.keys()
 
 
-	elif RUN_TIME == "TEST":
-		from keras.models import load_model 
-		model = load_model("snapshots/epoch_69.hdf5", custom_objects={"hinge_rank_loss":hinge_rank_loss})
+	elif RUN_TIME == "TEST": 
+		model = load_model("/home/throwaway1akshaychawla/devise-keras/snapshots/epoch_10.hdf5", 
+				custom_objects={'hinge_rank_loss': hinge_rank_loss})
 
-	hf = h5py.File("processed_features/features.h5","r")
+	# hf = h5py.File(PATH_h5,"r")
 
-	im_samples = hf["data/features"][:, :]
-	word_index = pickle.load(open("DICT_word_index.pkl"))
+	# im_samples = hf["data/features"][:, :]
+	# word_index = pickle.load(open("DICT_word_index.pkl"))
 
-	string = "man riding a bike"
-	cap_sample = [word_index[x] for x in string.strip().split()]
-	cap_sample = np.array([ cap_sample + [0 for i in range(MAX_SEQUENCE_LENGTH-len(cap_sample))] ])
-	cap_sample = np.tile(cap_sample, (im_samples.shape[0], 1))
+	# string = "man riding a bike"
+	# cap_sample = [word_index[x] for x in string.strip().split()]
+	# cap_sample = np.array([ cap_sample + [0 for i in range(MAX_SEQUENCE_LENGTH-len(cap_sample))] ])
+	# cap_sample = np.tile(cap_sample, (im_samples.shape[0], 1))
 
-	## TESTING
-	test_out = model.predict([im_samples, cap_sample], batch_size=5) ## Cannot do this because Keras expects a single output to be returned for a single input; while my ugly hack concats and returns two!
-	im_outs = test_out[:, :WORD_DIM]
-	cap_out = test_out[:, WORD_DIM:]
+	# ## TESTING
+	# test_out = model.predict([im_samples, cap_sample], batch_size=5) ## Cannot do this because Keras expects a single output to be returned for a single input; while my ugly hack concats and returns two!
+	# im_outs = test_out[:, :WORD_DIM]
+	# cap_out = test_out[:, WORD_DIM:]
 
-	print im_outs.shape
-	print cap_out.shape
+	# print im_outs.shape
+	# print cap_out.shape
 
-	im_outs = im_outs / np.linalg.norm(im_outs, axis=1, keepdims=True)
-	cap_out = cap_out / np.linalg.norm(cap_out, axis=1, keepdims=True)
+	# im_outs = im_outs / np.linalg.norm(im_outs, axis=1, keepdims=True)
+	# cap_out = cap_out / np.linalg.norm(cap_out, axis=1, keepdims=True)
 
-	diff = im_outs - cap_out
-	diff = np.linalg.norm(diff, axis=1)
-	print np.argsort(diff)[:25]
-	print np.sort(diff)[:25]
+	# diff = im_outs - cap_out
+	# diff = np.linalg.norm(diff, axis=1)
+	# print np.argsort(diff)[:25]
+	# print np.sort(diff)[:25]
 
-	ipdb.set_trace()
+	# ipdb.set_trace()
 
 	K.clear_session()
 
