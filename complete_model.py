@@ -7,7 +7,8 @@ from keras.models import Model, load_model
 from keras.layers import Input, Dense, BatchNormalization, Activation, Dropout, Embedding, LSTM, concatenate
 
 # globals 
-MAX_SEQUENCE_LENGTH = 20 
+MAX_SEQUENCE_LENGTH = 20
+WORD_DIM=300 
 
 def build_model(image_features, caption_features, embedding_matrix):
 	
