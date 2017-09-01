@@ -72,8 +72,16 @@ class FullModel:
 		## Change from (10, 224, 224, 3) to (10, 3, 224, 224)
 
 		# x_rolled = np.moveaxis(np.moveaxis(x, 3, 1), 2, 3)
-		
-		x_rolled = x
+
+		assert len(x.shape)==4, "--WHOA, the shape is not 4?????--"
+
+		if x.shape[-1]==3:
+			print "CHANGING SHAPE"
+			x_rolled = np.swapaxes(np.swapaxes(x, 3, 2), 2, 1)
+		else:
+			print "NOT CHANGING SHAPE"
+			x_rolled = x
+
 		print x_rolled.shape
 
 		# pass through vgg 
