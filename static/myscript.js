@@ -16,25 +16,29 @@ function process_response(server_response){
             var img_elem_to_append = 
             `<div class='gallery'> 
                 <img src='image_location_placeholder' alt='image' width=245 height=150>
+                <img id="overlay" src='image_location_placeholder_2' alt='image' width=245 height=150>
                 <div id='true_captions_xx'>
                    
                 </div>
             </div>`;
 
-            // specify image location in generic html
-            var img_elem_to_append = img_elem_to_append.replace("image_location_placeholder", server_response.images[i]);
-            var img_elem_to_append = img_elem_to_append.replace("xx", String(i)); // replace true_caption_xx with true_caption_{integer value}
-            
-            //console.log(server_response.images[i])
-            $("#gallery_placeholder").append(img_elem_to_append);
+            // get image id 
+            var image_id = server_response.images[i]; //mscoco.org/32561
+            image_id = image_id.split("/")[image_id.split("/").length-1] // get the number 32561
 
-            // find the correct true_captions_xx 
-            true_cap_div = $("#true_captions_"+String(i))
+            // create div element + append image + append caption container div
+            var $result_div = $("<div>", {"class": "gallery", "id": String(image_id)});
+            var $result_div_img = $('<img src=' + server_response.images[i] + " alt='image' width=245 height=150>").appendTo($result_div)
+            var $result_div_captions = $('<div id="true_captions"></div>').appendTo($result_div)
 
-            // append returned true captions to #true_captions_{Integer value} div
+            // add captions to $result_div_captions 
             for (var k = 0; k < server_response.captions[i].length; k++) {
-                true_cap_div.append("<p>"+server_response.captions[i][k]+"</p>"); // append the caption in the correct image ; refer using true_caption_{integer value}
+                $result_div_captions.append("<p>"+server_response.captions[i][k]+"</p>"); // append the caption in the correct image ; refer using true_caption_{integer value}
             }
+
+            // put it in the DOM
+            $("#gallery_placeholder").append($result_div);
+
         }
         
     }
