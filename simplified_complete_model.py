@@ -12,6 +12,7 @@ from keras.applications import VGG16
 from keras.preprocessing import image
 from keras.applications.imagenet_utils import preprocess_input
 from extract_features_and_dump import define_model as TheVGGModel
+from lime import lime_image
 
 class FullModel:
 	
@@ -100,14 +101,20 @@ class FullModel:
 
 	@staticmethod
 	def preprocess_image(img_path):
+		"""
+		Pre-process image by ImageNet standards.
+		Returns by expanding dims for "batch" dimension
+		and type casting to np.float64: just scikit-image things...
+		"""
 		img_input = image.load_img(img_path, target_size=(224, 224))
 		x = image.img_to_array(img_input)
 		x = np.expand_dims(x, axis=0)
 		x = preprocess_input(x)
+		x = x.astype(np.float64)
 		return x	
 
 	
-def TEST():
+def TEST_model():
 	cap_input = np.array([[8, 214, 23, 1, 626, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
     
 	model = FullModel(cap_input, "/Users/tejaswin.p/Downloads/epoch_9.hdf5")
@@ -116,7 +123,6 @@ def TEST():
 	# ipdb.set_trace()
 
 	x = model.preprocess_image("/Users/tejaswin.p/Downloads/eating_pizza_in_park.jpg")
-	x = x.astype(np.float64)
 	print x.shape
 
 	# x = np.moveaxis(np.moveaxis(x, 1, 0), 2, 1)
@@ -130,6 +136,29 @@ def TEST():
 
 	K.clear_session()
 
+def TEST_lime():
+	cap_input = np.array([[8, 214, 23, 1, 626, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
+	model = FullModel(cap_input, "/Users/tejaswin.p/Downloads/epoch_9.hdf5")
+	
+	x = model.preprocess_image("/Users/tejaswin.p/Downloads/eating_pizza_in_park.jpg")
+	print x.shape
+
+	print "\nMoving to 'channels last'."
+	x = np.swapaxes(np.swapaxes(x, 1, 2), 2, 3)
+	print x.shape
+
+	print "\nSelecting the image...eliminating the 'batch' dimension."
+	x = x[0] ## scikit-image works with batch last and only for single images.
+	print x.shape
+
+	import ipdb
+	ipdb.set_trace()
+
+	explainer = lime_image.LimeImageExplainer() ## LIME explainer.
+	explanation = explainer.explain_instance(x, model.predict , top_labels=1, hide_color=0, num_samples=100)
+
+	K.clear_session()
+
 if __name__ == '__main__':
-	TEST()
-		
+	TEST_model()
+	TEST_lime()
