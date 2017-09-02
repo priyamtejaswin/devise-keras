@@ -14,20 +14,20 @@ import tensorflow as tf
 import random
 import argparse
 import urllib
-import cSringIO
+import cStringIO
 from PIL import Image
 
 
 parser = argparse.ArgumentParser(description='server')
-parser.add_argument('-word_index', type=str, help="location of the DICT_word_index.VAL/TRAIN.pkl", required=True)
-parser.add_argument("-cache", type=str, help="location of the cache.h5 file", required=True)
-parser.add_argument("-model", type=str, help="location of the model.hdf5 snapshot", required=True)
-parser.add_argument("-threaded", type=int, help="Run flask server in multi-threaded/single-threaded mode", required=True)
-parser.add_argument("-host", type=str, help="flask server host in app.run()", required=True)
-parser.add_argument("-port", type=int, help="port on which the server will be run", required=True)
-parser.add_argument("-dummy", type=int, help="run server in dummy mode for testing js/html/css etc.", required=True)
-parser.add_argument("-captions_train", type=str, help="location of string captions of training images", required=True)
-parser.add_argument("-captions_valid", type=str, help="location of string captions of validation images", required=True)
+parser.add_argument("--word_index", type=str, help="location of the DICT_word_index.VAL/TRAIN.pkl", required=True)
+parser.add_argument("--cache", type=str, help="location of the cache.h5 file", required=True)
+parser.add_argument("--model", type=str, help="location of the model.hdf5 snapshot", required=True)
+parser.add_argument("--threaded", type=int, help="Run flask server in multi--threaded/single--threaded mode", required=True)
+parser.add_argument("--host", type=str, help="flask server host in app.run()", required=True)
+parser.add_argument("--port", type=int, help="port on which the server will be run", required=True)
+parser.add_argument("--dummy", type=int, help="run server in dummy mode for testing js/html/css etc.", required=True)
+parser.add_argument("--captions_train", type=str, help="location of string captions of training images", required=True)
+parser.add_argument("--captions_valid", type=str, help="location of string captions of validation images", required=True)
 args = parser.parse_args()
 
 app = Flask(__name__)
