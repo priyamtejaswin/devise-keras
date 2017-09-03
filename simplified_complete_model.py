@@ -84,7 +84,7 @@ class FullModel:
 
 		## pass through vgg 
 		top_op = self.top_model.predict(x_rolled)
-		import ipdb;ipdb.set_trace()
+		# import ipdb;ipdb.set_trace()
 
 		## pass through rnn model (get loss) 
 		rnn_output = self.rnn_model.predict( 
@@ -152,8 +152,7 @@ def TEST_lime():
 	x = x[0] ## scikit-image works with batch last and only for single images.
 	print x.shape
 
-	import ipdb
-	ipdb.set_trace()
+	# import ipdb;ipdb.set_trace()
 
 	explainer = lime_image.LimeImageExplainer() ## LIME explainer.
 	explanation = explainer.explain_instance(x, model.predict , top_labels=1, hide_color=0, num_samples=100)
@@ -161,5 +160,5 @@ def TEST_lime():
 	K.clear_session()
 
 if __name__ == '__main__':
-	TEST_model()
-	# TEST_lime()
+	# TEST_model()
+	TEST_lime()
