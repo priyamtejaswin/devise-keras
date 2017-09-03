@@ -21,6 +21,11 @@ import matplotlib.pyplot as plt
 import time
 
 class FullModel:
+	"""
+	Add a method which accepts an (image_url, caption) pair and 
+	returns the mask for top 10 SLIC super-pixels.
+	Appropriately, update the __init__ method.
+	"""
 	
 	def __init__(self, caption, rnn_model_loc):
 		# some globals 
