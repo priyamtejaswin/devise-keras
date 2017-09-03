@@ -14,20 +14,21 @@ import tensorflow as tf
 import random
 import argparse
 import urllib
-import cSringIO
+import cStringIO
 from PIL import Image
+import cv2
 
 
 parser = argparse.ArgumentParser(description='server')
-parser.add_argument('-word_index', type=str, help="location of the DICT_word_index.VAL/TRAIN.pkl", required=True)
-parser.add_argument("-cache", type=str, help="location of the cache.h5 file", required=True)
-parser.add_argument("-model", type=str, help="location of the model.hdf5 snapshot", required=True)
-parser.add_argument("-threaded", type=int, help="Run flask server in multi-threaded/single-threaded mode", required=True)
-parser.add_argument("-host", type=str, help="flask server host in app.run()", required=True)
-parser.add_argument("-port", type=int, help="port on which the server will be run", required=True)
-parser.add_argument("-dummy", type=int, help="run server in dummy mode for testing js/html/css etc.", required=True)
-parser.add_argument("-captions_train", type=str, help="location of string captions of training images", required=True)
-parser.add_argument("-captions_valid", type=str, help="location of string captions of validation images", required=True)
+parser.add_argument("--word_index", type=str, help="location of the DICT_word_index.VAL/TRAIN.pkl", required=True)
+parser.add_argument("--cache", type=str, help="location of the cache.h5 file", required=True)
+parser.add_argument("--model", type=str, help="location of the model.hdf5 snapshot", required=True)
+parser.add_argument("--threaded", type=int, help="Run flask server in multi--threaded/single--threaded mode", required=True)
+parser.add_argument("--host", type=str, help="flask server host in app.run()", required=True)
+parser.add_argument("--port", type=int, help="port on which the server will be run", required=True)
+parser.add_argument("--dummy", type=int, help="run server in dummy mode for testing js/html/css etc.", required=True)
+parser.add_argument("--captions_train", type=str, help="location of string captions of training images", required=True)
+parser.add_argument("--captions_valid", type=str, help="location of string captions of validation images", required=True)
 args = parser.parse_args()
 
 app = Flask(__name__)
@@ -140,12 +141,12 @@ def run_model(query_string):
 			
 			time.sleep(2)
 			
-			result = ["static/dog.jpg", "static/dog.jpg", "static/dog.jpg", "static/dog.jpg", "static/dog.jpg", "static/dog.jpg", "static/dog.jpg", "static/dog.jpg", "static/dog.jpg", "static/dog.jpg"]
+			result = ["static/12345.jpg", "static/32561.jpg", "static/45321.jpg"] 
 			
 			captions = ["the quick brown fox jumps over the lazy dog."]
 			import copy 
 			captions = copy.deepcopy(captions) + copy.deepcopy(captions) + copy.deepcopy(captions) + copy.deepcopy(captions) + copy.deepcopy(captions) # each image has 5 captions  
-			captions = [ copy.deepcopy(captions) for i in range(10)]                       # we have 10 images, each with 5 captions
+			captions = [ copy.deepcopy(captions) for i in range(3)]                       # we have 3 images, each with 5 captions
 			
 			assert len(captions) == len(result), " #results != #captions"
 						
@@ -218,6 +219,40 @@ def process_query():
 	}
 
 	return jsonify(result)
+
+@app.route("/_get_phrases")
+def get_phrases():
+
+	query_string = request.args.get('query', type=str)
+
+	# DUMMY RESULT
+	result = {
+		"rc" : 0,
+		"phrases": ["phrase_one", "phrase_two", "phrase_three"]
+	}
+
+	return jsonify(result)
+
+@app.route("/_get_LIME")
+def run_lime():
+
+
+	import json
+	phrases = json.loads(request.args.get("phrases"))
+	image_ids = json.loads(request.args.get("image_ids"))
+
+	phrases = [str(k) for k in phrases]
+	image_ids = [str(k) for k in image_ids]
+
+	if not os.path.isdir("./overlays_cache/"):
+		os.mkdir("./overlays_cache")
+
+	results = {}
+	for img_id in image_ids:
+		phrase_imgs = ["static/overlays_cache/im1.jpg", "static/overlays_cache/im2.jpg", "static/overlays_cache/im3.jpg"]
+		results[img_id] = phrase_imgs
+
+	return jsonify(results)
 
 if __name__ == '__main__':
 	app.run(threaded=bool(args.threaded), host=args.host, port=args.port)
