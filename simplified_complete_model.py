@@ -36,35 +36,31 @@ class FullModel:
 		self.rnn_model = load_model(rnn_model_loc, custom_objects={"hinge_rank_loss":hinge_rank_loss})
 		self.rnn_model.compile(optimizer="rmsprop", loss=self.custom_distance_function)
 
-	def custom_distance_function(self, y_true, y_pred):
-
+	def custom_distance_function(self, y_true, y_pred, DEBUG=False):
 		select_images = lambda x: x[:, :self.WORD_DIM]
 		select_words = lambda x: x[:, self.WORD_DIM:]
-
-		slice_first = lambda x: x[0:1 , :]
 
 		# separate the images from the captions==words
 		image_vectors = Lambda(select_images, output_shape=(self.BATCH, self.WORD_DIM))(y_pred)
 		word_vectors = Lambda(select_words, output_shape=(self.BATCH, self.WORD_DIM))(y_pred)
 
-		# separate correct/wrong images
-		correct_image = Lambda(slice_first, output_shape=(1, self.WORD_DIM))(image_vectors)
-
-		# separate correct/wrong words
-		correct_word = Lambda(slice_first, output_shape=(1, self.WORD_DIM))(word_vectors)
-
 		# l2 norm
 		l2 = lambda x: K.sqrt(K.sum(K.square(x), axis=1, keepdims=True))
 		l2norm = lambda x: x/l2(x)
 		
-		correct_image = l2norm(correct_image)
-		correct_word = l2norm(correct_word)
+		image_vectors = l2norm(image_vectors)
+		word_vectors = l2norm(word_vectors)
 
 		# correct_image VS incorrect_words | Note the singular/plurals
-		cost_images = K.sum(correct_image * correct_word, axis=1)
+		print "\n\n\t\tAM I PRINTING/COMPILING THE NEW CUSTOM LOSS??\n\n"
+		cost = K.sum(image_vectors * word_vectors, axis=1)
 		# cost_images = K.sum(cost_images, axis=-1) ## Commented because values expected for multiple inputs.
 
-		return cost_images ## WAS EARLIER DIVIDING BY INCORRECT_self.BATCH WHICH HAS BEEN SET TO 0, IDIOT.
+		if DEBUG:
+			import ipdb
+			ipdb.set_trace()
+
+		return cost ## WAS EARLIER DIVIDING BY INCORRECT_self.BATCH WHICH HAS BEEN SET TO 0, IDIOT.
 
 	def predict(self, x):
 
@@ -85,16 +81,15 @@ class FullModel:
 
 		print x_rolled.shape
 
-		# pass through vgg 
+		## pass through vgg 
 		top_op = self.top_model.predict(x_rolled)
+		import ipdb;ipdb.set_trace()
 
-		# pass through rnn model (get loss) 
+		## pass through rnn model (get loss) 
 		loss = self.rnn_model.test_on_batch( 
 			[top_op, np.tile(self.caption, (x_rolled.shape[0], 1))], 
 			np.zeros(x_rolled.shape[0]) )
 
-		# import ipdb
-		# ipdb.set_trace()
 		print loss.shape, loss
 
 		return loss
@@ -159,6 +154,29 @@ def TEST_lime():
 
 	K.clear_session()
 
+def TEST_distance():
+	cap_input = np.array([[8, 214, 23, 1, 626, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
+	model = FullModel(cap_input, "/Users/tejaswin.p/Downloads/epoch_9.hdf5")
+
+	image_vectors = np.random.rand(10, 300)
+	word_vectors  = np.random.rand(10, 300)
+	image_vectors = K.variable(image_vectors)
+	word_vectors  = K.variable(word_vectors)
+
+	concated = concatenate([image_vectors, word_vectors], axis=-1)
+
+	K.eval(model.custom_distance_function(image_vectors, concated, DEBUG=True))
+
+	import ipdb;ipdb.set_trace()
+
+	model.rnn_model.test_on_batch(
+			[np.random.rand(10, 4096), np.tile(cap_input, (10, 1))], 
+			np.zeros(10)
+		)
+
+	K.clear_session()
+
 if __name__ == '__main__':
-	TEST_model()
-	TEST_lime()
+	# TEST_model()
+	# TEST_lime()
+	TEST_distance()
