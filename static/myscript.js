@@ -7,28 +7,20 @@ function process_response(server_response){
     if (rc==0) {
         
         $("#gallery_placeholder").empty();
+        $("#phrases").empty()
         //console.log(server_response.images);
 
         // append each of the images to gallery_placeholder
         for (var i = 0; i < server_response.images.length; i++) {
             
-            // generic html
-            var img_elem_to_append = 
-            `<div class='gallery'> 
-                <img src='image_location_placeholder' alt='image' width=245 height=150>
-                <img id="overlay" src='image_location_placeholder_2' alt='image' width=245 height=150>
-                <div id='true_captions_xx'>
-                   
-                </div>
-            </div>`;
-
             // get image id 
             var image_id = server_response.images[i]; //mscoco.org/32561
             image_id = image_id.split("/")[image_id.split("/").length-1] // get the number 32561
+            image_id = image_id.replace(".jpg", "");
 
             // create div element + append image + append caption container div
             var $result_div = $("<div>", {"class": "gallery", "id": String(image_id)});
-            var $result_div_img = $('<img src=' + server_response.images[i] + " alt='image' width=245 height=150>").appendTo($result_div)
+            var $result_div_img = $('<img class="true_image" src=' + server_response.images[i] + " alt='image' width=245 height=150> ").appendTo($result_div)
             var $result_div_captions = $('<div id="true_captions"></div>').appendTo($result_div)
 
             // add captions to $result_div_captions 
@@ -53,6 +45,56 @@ function process_response(server_response){
     // enable the search bar
     $('#search_button').prop("disabled", false);
     $("#myquery").prop("disabled", false);
+
+}
+
+function create_phrases(all_phrases) {
+    // This function creates clickable boxes for each phrase split from user's query 
+    // Clicking on any of the box should show the LIME result for that phrase on all images
+    
+    var $phrases = $("#phrases");
+    for (var k = 0; k < all_phrases.length; k++){
+
+        var $elem = $('<p>'+all_phrases[k]+'</p>');
+
+        $elem.css("float", "left")
+        $elem.css("border", "2px solid #73AD21");
+        $elem.css("padding", "10px");
+        $elem.css("margin", "8px");
+        $elem.css("font-size", "11px");
+
+        //$elem.css("height", "40px");
+        $elem.css("border-radius", "25px");
+
+        $phrases.append($elem); 
+    }
+
+    console.log("appended phrases to phrase bar");
+}
+
+function show_salient_regions(){
+    // This functions lights up the salient regions in all images corresponsing to clicked phrase 
+
+    //debugger;
+    
+    var phrase_clicked = $(this)[0].innerHTML;
+    var all_phrases    = $("#phrases").children()
+    var all_phrases_clean = [];
+    for (var i=0; i < all_phrases.length; i++){
+        all_phrases_clean[i] = all_phrases[i].innerHTML;
+    }
+    all_phrases = all_phrases_clean;
+
+    // make true_image opacity = 0.8 
+    $(".true_image").css("opacity", 0.5);
+
+    // make all phrase image opacity = 0.0
+    for (var i=0; i < all_phrases.length; i++){
+        $("."+all_phrases[i]).css("opacity",0.0);
+    }
+
+    // make phrase_clicked opacity = 0.5
+    $("."+phrase_clicked).css("opacity",0.8); 
 
 }
 
@@ -89,5 +131,63 @@ $("#search_button").click(function () {
             // enable the search bar 
             $('#search_button').prop("disabled", false);
             $("#myquery").prop("disabled", false);
+
+            // LIME STARTS HERE 
+
+            // 1. get phrases
+            var all_phrases = null; 
+            $.ajax({
+                    url: "/_get_phrases",
+                    async: false,
+                    dataType: 'json',
+                    success: function(data) {
+                        all_phrases = data.phrases;
+                        }
+            });             
+            console.log(all_phrases)
+            create_phrases(all_phrases) //append phrases to the phrase bar i.e div with id=phrases
+
+            // 2. get all image_ids
+            var image_ids = null;
+            do {
+                console.log("trying to get image ids");
+                image_ids = $(".true_image");
+            } while (image_ids.length<1); 
+
+            var image_ids_clean = [];
+            for (var k = 0; k < image_ids.length; k++) {
+
+                image_ids_clean[k] = image_ids[k].src.split("/")[image_ids[k].src.split("/").length-1] ;
+                image_ids_clean[k] = image_ids_clean[k].replace(".jpg","");
+            
+            }
+            image_ids = image_ids_clean;
+
+            console.log(image_ids);
+
+            // 3. run lime 
+            $.getJSON("/_get_LIME", { phrases:JSON.stringify(all_phrases), image_ids:JSON.stringify(image_ids)}, function(response){
+                for (var k = 0; k < image_ids.length; k++){
+                    
+                    // phrase_imgs for image_id
+                    phrase_imgs_for_image_id = response[image_ids[k]] ; 
+                    
+                    //debugger;
+                    
+                    var $div = $("#"+String(image_ids[k])); // div coresponding to that image_id
+                    for (var l=0; l < phrase_imgs_for_image_id.length; l++){
+
+                        var overlay_img_elem_html = '<img class="some_class" src="some_src" width=245 height=150>'; 
+                        overlay_img_elem_html = overlay_img_elem_html.replace("some_class", all_phrases[l]);
+                        overlay_img_elem_html = overlay_img_elem_html.replace("some_src", phrase_imgs_for_image_id[l]);
+                        var $overlay_img = $(overlay_img_elem_html);
+                        $div.prepend($overlay_img);
+
+                    }
+                }
+            });
+
+            // 4. Make the phrase tags clickable and do something with it 
+            var phrase_elems = $("#phrases").children().click(show_salient_regions);
             
         })
