@@ -157,15 +157,20 @@ def TEST_lime():
 
 	# import ipdb;ipdb.set_trace()
 
+	print "\n\n\t\tRUNNING LIME\n\n"
 	explainer = lime_image.LimeImageExplainer() ## LIME explainer.
 	explanation = explainer.explain_instance(
 		x, 
-		model.predict , 
-		top_labels=1, hide_color=0, batch_size=25, num_samples=100, num_features=50
+		model.predict, 
+		top_labels=1, hide_color=0, batch_size=10, num_samples=20, num_features=50
 	)
 
-	temp, mask = explanation.get_image_and_mask(label=24, positive_only=True, num_features=15, hide_rest=True)
-	plt.imshow(mark_boundaries(temp , mask))
+	print "DONE. Saving explanation..."
+	with open("LIME_explanation.pkl", 'w') as fp:
+		pickle.dump(explanation, fp)
+
+	# temp, mask = explanation.get_image_and_mask(label=24, positive_only=True, num_features=15, hide_rest=True)
+	# plt.imshow(mark_boundaries(temp , mask))
 
 	K.clear_session()
 
