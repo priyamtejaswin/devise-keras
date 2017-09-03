@@ -15,7 +15,10 @@ from extract_features_and_dump import define_model as TheVGGModel
 from lime import lime_image
 from scipy.spatial.distance import cdist
 from skimage.segmentation import mark_boundaries
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import time
 
 class FullModel:
 	
@@ -33,7 +36,7 @@ class FullModel:
 		# vgg16 - fc2 output
 		# top_model = VGG16(weights="imagenet", include_top="True")
 		# self.top_model = Model(inputs=top_model.input, outputs=top_model.get_layer("fc2").output)
-		self.top_model = TheVGGModel("/Users/tejaswin.p/projects/devise-keras/vgg16_weights_th_dim_ordering_th_kernels.h5")
+		self.top_model = TheVGGModel("/home/tejaswin.p/vgg16_weights_th_dim_ordering_th_kernels.h5")
 
 		# rnn part + recompile with new loss
 		self.rnn_model = load_model(rnn_model_loc, custom_objects={"hinge_rank_loss":hinge_rank_loss})
@@ -121,7 +124,7 @@ class FullModel:
 def TEST_model():
 	cap_input = np.array([[8, 214, 23, 1, 626, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
     
-	model = FullModel(cap_input, "/Users/tejaswin.p/Downloads/epoch_9.hdf5")
+	model = FullModel(cap_input, "/Users/tejaswin.p/Downloads/epoch_13.hdf5")
 
 	# import ipdb
 	# ipdb.set_trace()
@@ -141,10 +144,10 @@ def TEST_model():
 	K.clear_session()
 
 def TEST_lime():
-	cap_input = np.array([[8, 214, 23, 1, 626, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
-	model = FullModel(cap_input, "/Users/tejaswin.p/Downloads/epoch_9.hdf5")
+	cap_input = np.array([[8, 2927, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
+	model = FullModel(cap_input, "/home/tejaswin.p/Dropbox/mscoco-search-snapshots/epoch_13.hdf5")
 	
-	x = model.preprocess_image("/Users/tejaswin.p/Downloads/eating_pizza_in_park.jpg")
+	x = model.preprocess_image("/home/tejaswin.p/devise-keras/static/32561.jpg")
 	print x.shape
 
 	print "\nMoving to 'channels last'."
@@ -158,14 +161,15 @@ def TEST_lime():
 	# import ipdb;ipdb.set_trace()
 
 	print "\n\n\t\tRUNNING LIME\n\n"
+	_st = time.time()
 	explainer = lime_image.LimeImageExplainer() ## LIME explainer.
 	explanation = explainer.explain_instance(
 		x, 
 		model.predict, 
-		top_labels=1, hide_color=0, batch_size=10, num_samples=20, num_features=50
+		top_labels=1, hide_color=0, batch_size=1000, num_samples=10000, num_features=200
 	)
 
-	print "DONE. Saving explanation..."
+	print "DONE. Saving explanation...", (time.time() - _st)/60.0
 	with open("LIME_explanation.pkl", 'w') as fp:
 		pickle.dump(explanation, fp)
 
