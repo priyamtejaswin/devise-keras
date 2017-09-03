@@ -13,6 +13,7 @@ from keras.preprocessing import image
 from keras.applications.imagenet_utils import preprocess_input
 from extract_features_and_dump import define_model as TheVGGModel
 from lime import lime_image
+from scipy.spatial.distance import cdist
 
 class FullModel:
 	
@@ -86,11 +87,16 @@ class FullModel:
 		import ipdb;ipdb.set_trace()
 
 		## pass through rnn model (get loss) 
-		loss = self.rnn_model.test_on_batch( 
-			[top_op, np.tile(self.caption, (x_rolled.shape[0], 1))], 
-			np.zeros(x_rolled.shape[0]) )
+		rnn_output = self.rnn_model.predict( 
+			[top_op, np.tile(self.caption, (x_rolled.shape[0], 1))]
+			) ## returns a (n, 600) array
 
-		print loss.shape, loss
+		print rnn_output.shape
+
+		## calculate the distance b/w image perturbations and the caption
+		word_vectors = rnn_output[:, :self.WORD_DIM]
+		caption_vectors = rnn_output[:, self.WORD_DIM:]
+		loss = 1 - cdist(word_vectors, caption_vectors, metric="cosine")
 
 		return loss
 
@@ -154,29 +160,6 @@ def TEST_lime():
 
 	K.clear_session()
 
-def TEST_distance():
-	cap_input = np.array([[8, 214, 23, 1, 626, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
-	model = FullModel(cap_input, "/Users/tejaswin.p/Downloads/epoch_9.hdf5")
-
-	image_vectors = np.random.rand(10, 300)
-	word_vectors  = np.random.rand(10, 300)
-	image_vectors = K.variable(image_vectors)
-	word_vectors  = K.variable(word_vectors)
-
-	concated = concatenate([image_vectors, word_vectors], axis=-1)
-
-	K.eval(model.custom_distance_function(image_vectors, concated, DEBUG=True))
-
-	import ipdb;ipdb.set_trace()
-
-	model.rnn_model.test_on_batch(
-			[np.random.rand(10, 4096), np.tile(cap_input, (10, 1))], 
-			np.zeros(10)
-		)
-
-	K.clear_session()
-
 if __name__ == '__main__':
-	# TEST_model()
+	TEST_model()
 	# TEST_lime()
-	TEST_distance()
