@@ -14,6 +14,8 @@ from keras.applications.imagenet_utils import preprocess_input
 from extract_features_and_dump import define_model as TheVGGModel
 from lime import lime_image
 from scipy.spatial.distance import cdist
+from skimage.segmentation import mark_boundaries
+import matplotlib.pyplot as plt
 
 class FullModel:
 	
@@ -156,7 +158,14 @@ def TEST_lime():
 	# import ipdb;ipdb.set_trace()
 
 	explainer = lime_image.LimeImageExplainer() ## LIME explainer.
-	explanation = explainer.explain_instance(x, model.predict , top_labels=1, hide_color=0, num_samples=100)
+	explanation = explainer.explain_instance(
+		x, 
+		model.predict , 
+		top_labels=1, hide_color=0, batch_size=25, num_samples=100, num_features=50
+	)
+
+	temp, mask = explanation.get_image_and_mask(label=24, positive_only=True, num_features=15, hide_rest=True)
+	plt.imshow(mark_boundaries(temp , mask))
 
 	K.clear_session()
 
