@@ -72,6 +72,8 @@ class FullModel:
 		# x_rolled = np.moveaxis(np.moveaxis(x, 3, 1), 2, 3)
 
 		assert len(x.shape)==4, "--WHOA, the shape is not 4?????--"
+		assert x.min()==0
+		assert x.max()==1
 
 		if x.shape[-1]==3:
 			print "CHANGING SHAPE"
@@ -83,7 +85,7 @@ class FullModel:
 		print x_rolled.shape
 
 		## pass through vgg 
-		top_op = self.top_model.predict(x_rolled)
+		top_op = self.top_model.predict(preprocess_input(x_rolled * 255.0)) ## mean-subtraction DONE HERE
 		# import ipdb;ipdb.set_trace()
 
 		## pass through rnn model (get loss) 
@@ -103,15 +105,14 @@ class FullModel:
 	@staticmethod
 	def preprocess_image(img_path):
 		"""
-		Pre-process image by ImageNet standards.
+		!!!!The mean-subtraction is done JUST before the VGG pass!!!! 
 		Returns by expanding dims for "batch" dimension
 		and type casting to np.float64: just scikit-image things...
 		"""
 		img_input = image.load_img(img_path, target_size=(224, 224))
 		x = image.img_to_array(img_input)
 		x = np.expand_dims(x, axis=0)
-		x = preprocess_input(x)
-		x = x.astype(np.float64)
+		x = x.astype(np.float64)/255.0
 		return x	
 
 	
