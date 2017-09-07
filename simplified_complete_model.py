@@ -27,24 +27,26 @@ class FullModel:
 	Appropriately, update the __init__ method.
 	"""
 	
-	def __init__(self, caption, rnn_model_loc):
+	def __init__(self, rnn_model_path, word_index_path, vgg_weights_path):
 		# some globals 
 		self.WORD_DIM = 300
 		self.BATCH = 1 
 		
-		# fixed caption (to be used against perturbed images to calculate loss)
-		self.caption = caption
+		assert os.path.isfile(rnn_model_path), "Provided incorect location to rnn_model"
+		assert os.path.isfile(word_index_path), "Provided incorrect location to word_index_path"
+		assert os.path.isfile(vgg_weights_path), "Provided incorrect location to vgg_weights"
 
-		assert self.caption.shape == (1,20), "Incorrect shape of captions having shape {}".format(self.caption.shape) 
-		assert os.path.isfile(rnn_model_loc), "Provided incorect location to rnn model"
+		with open(word_index_path, 'r') as fp:
+			self.word_index = pickle.load(fp)
+			assert isinstance(self.word_index, dict), "word_index_path provided is not a dict"
 
 		# vgg16 - fc2 output
 		# top_model = VGG16(weights="imagenet", include_top="True")
 		# self.top_model = Model(inputs=top_model.input, outputs=top_model.get_layer("fc2").output)
-		self.top_model = TheVGGModel("/home/tejaswin.p/vgg16_weights_th_dim_ordering_th_kernels.h5")
+		self.top_model = TheVGGModel(vgg_weights_path)
 
 		# rnn part + recompile with new loss
-		self.rnn_model = load_model(rnn_model_loc, custom_objects={"hinge_rank_loss":hinge_rank_loss})
+		self.rnn_model = load_model(rnn_model_path, custom_objects={"hinge_rank_loss":hinge_rank_loss})
 		self.rnn_model.compile(optimizer="rmsprop", loss=self.custom_distance_function)
 
 	def custom_distance_function(self, y_true, y_pred, DEBUG=False):
