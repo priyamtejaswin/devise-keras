@@ -19,6 +19,8 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import time
+import urllib
+import cStringIO
 
 class FullModel:
 	"""
@@ -101,13 +103,15 @@ class FullModel:
 		print x_rolled.shape
 
 		## pass through vgg 
-		top_op = self.top_model.predict(preprocess_input(x_rolled * 255.0)) ## mean-subtraction DONE HERE
+		top_op = self.top_model.predict(
+			preprocess_input(x_rolled * 255.0) ## mean-subtraction DONE HERE
+		)
 		# import ipdb;ipdb.set_trace()
 
 		## pass through rnn model (get loss) 
 		rnn_output = self.rnn_model.predict( 
 			[top_op, np.tile(self.caption, (x_rolled.shape[0], 1))]
-			) ## returns a (n, 600) array
+		) ## returns a (n, 600) array
 
 		print rnn_output.shape
 
@@ -129,8 +133,47 @@ class FullModel:
 		x = image.img_to_array(img_input)
 		x = np.expand_dims(x, axis=0)
 		x = x.astype(np.float64)/255.0
-		return x	
+		x = np.swapaxes(np.swapaxes(x, 1, 2), 2, 3) ## Moving to channels last.
+		x = x[0] ## Eliminate 'batch' dimension.
+		return x
 
+	def preprocess_caption(self, caption_string):
+		if isinstance(caption_string, unicode):
+			str_caption = caption_string.encode('utf-8')
+		else:
+			str_caption = caption_string
+
+		split_caption = str_caption.split(' ')
+		if len(split_caption)>20:
+			print "---WARNING: Input string contains more than 20 words. TRUNCATING.---"
+			split_caption = split_caption[:20] ## Max-len 20.
+
+		array_caption = []
+		for word in split_caption:
+			assert word in self.word_index, "---ERROR: word '%s' not in self.word_index---"%(word)
+			array_caption.append(self.word_index[word])
+
+		array_caption = array_caption + [0 for _ix in range(20 - len(array_caption))] ## Max-len 20.
+		return str_caption, array_caption
+
+	def run_lime(self, image_url, caption_string):
+		imgFile = cStringIO.StringIO(urllib.urlopen(image_url).read()) ## Download image.
+		
+		xImg = self.preprocess_image(imgFile) ## Load, pre-process image.
+
+		self.str_caption, self.caption = self.preprocess_caption(caption_string) ## Pre-process caption.
+
+		print "\n\t\tRunning LIME\n"
+		_st = time.time()
+
+		explainer = lime_image.LimeImageExplainer() ## LIME explainer.
+		explanation = explainer.explain_instance(
+			xImg,
+			self.predict,
+			top_labels=1, hide_color=0, batch_size=10, num_samples=30, num_features=100
+		)
+
+		print "\n\t\tDONE. Took", (time.time() - _st)/60.0, "minutes.\n"
 	
 def TEST_model():
 	cap_input = np.array([[8, 214, 23, 1, 626, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
