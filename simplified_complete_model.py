@@ -28,6 +28,8 @@ class FullModel:
 	"""
 	
 	def __init__(self, rnn_model_path, word_index_path, vgg_weights_path):
+		print "\n\tCreating model...loading weights and parameters...\n"
+
 		# some globals 
 		self.WORD_DIM = 300
 		self.BATCH = 1 
@@ -48,6 +50,8 @@ class FullModel:
 		# rnn part + recompile with new loss
 		self.rnn_model = load_model(rnn_model_path, custom_objects={"hinge_rank_loss":hinge_rank_loss})
 		self.rnn_model.compile(optimizer="rmsprop", loss=self.custom_distance_function)
+
+		print "\n\tDONE\n"
 
 	def custom_distance_function(self, y_true, y_pred, DEBUG=False):
 		select_images = lambda x: x[:, :self.WORD_DIM]
@@ -186,5 +190,10 @@ def TEST_lime():
 	K.clear_session()
 
 if __name__ == '__main__':
-	# TEST_model()
-	TEST_lime()
+	# TEST_lime()
+	model = FullModel(
+		rnn_model_path="/Users/tejaswin.p/Downloads/epoch_9.hdf5", 
+		word_index_path="/Users/tejaswin.p/Downloads/DICT_word_index.VAL.pkl", 
+		vgg_weights_path="/Users/tejaswin.p/projects/devise-keras/vgg16_weights_th_dim_ordering_th_kernels.h5"
+	)
+
