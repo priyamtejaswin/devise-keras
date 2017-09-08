@@ -240,3 +240,10 @@ if __name__ == '__main__':
 		vgg_weights_path="/Users/tejaswin.p/projects/devise-keras/vgg16_weights_th_dim_ordering_th_kernels.h5"
 	)
 
+	model.run_lime(
+		image_url="http://www.aacounty.org/sebin/n/m/dogpark.jpg", 
+		caption_string="dog in the park"
+	)
+
+	K.clear_session()
+
