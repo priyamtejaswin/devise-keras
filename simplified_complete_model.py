@@ -138,6 +138,12 @@ class FullModel:
 		return x
 
 	def preprocess_caption(self, caption_string):
+		"""
+		Accepts a string - byte or uni.
+		Assumes its already cleaned and everything from the JS ui.
+		Splits into words and maps to the word_index.
+		Returns the string and an array of indices with 0 padding.
+		"""
 		if isinstance(caption_string, unicode):
 			str_caption = caption_string.encode('utf-8')
 		else:
@@ -157,6 +163,11 @@ class FullModel:
 		return str_caption, array_caption
 
 	def run_lime(self, image_url, caption_string):
+		"""
+		Method to be called from the backend.
+		Accepts an image_url and the caption_string.
+		Runs LIME. Returns the mask.
+		"""
 		imgFile = cStringIO.StringIO(urllib.urlopen(image_url).read()) ## Download image.
 		
 		xImg = self.preprocess_image(imgFile) ## Load, pre-process image.
@@ -176,6 +187,12 @@ class FullModel:
 		print "\n\t\tDONE. Took", (time.time() - _st)/60.0, "minutes.\n"
 	
 def TEST_model():
+	"""
+	Was supposed to test the individual components of the model.
+	Defunct for now.
+	"""
+	return
+
 	cap_input = np.array([[8, 214, 23, 1, 626, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
     
 	model = FullModel(cap_input, "/Users/tejaswin.p/Downloads/epoch_13.hdf5")
@@ -198,42 +215,6 @@ def TEST_model():
 	K.clear_session()
 
 def TEST_lime():
-	cap_input = np.array([[8, 2927, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
-	model = FullModel(cap_input, "/home/tejaswin.p/Dropbox/mscoco-search-snapshots/epoch_13.hdf5")
-	
-	x = model.preprocess_image("/home/tejaswin.p/devise-keras/static/32561.jpg")
-	print x.shape
-
-	print "\nMoving to 'channels last'."
-	x = np.swapaxes(np.swapaxes(x, 1, 2), 2, 3)
-	print x.shape
-
-	print "\nSelecting the image...eliminating the 'batch' dimension."
-	x = x[0] ## scikit-image works with batch last and only for single images.
-	print x.shape
-
-	# import ipdb;ipdb.set_trace()
-
-	print "\n\n\t\tRUNNING LIME\n\n"
-	_st = time.time()
-	explainer = lime_image.LimeImageExplainer() ## LIME explainer.
-	explanation = explainer.explain_instance(
-		x, 
-		model.predict, 
-		top_labels=1, hide_color=0, batch_size=1000, num_samples=10000, num_features=200
-	)
-
-	print "DONE. Saving explanation...", (time.time() - _st)/60.0
-	with open("LIME_explanation.pkl", 'w') as fp:
-		pickle.dump(explanation, fp)
-
-	# temp, mask = explanation.get_image_and_mask(label=24, positive_only=True, num_features=15, hide_rest=True)
-	# plt.imshow(mark_boundaries(temp , mask))
-
-	K.clear_session()
-
-if __name__ == '__main__':
-	# TEST_lime()
 	model = FullModel(
 		rnn_model_path="/Users/tejaswin.p/Downloads/epoch_9.hdf5", 
 		word_index_path="/Users/tejaswin.p/Downloads/DICT_word_index.VAL.pkl", 
@@ -246,4 +227,7 @@ if __name__ == '__main__':
 	)
 
 	K.clear_session()
+
+if __name__ == '__main__':
+	TEST_lime()
 
