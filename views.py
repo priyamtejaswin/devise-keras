@@ -171,6 +171,9 @@ def run_model(query_string):
 			captions = [ copy.deepcopy(captions) for i in range(3)]                       # we have 3 images, each with 5 captions
 			
 			assert len(captions) == len(result), " #results != #captions"
+
+			coco_urls = result 
+			flickr_urls = result
 						
 		else:
 			assert MODEL is not None, "not in dummy mode, but model did not load!"
@@ -201,7 +204,7 @@ def run_model(query_string):
 					result.append(fnames[k][0])
 
 				# Replace /var/coco/train2014_clean/COCO_train2014_000000364251.jpg with http://mscoco.org/images/364251
-				result_url = []
+				coco_urls = []
 				for r in result:
 
 					imname = r.split("/")[-1] # COCO_train2014_000000364251.jpg
@@ -214,16 +217,12 @@ def run_model(query_string):
 					imname = imname.rstrip(".jpg") # 364251
 					imname = "http://mscoco.org/images/" + imname # http://mscoco.org/images/364251
 
-					# Retrieve the image for LIME
-					im_file = cStringIO.StringIO(urllib.urlopen(imname).read())
-					# Run LIME in a separate thread??
-
-					result_url.append(imname)
+					coco_urls.append(imname)
 				
 				#### NOTE: Since MSCOCO.ORG NO longer hosts images, we need to fetch images from flickr #####
-				captions = get_string_captions(result_url)	
-				flickr_urls = coco_url_to_flickr_url(result_url)
-				result      = flickr_urls
+				captions = get_string_captions(coco_urls)	
+				flickr_urls = coco_url_to_flickr_url(coco_urls)
+				
 				
 							
 		print '..over'
@@ -231,17 +230,18 @@ def run_model(query_string):
 	if result is None or len(result)<2:
 		return 1,"Err. Model prediction returned None. If you're seeing this, something went horribly wrong at our end.", []
 	else:
-		return 0,result,captions
+		return 0, flickr_urls, coco_urls, captions
 
 @app.route("/_process_query")
 def process_query():
 
 	query_string = request.args.get('query', type=str)
-	rc, images, captions = run_model(query_string) 
+	rc, flickr_urls, coco_urls, captions = run_model(query_string) 
 	
 	result = {
 		"rc":rc,
-		"images": images,
+		"flickr_urls": flickr_urls,
+		"coco_urls" : coco_urls,
 		"captions": captions
 	}
 

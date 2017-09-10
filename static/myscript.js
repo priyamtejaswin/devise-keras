@@ -8,19 +8,20 @@ function process_response(server_response){
         
         $("#gallery_placeholder").empty();
         $("#phrases").empty()
+        //debugger;
         //console.log(server_response.images);
 
         // append each of the images to gallery_placeholder
-        for (var i = 0; i < server_response.images.length; i++) {
+        for (var i = 0; i < server_response.coco_urls.length; i++) {
             
             // get image id 
-            var image_id = server_response.images[i]; //mscoco.org/32561
+            var image_id = server_response.coco_urls[i]; //mscoco.org/32561
             image_id = image_id.split("/")[image_id.split("/").length-1] // get the number 32561
             image_id = image_id.replace(".jpg", "");
 
             // create div element + append image + append caption container div
             var $result_div = $("<div>", {"class": "gallery", "id": String(image_id)});
-            var $result_div_img = $('<img class="true_image" src=' + server_response.images[i] + " alt='image' width=245 height=150> ").appendTo($result_div)
+            var $result_div_img = $('<img class="true_image" src=' + server_response.flickr_urls[i] + " alt='image' width=245 height=150> ").appendTo($result_div)
             var $result_div_captions = $('<div id="true_captions"></div>').appendTo($result_div)
 
             // add captions to $result_div_captions 
@@ -39,7 +40,7 @@ function process_response(server_response){
         // something went wrong
         $("#errors").empty();
         //console.log(server_response.images);
-        $("#errors").append("<p>Error. Server responded with rc : "+String(server_response.images)+"</p>")
+        $("#errors").append("<p>Error. Server responded with rc : "+String(server_response.flickr_urls)+"</p>")
     }
 
     // enable the search bar
@@ -145,16 +146,7 @@ $("#search_button").click(function () {
                 all_phrases = data.phrases
             });
 
-/*            $.ajax({
-                    url: '/_get_phrases',
-                    async: false,
-                    headers: {query: query},
-                    dataType: 'json',
-                    success: function(data) {
-                        all_phrases = data.phrases;
-                        }
-            });             
-*/          
+            
             while(all_phrases==null){
                 console.log("Trying to get all_phrases");
             }
@@ -179,11 +171,10 @@ $("#search_button").click(function () {
 
             console.log(image_ids);
 
-            /*
-            //debugger;
             // 3. Make the phrase tags clickable and do something with it 
             var phrase_elems = $("#phrases").children().click(show_salient_regions);
 
+            /*
             // 4. run lime for each image
             image_ids.forEach(function(im_id, index, thearray){
 
