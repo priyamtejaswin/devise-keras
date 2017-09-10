@@ -22,11 +22,11 @@ import time
 import urllib
 import cStringIO
 
-class FullModel:
+class FullModel(object):
 	"""
-	Add a method which accepts an (image_url, caption) pair and 
-	returns the mask for top 10 SLIC super-pixels.
-	Appropriately, update the __init__ method.
+	Unified vision(VGG) and language(RNN) model.
+	Accepts paths to rnn_model, vgg_weights and word_index.
+	See def:TEST_lime for usage.
 	"""
 	
 	def __init__(self, rnn_model_path, word_index_path, vgg_weights_path):
@@ -82,13 +82,12 @@ class FullModel:
 		return cost ## WAS EARLIER DIVIDING BY INCORRECT_self.BATCH WHICH HAS BEEN SET TO 0, IDIOT.
 
 	def predict(self, x):
-
-		# checks
-		# assert x.shape == (1, 3, 224, 224), "Incorrect input dims of {}".format(x.shape) 
-		## Change from (10, 224, 224, 3) to (10, 3, 224, 224)
-
-		# x_rolled = np.moveaxis(np.moveaxis(x, 3, 1), 2, 3)
-
+		"""
+		Wrapper exposed to LIME.
+		The x is only the image. The caption is at self.caption .
+		Runs the end-to-end FullModel and returns the cosine 
+		distance b/w the image(s) and the caption.
+		"""
 		assert len(x.shape)==4, "--WHOA, the shape is not 4?????--"
 		assert x.min()==0
 		assert x.max()==1
