@@ -99,6 +99,11 @@ function show_salient_regions(){
 }
 
 $("#search_button").click(function () {
+
+            // All Ajax are synchronous because we want to do things in order
+            $.ajaxSetup({
+                async: false
+            }); 
             
             // vars
             var MIN_QUERY_LENGTH = 10;
@@ -132,18 +137,27 @@ $("#search_button").click(function () {
             $('#search_button').prop("disabled", false);
             $("#myquery").prop("disabled", false);
 
-            // LIME STARTS HERE 
+            // LIME STARTS HERE
 
             // 1. get phrases
             var all_phrases = null; 
-            $.ajax({
-                    url: "/_get_phrases",
+            $.getJSON("/_get_phrases", { query: query}, function (data) {
+                all_phrases = data.phrases
+            });
+
+/*            $.ajax({
+                    url: '/_get_phrases',
                     async: false,
+                    headers: {query: query},
                     dataType: 'json',
                     success: function(data) {
                         all_phrases = data.phrases;
                         }
             });             
+*/          
+            while(all_phrases==null){
+                console.log("Trying to get all_phrases");
+            }
             console.log(all_phrases)
             create_phrases(all_phrases) //append phrases to the phrase bar i.e div with id=phrases
 
@@ -165,16 +179,29 @@ $("#search_button").click(function () {
 
             console.log(image_ids);
 
-            // 3. run lime 
-            $.getJSON("/_get_LIME", { phrases:JSON.stringify(all_phrases), image_ids:JSON.stringify(image_ids)}, function(response){
-                for (var k = 0; k < image_ids.length; k++){
-                    
-                    // phrase_imgs for image_id
-                    phrase_imgs_for_image_id = response[image_ids[k]] ; 
-                    
-                    //debugger;
-                    
-                    var $div = $("#"+String(image_ids[k])); // div coresponding to that image_id
+            /*
+            //debugger;
+            // 3. Make the phrase tags clickable and do something with it 
+            var phrase_elems = $("#phrases").children().click(show_salient_regions);
+
+            // 4. run lime for each image
+            image_ids.forEach(function(im_id, index, thearray){
+
+                //for each image 
+
+                // show in ui that explanation is being loaded
+                var error_bar = $("#errors");
+                error_bar.empty();
+                var explanation_load = $("<p>Loading Explanation for Image ID :" + String(im_id) + " </p>");
+                error_bar.append(explanation_load);
+
+                // get explanation 
+                $.getJSON("/_get_LIME", { phrases:JSON.stringify(all_phrases), image_ids:JSON.stringify([im_id])}, function(response){
+
+                    // phrase_imgs for im_id
+                    phrase_imgs_for_image_id = response[im_id];
+
+                    var $div = $("#"+String(im_id)); // div coresponding to that image_id
                     for (var l=0; l < phrase_imgs_for_image_id.length; l++){
 
                         var overlay_img_elem_html = '<img class="some_class" src="some_src" width=245 height=150>'; 
@@ -184,10 +211,30 @@ $("#search_button").click(function () {
                         $div.prepend($overlay_img);
 
                     }
-                }
-            });
 
-            // 4. Make the phrase tags clickable and do something with it 
-            var phrase_elems = $("#phrases").children().click(show_salient_regions);
+                });
+
+                // show in ui if all explanations have been loaded 
+                if(index == thearray.length-1) {
+                    error_bar.empty();
+                    error_bar.append($("<p>All explanations Loaded!</p>"));
+                }
+
+            });
+            */
+            
+          /*  $.getJSON("/_get_LIME", { phrases:JSON.stringify(all_phrases), image_ids:JSON.stringify(image_ids)}, function(response){
+                for (var k = 0; k < image_ids.length; k++){
+                    
+                    // phrase_imgs for image_id
+                    phrase_imgs_for_image_id = response[image_ids[k]] ; 
+                    
+                    //debugger;
+                    
+                    
+                }
+            });*/
+
+            
             
         })

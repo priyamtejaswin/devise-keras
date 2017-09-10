@@ -42,6 +42,11 @@ mutex = Lock()
 MAX_SEQUENCE_LENGTH = 20
 MODEL=None
 DICT_word_index = None
+
+# Load Spacy 
+from nlp_stuff import QueryParser
+QPObj = QueryParser()
+
 if DUMMY_MODE==False:
 	
 	MODEL = load_model(MODEL_LOC, custom_objects={"hinge_rank_loss":hinge_rank_loss})
@@ -69,6 +74,23 @@ if DUMMY_MODE==False:
 	train_caps = COCO(args.captions_train)
 	valid_caps = COCO(args.captions_valid)
 
+	
+	# qString = "cooking pizza in a pan"
+	# cleanString = QPObj.clean_string(qString)
+	# parse_dict = QPObj.parse_the_string(cleanString)
+
+def coco_url_to_flickr_url(coco_urls):
+	'''
+	mscoco.org does no longer host the images. Hence we convert the urls from mscoco.org/images/imgid to its flickr url 
+	'''
+	flickr_urls = []
+	for url in coco_urls:
+		imgId = int(url.split("/")[-1])
+		fl_url = valid_caps.imgs[imgId]["flickr_url"] # Extract the flickr url from valid_caps (not doing from train_caps yet)
+		flickr_urls.append(fl_url)
+
+	assert len(flickr_urls) == len(coco_urls), "flickr_urls is not same length as coco_urls"
+	return flickr_urls
 
 def get_string_captions(results_url):
 	''' input -> results_url (https://mscoco.org/3456) 
@@ -168,7 +190,7 @@ def run_model(query_string):
 				output = output / np.linalg.norm(output, axis=1, keepdims=True)
 			
 				# compare with im_outs
-				TOP_K = 5
+				TOP_K = 10
 				diff = im_outs - output 
 				diff = np.linalg.norm(diff, axis=1)
 				top_k_indices = np.argsort(diff)[:TOP_K].tolist()
@@ -181,6 +203,7 @@ def run_model(query_string):
 				# Replace /var/coco/train2014_clean/COCO_train2014_000000364251.jpg with http://mscoco.org/images/364251
 				result_url = []
 				for r in result:
+
 					imname = r.split("/")[-1] # COCO_train2014_000000364251.jpg
 					imname = imname.split("_")[-1] # 000000364251.jpg
 					
@@ -196,8 +219,12 @@ def run_model(query_string):
 					# Run LIME in a separate thread??
 
 					result_url.append(imname)
-				result = result_url
-				captions = get_string_captions(result)	
+				
+				#### NOTE: Since MSCOCO.ORG NO longer hosts images, we need to fetch images from flickr #####
+				captions = get_string_captions(result_url)	
+				flickr_urls = coco_url_to_flickr_url(result_url)
+				result      = flickr_urls
+				
 							
 		print '..over'
 	
@@ -225,32 +252,107 @@ def get_phrases():
 
 	query_string = request.args.get('query', type=str)
 
-	# DUMMY RESULT
-	result = {
-		"rc" : 0,
-		"phrases": ["phrase_one", "phrase_two", "phrase_three"]
-	}
+	if DUMMY_MODE == True:
+		# DUMMY RESULT
+		result = {
+			"rc" : 0,
+			"phrases": ["phrase_one", "phrase_two", "phrase_three"]
+		}
+	elif DUMMY_MODE == False:
+		
+		qString = str(query_string)
+		cleanString = QPObj.clean_string(qString)
+		parse_dict = QPObj.parse_the_string(cleanString)
+
+		noun_chunks = parse_dict["noun_chunks"]
+		noun_chunks = map(lambda x: str(x), noun_chunks)
+
+		phrases = []
+		node_paths = parse_dict["node_paths"]
+		for node_path in node_paths:
+			print 'root_node: ', node_path[0]
+			for full_node_path in node_path[1]:
+				print full_node_path
+				phrases.append(" ".join(full_node_path))
+
+		phrases = phrases + noun_chunks
+		phrases = map(lambda x: str(x), phrases)
+
+		phrases = [phrase.replace(" ","_") for phrase in phrases]
+		
+
+		result = {
+			"rc": 0,
+			"phrases": phrases
+		}
 
 	return jsonify(result)
 
 @app.route("/_get_LIME")
 def run_lime():
 
+	# Expected input:
+	# phrases: list of string phrases but "_" instead of spaces 
+	# image_ids: a list of length==1 containing a single image ID
+
+	import ipdb; ipdb.set_trace()
 
 	import json
 	phrases = json.loads(request.args.get("phrases"))
 	image_ids = json.loads(request.args.get("image_ids"))
 
+	# checks
+	assert len(phrases)>0, "phrases list has 0 elements"
+	assert len(image_ids)==1, "image_ids has more than one element or 0 element"
+
 	phrases = [str(k) for k in phrases]
-	image_ids = [str(k) for k in image_ids]
+	im_id  = str(image_ids[0])
 
-	if not os.path.isdir("./overlays_cache/"):
-		os.mkdir("./overlays_cache")
 
-	results = {}
-	for img_id in image_ids:
+	# remove _ from phrases 
+	phrases = [phrase.replace("_"," ") for phrase in phrases]
+	# prepend http://mscoco.org/images/ to image_ids
+	im_url  = "http://mscoco.org/images/" + im_id 
+
+	# ipdb.set_trace()
+
+	if not os.path.isdir("./static/overlays_cache/"):
+		os.mkdir("./static/overlays_cache")
+
+	if DUMMY_MODE==True:
+		
 		phrase_imgs = ["static/overlays_cache/im1.jpg", "static/overlays_cache/im2.jpg", "static/overlays_cache/im3.jpg"]
-		results[img_id] = phrase_imgs
+		results = {
+			"rc": 0,
+			im_id: phrase_imgs
+		}
+
+	elif DUMMY_MODE==False:
+				 
+		phrase_imgs = []
+		for phrase in phrases:
+			
+			# assuming we have an object that takes phrase+im_url and returns a mask of size (224,224) 
+			explain_mask = LIMEObj.explain(phrase, im_url)
+			mycolor = np.array([128,100,200])
+			explain_im   = np.ones((224,224,3)).astype(np.uint8) * 255
+			explain_im[explain_mask==1.0] = mycolor
+
+			# save explain_im to disk
+			imname = str(time.time()) + ".png"
+			cv2.imwrite("static/overlays_cache/"+imname, explain_im)
+
+			# explain_im save location --> append to -> phrase_imgs 
+			phrase_imgs.append("static/overlays_cache/" + imname) 
+
+		# populate response with phrase_imgs and return code rc
+		results = {
+			"rc": 0,
+			im_id: phrase_imgs 
+		}
+
+	else:
+		NotImplementedError("Dummy mode was something other than True or False ")
 
 	return jsonify(results)
 
