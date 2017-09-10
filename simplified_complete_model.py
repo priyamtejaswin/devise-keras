@@ -167,6 +167,8 @@ class FullModel(object):
 		Accepts an image_url and the caption_string.
 		Runs LIME. Returns the mask.
 		"""
+		lime_BATCH = 10
+
 		imgFile = cStringIO.StringIO(urllib.urlopen(image_url).read()) ## Download image.
 		
 		xImg = self.preprocess_image(imgFile) ## Load, pre-process image.
@@ -180,10 +182,15 @@ class FullModel(object):
 		explanation = explainer.explain_instance(
 			xImg,
 			self.predict,
-			top_labels=1, hide_color=0, batch_size=10, num_samples=30, num_features=100
+			top_labels=1, hide_color=0, batch_size=lime_BATCH, num_samples=30, num_features=100
 		)
 
 		print "\n\t\tDONE. Took", (time.time() - _st)/60.0, "minutes.\n"
+		
+		tmpImg, tmpMask = explanation.get_image_and_mask(
+			label=lime_BATCH-1, positive_only=True, num_features=10, hide_rest=True
+		)
+		return tmpMask
 	
 def TEST_model():
 	"""
@@ -220,10 +227,12 @@ def TEST_lime():
 		vgg_weights_path="/Users/tejaswin.p/projects/devise-keras/vgg16_weights_th_dim_ordering_th_kernels.h5"
 	)
 
-	model.run_lime(
+	mask = model.run_lime(
 		image_url="http://www.aacounty.org/sebin/n/m/dogpark.jpg", 
 		caption_string="dog in the park"
 	)
+
+	assert mask.shape == (224, 224), "--TEST FAILED. Image size incorrect.--"
 
 	K.clear_session()
 
