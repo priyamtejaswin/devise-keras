@@ -29,6 +29,7 @@ parser.add_argument("--port", type=int, help="port on which the server will be r
 parser.add_argument("--dummy", type=int, help="run server in dummy mode for testing js/html/css etc.", required=True)
 parser.add_argument("--captions_train", type=str, help="location of string captions of training images", required=True)
 parser.add_argument("--captions_valid", type=str, help="location of string captions of validation images", required=True)
+parser.add_argument("--vgg16", type=str, help="location of vgg16 weights", required=True)
 args = parser.parse_args()
 
 app = Flask(__name__)
@@ -69,15 +70,20 @@ if DUMMY_MODE==False:
 	assert fnames is not None, "Could not load fnames from cache.h5"
 
 	# load the string captions from .json file 
-
 	from pycocotools.coco import COCO
 	train_caps = COCO(args.captions_train)
 	valid_caps = COCO(args.captions_valid)
 
+	# Load LIME 
+	from simplified_complete_model import FullModel
+	model = FullModel(
+		rnn_model_path=args.model, 
+		word_index_path=args.word_index, 
+		vgg_weights_path=args.vgg16
+	)
+
 	
-	# qString = "cooking pizza in a pan"
-	# cleanString = QPObj.clean_string(qString)
-	# parse_dict = QPObj.parse_the_string(cleanString)
+	
 
 def coco_url_to_flickr_url(coco_urls):
 	'''
@@ -193,7 +199,7 @@ def run_model(query_string):
 				output = output / np.linalg.norm(output, axis=1, keepdims=True)
 			
 				# compare with im_outs
-				TOP_K = 10
+				TOP_K = 5
 				diff = im_outs - output 
 				diff = np.linalg.norm(diff, axis=1)
 				top_k_indices = np.argsort(diff)[:TOP_K].tolist()
@@ -295,8 +301,6 @@ def run_lime():
 	# phrases: list of string phrases but "_" instead of spaces 
 	# image_ids: a list of length==1 containing a single image ID
 
-	import ipdb; ipdb.set_trace()
-
 	import json
 	phrases = json.loads(request.args.get("phrases"))
 	image_ids = json.loads(request.args.get("image_ids"))
@@ -308,12 +312,12 @@ def run_lime():
 	phrases = [str(k) for k in phrases]
 	im_id  = str(image_ids[0])
 
-
 	# remove _ from phrases 
 	phrases = [phrase.replace("_"," ") for phrase in phrases]
-	# prepend http://mscoco.org/images/ to image_ids
-	im_url  = "http://mscoco.org/images/" + im_id 
-
+	
+	# get flickr url 
+	im_url = str(valid_caps.imgs[int(im_id)]["flickr_url"])
+	
 	# ipdb.set_trace()
 
 	if not os.path.isdir("./static/overlays_cache/"):
@@ -332,11 +336,15 @@ def run_lime():
 		phrase_imgs = []
 		for phrase in phrases:
 			
-			# assuming we have an object that takes phrase+im_url and returns a mask of size (224,224) 
-			explain_mask = LIMEObj.explain(phrase, im_url)
+			# assuming we have an object that takes phrase+im_url and returns a mask of size (224,224)
+			mask = model.run_lime(
+				image_url=im_url, 
+				caption_string=phrase
+			) 
+			
 			mycolor = np.array([128,100,200])
 			explain_im   = np.ones((224,224,3)).astype(np.uint8) * 255
-			explain_im[explain_mask==1.0] = mycolor
+			explain_im[mask==1.0] = mycolor
 
 			# save explain_im to disk
 			imname = str(time.time()) + ".png"
@@ -346,6 +354,7 @@ def run_lime():
 			phrase_imgs.append("static/overlays_cache/" + imname) 
 
 		# populate response with phrase_imgs and return code rc
+		# import ipdb; ipdb.set_trace()
 		results = {
 			"rc": 0,
 			im_id: phrase_imgs 

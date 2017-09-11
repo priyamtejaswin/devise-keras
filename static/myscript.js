@@ -154,27 +154,18 @@ $("#search_button").click(function () {
             create_phrases(all_phrases) //append phrases to the phrase bar i.e div with id=phrases
 
             // 2. get all image_ids
-            var image_ids = null;
-            do {
-                console.log("trying to get image ids");
-                image_ids = $(".true_image");
-            } while (image_ids.length<1); 
-
-            var image_ids_clean = [];
-            for (var k = 0; k < image_ids.length; k++) {
-
-                image_ids_clean[k] = image_ids[k].src.split("/")[image_ids[k].src.split("/").length-1] ;
-                image_ids_clean[k] = image_ids_clean[k].replace(".jpg","");
-            
-            }
-            image_ids = image_ids_clean;
+            var image_ids = $(".gallery");
+            image_ids = image_ids.toArray() //jquery returns an obj, need to convert it to an array for forEach 
+            image_ids.forEach(function(im_id, index, theArray) {
+                theArray[index] = im_id.id;
+            });
 
             console.log(image_ids);
 
             // 3. Make the phrase tags clickable and do something with it 
             var phrase_elems = $("#phrases").children().click(show_salient_regions);
 
-            /*
+            
             // 4. run lime for each image
             image_ids.forEach(function(im_id, index, thearray){
 
@@ -189,6 +180,7 @@ $("#search_button").click(function () {
                 // get explanation 
                 $.getJSON("/_get_LIME", { phrases:JSON.stringify(all_phrases), image_ids:JSON.stringify([im_id])}, function(response){
 
+                    //debugger;
                     // phrase_imgs for im_id
                     phrase_imgs_for_image_id = response[im_id];
 
@@ -212,20 +204,7 @@ $("#search_button").click(function () {
                 }
 
             });
-            */
             
-          /*  $.getJSON("/_get_LIME", { phrases:JSON.stringify(all_phrases), image_ids:JSON.stringify(image_ids)}, function(response){
-                for (var k = 0; k < image_ids.length; k++){
-                    
-                    // phrase_imgs for image_id
-                    phrase_imgs_for_image_id = response[image_ids[k]] ; 
-                    
-                    //debugger;
-                    
-                    
-                }
-            });*/
-
             
             
         })
