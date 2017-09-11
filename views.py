@@ -335,14 +335,14 @@ def run_lime():
 				 
 		phrase_imgs = []
 		for phrase in phrases:
-			
+			print "Running Lime for url: ", im_url, " | phrase: ", phrase
 			# assuming we have an object that takes phrase+im_url and returns a mask of size (224,224)
 			mask = model.run_lime(
 				image_url=im_url, 
 				caption_string=phrase
 			) 
 			
-			mycolor = np.array([128,100,200])
+			mycolor = np.array([240, 10, 10])
 			explain_im   = np.ones((224,224,3)).astype(np.uint8) * 255
 			explain_im[mask==1.0] = mycolor
 

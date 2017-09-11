@@ -87,7 +87,7 @@ function show_salient_regions(){
     all_phrases = all_phrases_clean;
 
     // make true_image opacity = 0.8 
-    $(".true_image").css("opacity", 0.5);
+    $(".true_image").css("opacity", 0.3);
 
     // make all phrase image opacity = 0.0
     for (var i=0; i < all_phrases.length; i++){
@@ -95,7 +95,7 @@ function show_salient_regions(){
     }
 
     // make phrase_clicked opacity = 0.5
-    $("."+phrase_clicked).css("opacity",0.8); 
+    $("."+phrase_clicked).css("opacity",0.95); 
 
 }
 
