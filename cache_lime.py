@@ -58,7 +58,7 @@ def main():
 	import ipdb; ipdb.set_trace()
 
 	# Run LIME for (phrase, flickr_url) tuple
-	for url in flickr_urls[:2]:
+	for url in flickr_urls:
 		for phrase in phrases:
 			
 			print "Image:", url, " | phrase: ", phrase 
