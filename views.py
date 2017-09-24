@@ -323,6 +323,7 @@ def run_lime():
 	dbase_results = cursor.fetchall()
 
 	if len(dbase_results) == 0:
+		print "Err. could not find the pair", flickr_url, image_id, phrase
 		# could not find this (flickr_url, phrase) pair in dbase
 		result = {
 			"rc": 1,
@@ -330,6 +331,7 @@ def run_lime():
 		}
 	elif len(dbase_results) > 1:
 		# more than one result for (flickr_url, phrase) pair
+		print "Err. more than one result for", flickr_url, image_id, phrase
 		result = {
 			"rc": 2,
 			"lime": "empty"
