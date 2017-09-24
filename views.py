@@ -306,9 +306,13 @@ def run_lime():
 	'''
 	
 	phrase = request.args.get('phrase', type=str)
-	image_id = request.args.get('image_id', type=int)
+	image_id = request.args.get('image_id', type=str)
+	phrase = phrase.strip('"') # '"cooking vegetables"' -> 'cooking vegetables'
+	image_id = image_id.strip('"') # same as above 
+	image_id = int(image_id)
 
 	# lookup flickr_url from image_id 
+	# ipdb.set_trace()
 	assert image_id in valid_caps.imgs.keys(), "This image_id is not available in valid_caps"
 	flickr_url = str(valid_caps.imgs[image_id]["flickr_url"])
 
