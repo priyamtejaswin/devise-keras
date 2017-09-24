@@ -17,7 +17,7 @@ import urllib
 import cStringIO
 from PIL import Image
 import cv2
-
+import sqlite3 
 
 parser = argparse.ArgumentParser(description='server')
 parser.add_argument("--word_index", type=str, help="location of the DICT_word_index.VAL/TRAIN.pkl", required=True)
@@ -298,19 +298,46 @@ def get_phrases():
 
 @app.route("/_get_LIME")
 def run_lime():
-
-	# Expected input:
-	# phrases: list of string phrases but "_" instead of spaces 
-	# image_ids: a list of length==1 containing a single image ID
-
-	# TODO: Instead of Actually running lime, return pre-loaded results 
+	''' 
+	input -> (phrase, image_id)
+	get flickr_url from image_id
+	This code does a lookup of the (phrase, flickr_url) tuple.
+	return {rc:0, image_name:static/overlays_cache/something.png} 
+	'''
 	
-	results = {
-		"rc": 1,
-		im_id: [] 
-	}
+	phrase = request.args.get('phrase', type=str)
+	image_id = request.args.get('image_id', type=int)
 
-	return jsonify(results)
+	# lookup flickr_url from image_id 
+	assert image_id in valid_caps.imgs.keys(), "This image_id is not available in valid_caps"
+	flickr_url = str(valid_caps.imgs[image_id]["flickr_url"])
+
+	conn = sqlite3.connect("lime_results_dbase.db")
+	cursor = conn.cursor()
+
+	cursor.execute("select image_name from results WHERE phrase in ('{}') AND flickr_url in ('{}')".format(str(phrase), str(flickr_url)))
+	dbase_results = cursor.fetchall()
+
+	if len(dbase_results) == 0:
+		# could not find this (flickr_url, phrase) pair in dbase
+		result = {
+			"rc": 1,
+			"lime": "empty"
+		}
+	elif len(dbase_results) > 1:
+		# more than one result for (flickr_url, phrase) pair
+		result = {
+			"rc": 2,
+			"lime": "empty"
+		}
+	else:
+		# everything went fine, one lime image for this (flickr_url, phrase) pair
+		result = {
+			"rc": 0,
+			"lime": "static/overlays_cache/" + str(dbase_results[0][0])
+		}
+
+	return jsonify(result)
 
 
 if __name__ == '__main__':
