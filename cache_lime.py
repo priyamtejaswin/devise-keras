@@ -55,7 +55,7 @@ def main():
 	phrases = [str(k) for k in phrases]
 	phrases = [phrase.replace("_"," ") for phrase in phrases]
 
-	import ipdb; ipdb.set_trace()
+	# import ipdb; ipdb.set_trace()
 
 	# Run LIME for (phrase, flickr_url) tuple
 	for url in flickr_urls:
