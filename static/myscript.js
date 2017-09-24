@@ -210,7 +210,6 @@ $("#search_button").click(function () {
             $.getJSON("/_get_phrases", { query: query}, function (data) {
                 all_phrases = data.phrases
             });
-
             
             while(all_phrases==null){
                 console.log("Trying to get all_phrases");
@@ -230,7 +229,6 @@ $("#search_button").click(function () {
             // 3. Make the phrase tags clickable and do something with it 
             var phrase_elems = $("#phrases").children().click(show_salient_regions);
 
-            /*
             // 4. run lime for each image
             image_ids.forEach(function(im_id, index, thearray){
 
@@ -242,24 +240,30 @@ $("#search_button").click(function () {
                 var explanation_load = $("<p>Loading Explanation for Image ID :" + String(im_id) + " </p>");
                 error_bar.append(explanation_load);
 
-                // get explanation 
-                $.getJSON("/_get_LIME", { phrases:JSON.stringify(all_phrases), image_ids:JSON.stringify([im_id])}, function(response){
+                // loop over every phrase
+                debugger;
+                all_phrases.forEach(function(onePhrase){
 
-                    //debugger;
-                    // phrase_imgs for im_id
-                    phrase_imgs_for_image_id = response[im_id];
+                    // get explanation 
+                    $.getJSON("/_get_LIME", { phrase:JSON.stringify(onePhrase), image_id:JSON.stringify(im_id)}, function(response){
 
-                    var $div = $("#"+String(im_id)); // div coresponding to that image_id
-                    for (var l=0; l < phrase_imgs_for_image_id.length; l++){
+                        //debugger;
+                        if(response["rc"] == 0){
+                            // phrase_imgs for im_id
+                            lime_image = response["lime"];
 
-                        var overlay_img_elem_html = '<img class="some_class" src="some_src" width=245 height=150>'; 
-                        overlay_img_elem_html = overlay_img_elem_html.replace("some_class", all_phrases[l]);
-                        overlay_img_elem_html = overlay_img_elem_html.replace("some_src", phrase_imgs_for_image_id[l]);
-                        var $overlay_img = $(overlay_img_elem_html);
-                        $div.prepend($overlay_img);
-
-                    }
-
+                            var $div = $("#"+String(im_id)); // div coresponding to that image_id
+                            var overlay_img_elem_html = '<img class="some_class" src="some_src" width=245 height=150>'; 
+                            overlay_img_elem_html = overlay_img_elem_html.replace("some_class", onePhrase);
+                            overlay_img_elem_html = overlay_img_elem_html.replace("some_src", lime_image);
+                            var $overlay_img = $(overlay_img_elem_html);
+                            $div.prepend($overlay_img);
+                            
+                        }
+                        else{
+                            console.log("something went wrong for image: " + im_id + " and phrase: " + onePhrase);
+                        }
+                    });
                 });
 
                 // show in ui if all explanations have been loaded 
@@ -269,8 +273,6 @@ $("#search_button").click(function () {
                 }
 
             }); 
-            */
-            
             
             
         })
