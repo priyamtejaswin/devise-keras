@@ -99,6 +99,87 @@ function show_salient_regions(){
 
 }
 
+function split( val ) {
+    return val.split( /,\s*/ );
+}
+function extractLast( term ) {
+    return split( term ).pop();
+}
+
+var availableTags = [
+      "ActionScript",
+      "AppleScript",
+      "Asp",
+      "BASIC",
+      "C",
+      "C++"
+    ];
+
+  $( function() {
+    var availableTags = [
+      "ActionScript",
+      "AppleScript",
+      "Asp",
+      "BASIC",
+      "C",
+      "C++",
+      "Clojure",
+      "COBOL",
+      "ColdFusion",
+      "Erlang",
+      "Fortran",
+      "Groovy",
+      "Haskell",
+      "Java",
+      "JavaScript",
+      "Lisp",
+      "Perl",
+      "PHP",
+      "Python",
+      "Ruby",
+      "Scala",
+      "Scheme"
+    ];
+    function split( val ) {
+      return val.split( /,\s*/ );
+    }
+    function extractLast( term ) {
+      return split( term ).pop();
+    }
+ 
+    $( "#myquery" )
+      // don't navigate away from the field on tab when selecting an item
+      .on( "keydown", function( event ) {
+        if ( event.keyCode === $.ui.keyCode.TAB &&
+            $( this ).autocomplete( "instance" ).menu.active ) {
+          event.preventDefault();
+        }
+      })
+      .autocomplete({
+        minLength: 0,
+        source: function( request, response ) {
+          // delegate back to autocomplete, but extract the last term
+          response( $.ui.autocomplete.filter(
+            availableTags, extractLast( request.term ) ) );
+        },
+        focus: function() {
+          // prevent value inserted on focus
+          return false;
+        },
+        select: function( event, ui ) {
+          var terms = split( this.value );
+          // remove the current input
+          terms.pop();
+          // add the selected item
+          terms.push( ui.item.value );
+          // add placeholder to get the comma-and-space at the end
+          terms.push( "" );
+          this.value = terms.join( "" );
+          return false;
+        }
+      });
+  } );
+
 $("#search_button").click(function () {
 
             // All Ajax are synchronous because we want to do things in order
@@ -165,7 +246,7 @@ $("#search_button").click(function () {
             // 3. Make the phrase tags clickable and do something with it 
             var phrase_elems = $("#phrases").children().click(show_salient_regions);
 
-            
+            /*
             // 4. run lime for each image
             image_ids.forEach(function(im_id, index, thearray){
 
@@ -203,7 +284,8 @@ $("#search_button").click(function () {
                     error_bar.append($("<p>All explanations Loaded!</p>"));
                 }
 
-            });
+            }); 
+            */
             
             
             
