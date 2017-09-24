@@ -106,47 +106,31 @@ function extractLast( term ) {
     return split( term ).pop();
 }
 
-var availableTags = [
-      "ActionScript",
-      "AppleScript",
-      "Asp",
-      "BASIC",
-      "C",
-      "C++"
-    ];
+$( function() {
+    var availableTags = (function() {
+        var availableTags = null;
+        $.ajax({
+            'async': false,
+            'global': false,
+            'url': "static/lime_queries.json",
+            'dataType': "json",
+            'mimeType': 'application/json',
+            'type':        "GET",
+            'success': function (data) {
+                availableTags = data;
+            }
+        });
+        return availableTags;
+    })();
+    console.log(availableTags);
 
-  $( function() {
-    var availableTags = [
-      "ActionScript",
-      "AppleScript",
-      "Asp",
-      "BASIC",
-      "C",
-      "C++",
-      "Clojure",
-      "COBOL",
-      "ColdFusion",
-      "Erlang",
-      "Fortran",
-      "Groovy",
-      "Haskell",
-      "Java",
-      "JavaScript",
-      "Lisp",
-      "Perl",
-      "PHP",
-      "Python",
-      "Ruby",
-      "Scala",
-      "Scheme"
-    ];
     function split( val ) {
       return val.split( /,\s*/ );
     }
     function extractLast( term ) {
       return split( term ).pop();
     }
- 
+
     $( "#myquery" )
       // don't navigate away from the field on tab when selecting an item
       .on( "keydown", function( event ) {
@@ -178,7 +162,7 @@ var availableTags = [
           return false;
         }
       });
-  } );
+} );
 
 $("#search_button").click(function () {
 
