@@ -89,8 +89,9 @@ class FullModel(object):
 		distance b/w the image(s) and the caption.
 		"""
 		assert len(x.shape)==4, "--WHOA, the shape is not 4?????--"
+		# import ipdb; ipdb.set_trace()
 		assert x.min()==0
-		assert x.max()==1
+		assert x.max()<=1
 
 		if x.shape[-1]==3:
 			print "CHANGING SHAPE"
@@ -167,7 +168,7 @@ class FullModel(object):
 		Accepts an image_url and the caption_string.
 		Runs LIME. Returns the mask.
 		"""
-		lime_BATCH = 10
+		lime_BATCH = 500 
 
 		imgFile = cStringIO.StringIO(urllib.urlopen(image_url).read()) ## Download image.
 		
@@ -182,7 +183,7 @@ class FullModel(object):
 		explanation = explainer.explain_instance(
 			xImg,
 			self.predict,
-			top_labels=1, hide_color=0, batch_size=lime_BATCH, num_samples=30, num_features=100
+			top_labels=1, hide_color=0, batch_size=lime_BATCH, num_samples=5000, num_features=100
 		)
 
 		print "\n\t\tDONE. Took", (time.time() - _st)/60.0, "minutes.\n"

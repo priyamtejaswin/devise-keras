@@ -75,12 +75,14 @@ if DUMMY_MODE==False:
 	valid_caps = COCO(args.captions_valid)
 
 	# Load LIME 
+	'''
 	from simplified_complete_model import FullModel
 	model = FullModel(
 		rnn_model_path=args.model, 
 		word_index_path=args.word_index, 
 		vgg_weights_path=args.vgg16
 	)
+	'''
 
 	
 	
@@ -301,69 +303,15 @@ def run_lime():
 	# phrases: list of string phrases but "_" instead of spaces 
 	# image_ids: a list of length==1 containing a single image ID
 
-	import json
-	phrases = json.loads(request.args.get("phrases"))
-	image_ids = json.loads(request.args.get("image_ids"))
-
-	# checks
-	assert len(phrases)>0, "phrases list has 0 elements"
-	assert len(image_ids)==1, "image_ids has more than one element or 0 element"
-
-	phrases = [str(k) for k in phrases]
-	im_id  = str(image_ids[0])
-
-	# remove _ from phrases 
-	phrases = [phrase.replace("_"," ") for phrase in phrases]
+	# TODO: Instead of Actually running lime, return pre-loaded results 
 	
-	# get flickr url 
-	im_url = str(valid_caps.imgs[int(im_id)]["flickr_url"])
-	
-	# ipdb.set_trace()
-
-	if not os.path.isdir("./static/overlays_cache/"):
-		os.mkdir("./static/overlays_cache")
-
-	if DUMMY_MODE==True:
-		
-		phrase_imgs = ["static/overlays_cache/im1.jpg", "static/overlays_cache/im2.jpg", "static/overlays_cache/im3.jpg"]
-		results = {
-			"rc": 0,
-			im_id: phrase_imgs
-		}
-
-	elif DUMMY_MODE==False:
-				 
-		phrase_imgs = []
-		for phrase in phrases:
-			print "Running Lime for url: ", im_url, " | phrase: ", phrase
-			# assuming we have an object that takes phrase+im_url and returns a mask of size (224,224)
-			mask = model.run_lime(
-				image_url=im_url, 
-				caption_string=phrase
-			) 
-			
-			mycolor = np.array([240, 10, 10])
-			explain_im   = np.ones((224,224,3)).astype(np.uint8) * 255
-			explain_im[mask==1.0] = mycolor
-
-			# save explain_im to disk
-			imname = str(time.time()) + ".png"
-			cv2.imwrite("static/overlays_cache/"+imname, explain_im)
-
-			# explain_im save location --> append to -> phrase_imgs 
-			phrase_imgs.append("static/overlays_cache/" + imname) 
-
-		# populate response with phrase_imgs and return code rc
-		# import ipdb; ipdb.set_trace()
-		results = {
-			"rc": 0,
-			im_id: phrase_imgs 
-		}
-
-	else:
-		NotImplementedError("Dummy mode was something other than True or False ")
+	results = {
+		"rc": 1,
+		im_id: [] 
+	}
 
 	return jsonify(results)
+
 
 if __name__ == '__main__':
 	app.run(threaded=bool(args.threaded), host=args.host, port=args.port)
