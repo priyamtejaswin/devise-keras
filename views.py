@@ -322,6 +322,10 @@ def run_lime():
 	cursor.execute("select image_name from results WHERE phrase in ('{}') AND flickr_url in ('{}')".format(str(phrase), str(flickr_url)))
 	dbase_results = cursor.fetchall()
 
+	## 0th index is phrase
+	## 1st index is flickr_url
+	## 2nd index is image_name
+
 	if len(dbase_results) == 0:
 		print "Err. could not find the pair", flickr_url, image_id, phrase
 		# could not find this (flickr_url, phrase) pair in dbase
@@ -331,16 +335,17 @@ def run_lime():
 		}
 	elif len(dbase_results) > 1:
 		# more than one result for (flickr_url, phrase) pair
-		print "Err. more than one result for", flickr_url, image_id, phrase
+		# returning the last result
+		print "Found more than one image - returning last", flickr_url, image_id, phrase
 		result = {
-			"rc": 2,
-			"lime": "empty"
+			"rc": 0,
+			"lime": "static/overlays_cache/" + str(dbase_results[-1][0])
 		}
 	else:
 		# everything went fine, one lime image for this (flickr_url, phrase) pair
 		result = {
 			"rc": 0,
-			"lime": "static/overlays_cache/" + str(dbase_results[0][0])
+			"lime": "static/overlays_cache/" + str(dbase_results[-1][0])
 		}
 
 	return jsonify(result)
