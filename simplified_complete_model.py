@@ -21,6 +21,7 @@ import matplotlib.pyplot as plt
 import time
 import urllib
 import cStringIO
+import datetime
 
 class FullModel(object):
 	"""
@@ -172,7 +173,8 @@ class FullModel(object):
 
 		try:
 			imgFile = cStringIO.StringIO(urllib.urlopen(image_url).read()) ## Download image.
-		except:
+		except Exception as error:
+			print "--LOG--%s"%(str(datetime.datetime.now())), error
 			return np.zeros((224, 224, 3))
 		
 		xImg = self.preprocess_image(imgFile) ## Load, pre-process image.
