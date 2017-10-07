@@ -170,7 +170,10 @@ class FullModel(object):
 		"""
 		lime_BATCH = 500 
 
-		imgFile = cStringIO.StringIO(urllib.urlopen(image_url).read()) ## Download image.
+		try:
+			imgFile = cStringIO.StringIO(urllib.urlopen(image_url).read()) ## Download image.
+		except:
+			return np.zeros((224, 224, 3))
 		
 		xImg = self.preprocess_image(imgFile) ## Load, pre-process image.
 
