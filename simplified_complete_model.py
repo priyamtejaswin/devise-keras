@@ -168,7 +168,7 @@ class FullModel(object):
 		Accepts an image_url and the caption_string.
 		Runs LIME. Returns the mask.
 		"""
-		lime_BATCH = 500 
+		lime_BATCH = 5000 
 
 		imgFile = cStringIO.StringIO(urllib.urlopen(image_url).read()) ## Download image.
 		
