@@ -16,3 +16,4 @@ UIUC_PASCAL_*/*
 *.h5
 !index.html
 static/overlays_cache/*
+*.db-journal
