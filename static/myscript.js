@@ -21,7 +21,7 @@ function process_response(server_response){
 
             // create div element + append image + append caption container div
             var $result_div = $("<div>", {"class": "gallery", "id": String(image_id)});
-            var $result_div_img = $('<img class="true_image" src=' + server_response.flickr_urls[i] + " alt='image' width=245 height=150> ").appendTo($result_div)
+            var $result_div_img = $('<img class="true_image" src=' + server_response.flickr_urls[i] + " alt='image' width=224 height=224> ").appendTo($result_div)
             var $result_div_captions = $('<div id="true_captions"></div>').appendTo($result_div)
 
             // add captions to $result_div_captions 
@@ -87,7 +87,7 @@ function show_salient_regions(){
     all_phrases = all_phrases_clean;
 
     // make true_image opacity = 0.8 
-    $(".true_image").css("opacity", 0.3);
+    $(".true_image").css("opacity", 0.7);
 
     // make all phrase image opacity = 0.0
     for (var i=0; i < all_phrases.length; i++){
@@ -253,7 +253,7 @@ $("#search_button").click(function () {
                             lime_image = response["lime"];
 
                             var $div = $("#"+String(im_id)); // div coresponding to that image_id
-                            var overlay_img_elem_html = '<img class="some_class" src="some_src" width=245 height=150>'; 
+                            var overlay_img_elem_html = '<img class="some_class" src="some_src" width=224 height=224>'; 
                             overlay_img_elem_html = overlay_img_elem_html.replace("some_class", onePhrase);
                             overlay_img_elem_html = overlay_img_elem_html.replace("some_src", lime_image);
                             var $overlay_img = $(overlay_img_elem_html);
