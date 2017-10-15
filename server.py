@@ -308,6 +308,7 @@ def run_lime():
 	phrase = request.args.get('phrase', type=str)
 	image_id = request.args.get('image_id', type=str)
 	phrase = phrase.strip('"') # '"cooking vegetables"' -> 'cooking vegetables'
+	phrase = phrase.replace("_", " ") # 'cat_sitting_on_a_tv' --> 'cat sitting on a tv'
 	image_id = image_id.strip('"') # same as above 
 	image_id = int(image_id)
 
