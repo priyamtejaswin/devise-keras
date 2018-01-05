@@ -38,6 +38,8 @@ function process_response(server_response){
     else {
 
         // something went wrong
+        $("#gallery_placeholder").empty();
+        $("#phrases").empty()
         $("#errors").empty();
         //console.log(server_response.images);
         $("#errors").append("<p>Error. Server responded with rc : "+String(server_response.flickr_urls)+"</p>")
@@ -203,7 +205,11 @@ $("#search_button").click(function () {
             $('#search_button').prop("disabled", false);
             $("#myquery").prop("disabled", false);
 
+            // If no issues happenned and we have loaded images
+            if ($('.true_image').length>0){
+
             // LIME STARTS HERE
+            //debugger;
 
             // 1. get phrases
             var all_phrases = null; 
@@ -241,7 +247,7 @@ $("#search_button").click(function () {
                 error_bar.append(explanation_load);
 
                 // loop over every phrase
-                debugger;
+                //debugger;
                 all_phrases.forEach(function(onePhrase){
 
                     // get explanation 
@@ -272,7 +278,10 @@ $("#search_button").click(function () {
                     error_bar.append($("<p>All explanations Loaded!</p>"));
                 }
 
-            }); 
+            }); // end of image_ids.forEach , the ; is there to signify a statement 
+
+            } // End of if($('.true_image')>0)
             
             
-        })
+            
+        }) // End of searchbutton click function call 

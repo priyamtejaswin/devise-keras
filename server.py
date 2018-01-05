@@ -191,7 +191,7 @@ def run_model(query_string):
 				word_indices = query_string_to_word_indices(query_string)
 			except Exception, e:
 				print str(e)
-				return 2, str(e), []
+				return 2, str(e), [], []
 
 			## multithread fix for keras/tf backend
 			global graph
@@ -236,7 +236,7 @@ def run_model(query_string):
 		print '..over'
 	
 	if result is None or len(result)<2:
-		return 1,"Err. Model prediction returned None. If you're seeing this, something went horribly wrong at our end.", []
+		return 1,"Err. Model prediction returned None. If you're seeing this, something went horribly wrong at our end.", [], []
 	else:
 		return 0, flickr_urls, coco_urls, captions
 
