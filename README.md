@@ -54,3 +54,22 @@ devise-keras/
 **ui**: This branch contains code for building the user-interface of the search engine and the backend for running the model.
 
 **LIME**: This branch extends **mscoco-search** and includes a frontend from **ui**. Additionally, it adds interpretability modules.
+
+## How to run
+1. First download these required files and place them in a folder called devise_cache. 
+	1. vgg16 pre-trained weights: 
+	2. word index mappings: 
+	3. Pre-trained DeVISE weights: 
+	4. MS COCO captions: 
+	5. cache.h5: 
+
+2. Clone this repository to your local system. 
+3. Run the server using: 
+
+```
+python server_lime_contours.py --word_index=/path/to/devise_cache/DICT_word_index.VAL.pkl --cache=/path/to/devise_cache/cache.h5 --model=/path/to/devise_cache/epoch_13.hdf5 --threaded=0 --host=127.0.0.1 --port=5000 --dummy=0 --captions_train=/path/to/devise_cache/annotations/captions_train2014.json --captions_valid=/path/to/devise_cache/annotations/captions_val2014.json --vgg16=/path/to/devise_cache/vgg16_weights_th_dim_ordering_th_kernels.h5
+```
+
+
+4. Be careful to replace /path/to/devise_cache/ to the correct path to your devise_cache folder.
+5.  Open a modern web browser (we tested this on firefox quantum 57) and navigate to localhost:5000 to view the webpage.
