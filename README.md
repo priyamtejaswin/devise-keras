@@ -106,10 +106,10 @@ In order to explain the relevance of our results, we modified Ribeiro et al's LI
 ### Deployment 
 We deployed our work as an image search engine by building html, css and js components. Concretely, we run a server in the background that communicates with a frontend ui that displays the search results and lime saliency regions. 
 
-The user enters a search query which is communicated to the server. The server runs the query string through the trained RNN model to find its vector. We search for the top 10 images closest to that query in the embedding space and return the links to those images. 
+The user enters a search query which is communicated to the server. The server runs the query string through the trained RNN model to find its final state vector. We search for the top 10 images closest to that query in the embedding space and return the links to those images. 
 
-Once the retrieved images have been displayed on the webpage, we request the server to extract appropriate noun and verb phrases using a dependancy parser. These phrases are displayed as button on the webpage. We also request the server to fetch salient regions for each phrase and each returned image. 
+Once the retrieved images have been displayed on the webpage, we request the server to extract appropriate noun and verb phrases using a dependancy parser. These phrases are displayed as button on the webpage. We also request the server to fetch salient regions for each phrase and each returned image. Selecting a phrase button will highlight its approprate region in all images. 
 
-**NOTE: Calculating LIME results for each (query, images) tuple requires ~3 hours as each phrase has to be run against every image retrieved. Hence, in the interest of time (and the limitations of having 1/0 GPUs) we pre-cache the LIME results for some sample queries. These sample queries can be accessed via clicking on the drop-down menu which appears when the user clicks on the search box.** 
+**NOTE: Calculating LIME results for each (query, images) tuple requires ~3 hours as each phrase has to be run against every image retrieved. Hence, in the interest of time (and the limitations of having 1/0 GPUs) we pre-cache the LIME results for some sample queries. These sample queries can be accessed via clicking on the drop-down menu which appears when the user clicks on the search box.** While LIME results are available only for a limited set of queries, the search and retrieval sans lime works for all queries, provided the input tokes are present in our dictionary. 
 
 Apologies to web designers, we just cannot write good html/css.
