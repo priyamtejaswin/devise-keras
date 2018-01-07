@@ -1,9 +1,2 @@
-Adding interpretibility to the image results using LIME - “Why Should I Trust You?” Explaining the Predictions of Any Classifier
-
-# THIS BRANCH SHOULD BE MERGED WITH ui ONCE COMPLETED.
-
-https://www.dropbox.com/s/7lsubnf9fna7kun/epoch_13.hdf5?dl=0
-
-https://github.com/fchollet/deep-learning-models/releases/download/v0.1/vgg16_weights_th_dim_ordering_th_kernels.h5
-
-https://www.dropbox.com/s/h9m7ju42sckehy5/DICT_word_index.VAL.pkl?dl=0
+# Introduction
+This project extends the original [Google DeViSE](https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/41473.pdf) paper to create a functioning image search engine with a focus on interpreting search results. We have extended the original paper in the following ways. First, we added an RNN to process variable length queries as opposed to single words. Next, to understand how the network responds to different parts of the query(like noun phrases) and the image, we leverage [Ribeiro et.al's LIME](https://arxiv.org/pdf/1602.04938v1.pdf) for model-agnostic interpretability. It has been tested on subsets of the [UIUC-PASCAL dataset](http://vision.cs.uiuc.edu/pascal-sentences/) and the final network has been trained on the [MSCOCO 2014 dataset](http://cocodataset.org/#home).
