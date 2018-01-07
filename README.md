@@ -81,3 +81,24 @@ python server_lime_contours.py \
 
 4. Be careful to replace /path/to/devise_cache/ to the correct path to your devise_cache folder.
 5.  Open a modern web browser (we tested this on firefox quantum 57) and navigate to localhost:5000 to view the webpage.
+
+## How it works
+
+### DeViSE: A Deep Visual-Semantic Embedding Model
+ In this paper, the authors present a new deep visual-semantic embedding model trained to identify visual objects using both labeled image data as well as semantic information gleaned from unannotated text. They accomplish this by minimizing a combination of the cosine similarity and hinge rank loss between the embedding vectors learned by the language model and the vectors from the core visual model as shown below. 
+ 
+ ![devise_core](https://user-images.githubusercontent.com/8658591/34649979-1b47f090-f3df-11e7-8833-e488dc33cad0.PNG)
+
+In the interest of time, we did not train a skip-gram model ourselves but chose to use the [GloVe (Global Vectors for Word Representation)](https://nlp.stanford.edu/projects/glove/) model from the stanford NLP group as our initilization. 
+
+### Extending DeViSE for captions 
+In order to encode variable length captions in the language model, we used an RNN network consisting of an Embedding input layer and 2 LSTM cells with 300 hidden units. This gave us an output vector that can be used for computing the similarity metric mentioned before. 
+
+![RNN picture](https://user-images.githubusercontent.com/8658591/34650207-00c08814-f3e3-11e7-95f9-e2cf081661bd.PNG)
+
+This allows us to map images and their captions to a common semantic embedding space. We use this feature to search for images in the embedding space that are close to the query entered by a user. 
+ 
+### Adding LIME explainability 
+In order to explain the relevance of our results, we modified Ribeiro et al's LIME such that it highlights salient regions relevant to the user's query. This gives visual cues about the regions in an image which maximally contributed to its retrieval. 
+
+![lime_pic](https://user-images.githubusercontent.com/8658591/34650324-7ab4edd4-f3e5-11e7-9ffa-95798fbf5638.PNG)
