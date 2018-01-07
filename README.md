@@ -25,9 +25,7 @@ devise-keras/
 ├── server.py
 ├── simplified_complete_model.py
 ├── static
-│   ├── 12345.jpg
-│   ├── 32561.jpg
-│   ├── 45321.jpg
+│   ├── <SAMPLE_IMAGES>.jpg
 │   ├── jquery-1.12.4.js
 │   ├── jquery-ui.js
 │   ├── lime_queries.json
@@ -67,7 +65,17 @@ devise-keras/
 3. Run the server using: 
 
 ```
-python server_lime_contours.py --word_index=/path/to/devise_cache/DICT_word_index.VAL.pkl --cache=/path/to/devise_cache/cache.h5 --model=/path/to/devise_cache/epoch_13.hdf5 --threaded=0 --host=127.0.0.1 --port=5000 --dummy=0 --captions_train=/path/to/devise_cache/annotations/captions_train2014.json --captions_valid=/path/to/devise_cache/annotations/captions_val2014.json --vgg16=/path/to/devise_cache/vgg16_weights_th_dim_ordering_th_kernels.h5
+python server_lime_contours.py \
+--word_index=/path/to/devise_cache/DICT_word_index.VAL.pkl \
+--cache=/path/to/devise_cache/cache.h5 \
+--model=/path/to/devise_cache/epoch_9.hdf5 \
+--threaded=0 \
+--host=127.0.0.1 \
+--port=5000 \
+--dummy=0 \
+--captions_train=/path/to/devise_cache/annotations/captions_train2014.json \
+--captions_valid=/path/to/devise_cache/annotations/captions_val2014.json \
+--vgg16=/path/to/devise_cache/vgg16_weights_th_dim_ordering_th_kernels.h5
 ```
 
 
