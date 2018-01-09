@@ -241,9 +241,15 @@ $("#search_button").click(function () {
             $('#search_button').prop("disabled", false);
             $("#myquery").prop("disabled", false);
 
-            // If no issues happenned and we have loaded images
-            if ($('.true_image').length>0){
-
+            // If devise-rnn ran correctly, there will be elements with class .true_image
+            // Also, run LIME only for queries present in lime_queries.json 
+            var availableTags = null; 
+            $.getJSON("static/lime_queries.json", function(data){
+                availableTags = data; 
+            });
+            // MAIN LIME IF CONDITION
+            if ( ($('.true_image').length>0) && (availableTags.indexOf(query)>-1) ) {
+            
             // LIME STARTS HERE
             //debugger;
 
