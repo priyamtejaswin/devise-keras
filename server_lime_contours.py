@@ -190,7 +190,7 @@ def run_model(query_string):
 				output = output / np.linalg.norm(output, axis=1, keepdims=True)
 			
 				# compare with im_outs
-				TOP_K = 10
+				TOP_K = 50
 				diff = im_outs - output 
 				diff = np.linalg.norm(diff, axis=1)
 				top_k_indices = np.argsort(diff)[:TOP_K].tolist()
