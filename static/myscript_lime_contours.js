@@ -128,7 +128,12 @@ function show_salient_regions(){
 
     // for each image Id -> draw the contours 
     Object.keys(LIME_RESULTS_OBJECT).forEach(function(image_id) {
-        var contours_dict = LIME_RESULTS_OBJECT[String(image_id)][String(phrase_clicked)];
+        
+        if (LIME_RESULTS_OBJECT[image_id][phrase_clicked] == null){
+            return; //return if could not find any lime contour for (image_id, phrase_clicked)
+        }
+
+        var contours_dict = LIME_RESULTS_OBJECT[image_id][phrase_clicked];
         //debugger;
         draw_lime_contours(image_id, contours_dict); 
     });
@@ -262,8 +267,8 @@ $("#search_button").click(function () {
             while(all_phrases==null){
                 console.log("Trying to get all_phrases");
             }
-            console.log(all_phrases)
-            create_phrases(all_phrases) //append phrases to the phrase bar i.e div with id=phrases
+            console.log(all_phrases);
+            create_phrases(all_phrases); //append phrases to the phrase bar i.e div with id=phrases
 
             // 2. get all image_ids
             var image_ids = $(".gallery");
@@ -271,8 +276,11 @@ $("#search_button").click(function () {
             image_ids.forEach(function(im_id, index, theArray) {
                 theArray[index] = im_id.id;
             });
-
             console.log(image_ids);
+
+            // 3. Limit image_ids to 10 images 
+            // (we return 50 images, but we have previously cached LIME for ONLY TOP 10 IMAGES)
+            image_ids = image_ids.slice(0,10);
 
             // 3. Make the phrase tags clickable and do something with it 
             var phrase_elems = $("#phrases").children().click(show_salient_regions);
