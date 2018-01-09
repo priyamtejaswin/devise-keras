@@ -190,7 +190,7 @@ def run_model(query_string):
 				output = output / np.linalg.norm(output, axis=1, keepdims=True)
 			
 				# compare with im_outs
-				TOP_K = 10
+				TOP_K = 50
 				diff = im_outs - output 
 				diff = np.linalg.norm(diff, axis=1)
 				top_k_indices = np.argsort(diff)[:TOP_K].tolist()
@@ -340,6 +340,10 @@ def run_lime():
 
 	return jsonify(result)
 
+#GLOBAL VARS FOR LIME
+conn = sqlite3.connect("lime_results_dbase.db", check_same_thread=False)
+# mutex_dbase = Lock()
+
 @app.route("/_get_LIME_contours")
 def run_lime_contours():
 	''' 
@@ -361,8 +365,10 @@ def run_lime_contours():
 	assert image_id in valid_caps.imgs.keys(), "This image_id is not available in valid_caps"
 	flickr_url = str(valid_caps.imgs[image_id]["flickr_url"])
 
-	conn = sqlite3.connect("lime_results_dbase.db")
+	#conn = sqlite3.connect("lime_results_dbase.db")
 	cursor = conn.cursor()
+
+	print "mutex_dbase lock acquired."
 
 	cursor.execute("select image_name from results WHERE phrase in ('{}') AND flickr_url in ('{}')".format(str(phrase), str(flickr_url)))
 	dbase_results = cursor.fetchall()
