@@ -340,6 +340,11 @@ def run_lime():
 
 	return jsonify(result)
 
+#GLOBAL VARS FOR LIME
+conn = sqlite3.connect("lime_results_dbase.db")
+cursor = conn.cursor()
+mutex_dbase = Lock()
+
 @app.route("/_get_LIME_contours")
 def run_lime_contours():
 	''' 
@@ -361,40 +366,44 @@ def run_lime_contours():
 	assert image_id in valid_caps.imgs.keys(), "This image_id is not available in valid_caps"
 	flickr_url = str(valid_caps.imgs[image_id]["flickr_url"])
 
-	conn = sqlite3.connect("lime_results_dbase.db")
-	cursor = conn.cursor()
+	#conn = sqlite3.connect("lime_results_dbase.db")
+	#cursor = conn.cursor()
 
-	cursor.execute("select image_name from results WHERE phrase in ('{}') AND flickr_url in ('{}')".format(str(phrase), str(flickr_url)))
-	dbase_results = cursor.fetchall()
+	with mutex_dbase:
 
-	## 0th index is phrase
-	## 1st index is flickr_url
-	## 2nd index is image_name
+		print "mutex_dbase lock acquired."
 
-	if len(dbase_results) == 0:
-		print "Err. could not find the pair", flickr_url, image_id, phrase
-		# could not find this (flickr_url, phrase) pair in dbase
-		result = {
-			"rc": 1,
-			"lime": "empty"
-		}
-	elif len(dbase_results) > 1:
-		# more than one result for (flickr_url, phrase) pair
-		# returning the last result
-		overlay_contours = file2poly("./static/overlays_cache/" + str(dbase_results[-1][0]))
-		print "Found more than one image - returning last", flickr_url, image_id, phrase
-		result = {
-			"rc": 0,
-			"lime": overlay_contours
-		}
-	else:
-		# everything went fine, one lime image for this (flickr_url, phrase) pair
-		# convert overlay image to dict of contours 
-		overlay_contours = file2poly("./static/overlays_cache/" + str(dbase_results[-1][0]))
-		result = {
-			"rc": 0,
-			"lime": overlay_contours
-		}
+		cursor.execute("select image_name from results WHERE phrase in ('{}') AND flickr_url in ('{}')".format(str(phrase), str(flickr_url)))
+		dbase_results = cursor.fetchall()
+
+		## 0th index is phrase
+		## 1st index is flickr_url
+		## 2nd index is image_name
+
+		if len(dbase_results) == 0:
+			print "Err. could not find the pair", flickr_url, image_id, phrase
+			# could not find this (flickr_url, phrase) pair in dbase
+			result = {
+				"rc": 1,
+				"lime": "empty"
+			}
+		elif len(dbase_results) > 1:
+			# more than one result for (flickr_url, phrase) pair
+			# returning the last result
+			overlay_contours = file2poly("./static/overlays_cache/" + str(dbase_results[-1][0]))
+			print "Found more than one image - returning last", flickr_url, image_id, phrase
+			result = {
+				"rc": 0,
+				"lime": overlay_contours
+			}
+		else:
+			# everything went fine, one lime image for this (flickr_url, phrase) pair
+			# convert overlay image to dict of contours 
+			overlay_contours = file2poly("./static/overlays_cache/" + str(dbase_results[-1][0]))
+			result = {
+				"rc": 0,
+				"lime": overlay_contours
+			}
 
 	return jsonify(result)
 
