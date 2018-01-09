@@ -341,8 +341,7 @@ def run_lime():
 	return jsonify(result)
 
 #GLOBAL VARS FOR LIME
-conn = sqlite3.connect("lime_results_dbase.db")
-cursor = conn.cursor()
+conn = sqlite3.connect("lime_results_dbase.db", check_same_thread=False)
 mutex_dbase = Lock()
 
 @app.route("/_get_LIME_contours")
@@ -367,7 +366,7 @@ def run_lime_contours():
 	flickr_url = str(valid_caps.imgs[image_id]["flickr_url"])
 
 	#conn = sqlite3.connect("lime_results_dbase.db")
-	#cursor = conn.cursor()
+	cursor = conn.cursor()
 
 	with mutex_dbase:
 
