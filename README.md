@@ -1,7 +1,7 @@
 # Interpretable Image Search
 *- by Priyam Tejaswin and Akshay Chawla*
 
-**LIVE WEB DEMO AT:** http://intimsearch.ml/  . This will forward to a GCP instance endpoint. If you're having issues accessing it from your internal work or office network, please raise an issue or contact [Priyam](mailto:priyamtejaswin@gmail.com), [Akshay](mailto:chawla.akshay1234@gmail.com).
+**LIVE WEB DEMO AT:** http://35.193.106.36:5050/  . This will forward to a GCP instance endpoint. If you're having issues accessing it from your internal work or office network, please raise an issue or contact [Priyam](mailto:priyamtejaswin@gmail.com), [Akshay](mailto:chawla.akshay1234@gmail.com).
 
 ## Introduction
 This project extends the original [Google DeViSE](https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/41473.pdf) paper to create a functioning image search engine with a focus on interpreting search results. We have extended the original paper in the following ways. First, we added an RNN to process variable length queries as opposed to single words. Next, to understand how the network responds to different parts of the query(like noun phrases) and the image, we leverage [Ribeiro et.al's LIME](https://arxiv.org/pdf/1602.04938v1.pdf) for model-agnostic interpretability. It has been tested on subsets of the [UIUC-PASCAL dataset](http://vision.cs.uiuc.edu/pascal-sentences/) and the final network has been trained on the [MSCOCO 2014 dataset](http://cocodataset.org/#home).
