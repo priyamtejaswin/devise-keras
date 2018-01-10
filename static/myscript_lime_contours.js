@@ -61,6 +61,18 @@ function create_phrases(all_phrases) {
     // Clicking on any of the box should show the LIME result for that phrase on all images
     
     var $phrases = $("#phrases");
+
+    // DISABLE_LIME_CONTOURS button
+    var $elem = $('<p>'+'DISABLE_LIME_CONTOURS'+'</p>');
+    $elem.css("float", "left")
+    $elem.css("border", "2px solid red");
+    $elem.css("padding", "10px");
+    $elem.css("margin", "8px");
+    $elem.css("font-size", "11px");
+    $elem.css("border-radius", "25px");
+    $phrases.append($elem);
+
+    // buttons for all_phrases
     for (var k = 0; k < all_phrases.length; k++){
 
         var $elem = $('<p>'+all_phrases[k]+'</p>');
@@ -117,6 +129,11 @@ function show_salient_regions(){
     // This functions lights up the salient regions in all images corresponsing to clicked phrase 
 
     var phrase_clicked = $(this)[0].innerHTML; 
+    
+    // remove highlight background from every phrase
+    for(var i=0; i<$("#phrases")[0].children.length; i++){
+        $("#phrases")[0].children[i].style["background"] = "white";
+    }
 
     // reset all canvases 
     var all_canvases = $(".mycanvas");
@@ -125,6 +142,14 @@ function show_salient_regions(){
         var context = canv.getContext("2d");
         context.clearRect(0, 0, canv.width, canv.height);
     });
+
+    // if user clicked on DISABLE_CONTOURS button
+    if (phrase_clicked=="DISABLE_LIME_CONTOURS"){
+        return;
+    }
+
+    // highlight background for JUST THIS PHRASE
+    $(this)[0].style["background"] = "lightgreen";
 
     // for each image Id -> draw the contours 
     Object.keys(LIME_RESULTS_OBJECT).forEach(function(image_id) {
