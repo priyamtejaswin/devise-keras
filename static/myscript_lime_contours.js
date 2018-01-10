@@ -61,6 +61,7 @@ function create_phrases(all_phrases) {
     // Clicking on any of the box should show the LIME result for that phrase on all images
     
     var $phrases = $("#phrases");
+    $phrases.hide(); // DO not show the phrase buttons until all lime explanations have been loaded.
 
     // DISABLE_LIME_CONTOURS button
     var $elem = $('<p>'+'DISABLE_LIME_CONTOURS'+'</p>');
@@ -78,7 +79,7 @@ function create_phrases(all_phrases) {
         var $elem = $('<p>'+all_phrases[k]+'</p>');
 
         $elem.css("float", "left")
-        $elem.css("border", "2px solid #73AD21");
+        $elem.css("border", "2px solid green");
         $elem.css("padding", "10px");
         $elem.css("margin", "8px");
         $elem.css("font-size", "11px");
@@ -90,6 +91,8 @@ function create_phrases(all_phrases) {
     }
 
     console.log("appended phrases to phrase bar");
+
+    // PLEASE NOTE: $phrases is HIDDEN
 }
 
 function draw_lime_contours(image_id, contours_dict){
@@ -149,7 +152,7 @@ function show_salient_regions(){
     }
 
     // highlight background for JUST THIS PHRASE
-    $(this)[0].style["background"] = "lightgreen";
+    $(this)[0].style["background"] = "#EDC7B7";
 
     // for each image Id -> draw the contours 
     Object.keys(LIME_RESULTS_OBJECT).forEach(function(image_id) {
@@ -281,6 +284,10 @@ $("#search_button").click(function () {
             if ( ($('.true_image').length>0) && (availableTags.indexOf(query)>-1) ) {
             
             // LIME STARTS HERE
+
+            // while running lime disable search bar  
+            $('#search_button').prop("disabled", true);
+            $("#myquery").prop("disabled", true);
             //debugger;
 
             // 1. get phrases
@@ -318,7 +325,7 @@ $("#search_button").click(function () {
                 // show in ui that explanation is being loaded
                 var error_bar = $("#errors");
                 error_bar.empty();
-                var explanation_load = $("<p>Loading Explanation for Image ID :" + String(im_id) + " </p>");
+                var explanation_load = $("<p>Loading Explanation for Image ID :" + String(im_id) + ". Please wait..</p>");
                 error_bar.append(explanation_load);
 
                 // Empty dictionary for LIME_RESULTS_OBJECT[im_id]
@@ -355,6 +362,7 @@ $("#search_button").click(function () {
                 if(index == thearray.length-1) {
                     error_bar.empty();
                     error_bar.append($("<p>All explanations Loaded!</p>"));
+                    $("#phrases").show(); // Show phrases if and only if all explanations have been loaded.
                 }
 
             }); // end of image_ids.forEach , the ; is there to signify a statement 
@@ -362,5 +370,8 @@ $("#search_button").click(function () {
             } // End of if($('.true_image')>0)
             
             
+            // Enable search button and text box after lime results loaded 
+            $('#search_button').prop("disabled", false);
+            $("#myquery").prop("disabled", false); 
             
         }) // End of searchbutton click function call 

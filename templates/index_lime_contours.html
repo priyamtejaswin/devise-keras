@@ -27,7 +27,7 @@
 
         #errors {
             font-size: 15px;
-            color: red
+            color: red;
         }
 
         h2 {
@@ -78,6 +78,14 @@
             <li>buying fruit</li>
             <li>eating pizza at home</li>
         </ul>
+
+        <br>
+        <p style="color: #123C69"> 1. Kindly enter your query in the text box and click the Search button</p>
+        <p style="color: #123C69"> 2. Since it takes ~3 hours to generate LIME explanations on a GPU for each query, we have precached LIME explanations for 15 queries, for their top 10 results. These LIME enabled queries are shown in the dropbox when the user 
+            starts typing.</p>
+        <p style="color: #AC3B61"> 3. LIME explanations contain heavy payloads and may take several seconds to load. We REALLY appreciate your patience and support.</p> 
+
+
     
     </div>
 
@@ -85,6 +93,11 @@
         <input type="text" name="query" id="myquery">
         <button type="button" id="search_button">Search</button> 
         <div id="errors"></div>        
+    </div>
+
+    <div id="info_about_phrases">
+        <p style="color: #123C69">'+'Once explanations are loaded, click on the buttons below to highlight salient regions in images.'+'</p>
+        <p style="color: #123C69">'+'Click DISABLE_LIME_CONTOURS to remove the explanation masks.'+'</p>
     </div>
 
     <div id="phrases">        
