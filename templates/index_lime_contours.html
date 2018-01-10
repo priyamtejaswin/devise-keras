@@ -9,7 +9,7 @@
     <script src="/static/jquery-ui.js"></script>
 
     <style type="text/css">
-        
+
         #gallery_placeholder {
             width:100%;
             height: auto;
@@ -22,12 +22,12 @@
             height: 500px;
             padding: 10px;
             font-size: 11px;
-            border: 1px solid #ccc; 
+            border: 1px solid #ccc;
         }
 
         #errors {
             font-size: 15px;
-            color: red
+            color: red;
         }
 
         h2 {
@@ -62,15 +62,27 @@
 </head>
 
 <body>
-      
+
     <!-- Search query -->
 
     <h2>Image Search Engine</h2>
     <div>
-        
+
         <p id="byline">Built in spare time by Priyam Tejaswin & Akshay Chawla | An extension of Google's <a href="https://research.google.com/pubs/pub41869.html">DeViSE: A Deep Visual-Semantic Embedding Model</a> research | <a href="https://github.com/priyamtejaswin/devise-keras">GitHub</a> </p>
-        
-        <p class="sample_queries">some sample queries you can try:</p>
+        <hr>
+
+        <h4>What are you supposed to do?</h4>
+        <p style="color: #123C69">Kindly enter your query in the text box and click the Search button.</p>
+        <p style="color: #123C69">Since it takes ~3 hours to generate LIME explanations on a GPU for each query, we have precached LIME explanations for 15 queries, for their top 10 results. These LIME enabled queries are shown in the dropbox when the user
+            starts typing.</p>
+        <p style="color: #AC3B61">LIME explanations contain heavy payloads and may take several seconds to load. We REALLY appreciate your patience and support.</p>
+
+        <div id="info_about_phrases">
+            <b><p style="color: #123C69">*Once explanations are LOADED, click on the buttons below to highlight salient regions in images.*</p></b>
+            <b><p style="color: #123C69">*Click DISABLE_LIME_CONTOURS to remove the explanation masks.*</p></b>
+        </div>
+
+        <p class="sample_queries">Some sample queries you can try:</p>
         <ul class="sample_queries">
             <li>dog playing with a ball in the park</li>
             <li>cutting vegetables</li>
@@ -78,16 +90,29 @@
             <li>buying fruit</li>
             <li>eating pizza at home</li>
         </ul>
-    
+        <hr>
+
+        <h4>What happens when you click "Search"?</h4>
+        <p>
+          <ol class="sample_queries">
+            <li>Your query is sent to the server.</li>
+            <li>We check for unseen words.</li>
+            <li>Your query is passed through a RNN which returns a vector.</li>
+            <li>We already have the vectors for the images in the validation set.</li>
+            <li>We show you the 50 images which are closest to your query.</li>
+            <li>You stare in awe.</li>
+          </ol>
+        </p>
+
     </div>
 
     <div id="Search_Query">
         <input type="text" name="query" id="myquery">
-        <button type="button" id="search_button">Search</button> 
-        <div id="errors"></div>        
+        <button type="button" id="search_button">Search</button>
+        <div id="errors"></div>
     </div>
 
-    <div id="phrases">        
+    <div id="phrases">
     </div>
 
     <br>
@@ -97,6 +122,6 @@
 
     <script src="/static/myscript_lime_contours.js"></script>
 
-      
+
 </body>
 </html>

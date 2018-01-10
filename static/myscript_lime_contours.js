@@ -61,12 +61,25 @@ function create_phrases(all_phrases) {
     // Clicking on any of the box should show the LIME result for that phrase on all images
     
     var $phrases = $("#phrases");
+    $phrases.hide(); // DO not show the phrase buttons until all lime explanations have been loaded.
+
+    // DISABLE_LIME_CONTOURS button
+    var $elem = $('<p>'+'DISABLE_LIME_CONTOURS'+'</p>');
+    $elem.css("float", "left")
+    $elem.css("border", "2px solid red");
+    $elem.css("padding", "10px");
+    $elem.css("margin", "8px");
+    $elem.css("font-size", "11px");
+    $elem.css("border-radius", "25px");
+    $phrases.append($elem);
+
+    // buttons for all_phrases
     for (var k = 0; k < all_phrases.length; k++){
 
         var $elem = $('<p>'+all_phrases[k]+'</p>');
 
         $elem.css("float", "left")
-        $elem.css("border", "2px solid #73AD21");
+        $elem.css("border", "2px solid green");
         $elem.css("padding", "10px");
         $elem.css("margin", "8px");
         $elem.css("font-size", "11px");
@@ -78,6 +91,8 @@ function create_phrases(all_phrases) {
     }
 
     console.log("appended phrases to phrase bar");
+
+    // PLEASE NOTE: $phrases is HIDDEN
 }
 
 function draw_lime_contours(image_id, contours_dict){
@@ -117,6 +132,11 @@ function show_salient_regions(){
     // This functions lights up the salient regions in all images corresponsing to clicked phrase 
 
     var phrase_clicked = $(this)[0].innerHTML; 
+    
+    // remove highlight background from every phrase
+    for(var i=0; i<$("#phrases")[0].children.length; i++){
+        $("#phrases")[0].children[i].style["background"] = "white";
+    }
 
     // reset all canvases 
     var all_canvases = $(".mycanvas");
@@ -126,9 +146,22 @@ function show_salient_regions(){
         context.clearRect(0, 0, canv.width, canv.height);
     });
 
+    // if user clicked on DISABLE_CONTOURS button
+    if (phrase_clicked=="DISABLE_LIME_CONTOURS"){
+        return;
+    }
+
+    // highlight background for JUST THIS PHRASE
+    $(this)[0].style["background"] = "#EDC7B7";
+
     // for each image Id -> draw the contours 
     Object.keys(LIME_RESULTS_OBJECT).forEach(function(image_id) {
-        var contours_dict = LIME_RESULTS_OBJECT[String(image_id)][String(phrase_clicked)];
+        
+        if (LIME_RESULTS_OBJECT[image_id][phrase_clicked] == null){
+            return; //return if could not find any lime contour for (image_id, phrase_clicked)
+        }
+
+        var contours_dict = LIME_RESULTS_OBJECT[image_id][phrase_clicked];
         //debugger;
         draw_lime_contours(image_id, contours_dict); 
     });
@@ -241,10 +274,20 @@ $("#search_button").click(function () {
             $('#search_button').prop("disabled", false);
             $("#myquery").prop("disabled", false);
 
-            // If no issues happenned and we have loaded images
-            if ($('.true_image').length>0){
-
+            // If devise-rnn ran correctly, there will be elements with class .true_image
+            // Also, run LIME only for queries present in lime_queries.json 
+            var availableTags = null; 
+            $.getJSON("static/lime_queries.json", function(data){
+                availableTags = data; 
+            });
+            // MAIN LIME IF CONDITION
+            if ( ($('.true_image').length>0) && (availableTags.indexOf(query)>-1) ) {
+            
             // LIME STARTS HERE
+
+            // while running lime disable search bar  
+            $('#search_button').prop("disabled", true);
+            $("#myquery").prop("disabled", true);
             //debugger;
 
             // 1. get phrases
@@ -256,8 +299,8 @@ $("#search_button").click(function () {
             while(all_phrases==null){
                 console.log("Trying to get all_phrases");
             }
-            console.log(all_phrases)
-            create_phrases(all_phrases) //append phrases to the phrase bar i.e div with id=phrases
+            console.log(all_phrases);
+            create_phrases(all_phrases); //append phrases to the phrase bar i.e div with id=phrases
 
             // 2. get all image_ids
             var image_ids = $(".gallery");
@@ -265,8 +308,11 @@ $("#search_button").click(function () {
             image_ids.forEach(function(im_id, index, theArray) {
                 theArray[index] = im_id.id;
             });
-
             console.log(image_ids);
+
+            // 3. Limit image_ids to 10 images 
+            // (we return 50 images, but we have previously cached LIME for ONLY TOP 10 IMAGES)
+            image_ids = image_ids.slice(0,10);
 
             // 3. Make the phrase tags clickable and do something with it 
             var phrase_elems = $("#phrases").children().click(show_salient_regions);
@@ -279,7 +325,7 @@ $("#search_button").click(function () {
                 // show in ui that explanation is being loaded
                 var error_bar = $("#errors");
                 error_bar.empty();
-                var explanation_load = $("<p>Loading Explanation for Image ID :" + String(im_id) + " </p>");
+                var explanation_load = $("<p>Loading Explanation for Image ID :" + String(im_id) + ". Please wait..</p>");
                 error_bar.append(explanation_load);
 
                 // Empty dictionary for LIME_RESULTS_OBJECT[im_id]
@@ -316,6 +362,7 @@ $("#search_button").click(function () {
                 if(index == thearray.length-1) {
                     error_bar.empty();
                     error_bar.append($("<p>All explanations Loaded!</p>"));
+                    $("#phrases").show(); // Show phrases if and only if all explanations have been loaded.
                 }
 
             }); // end of image_ids.forEach , the ; is there to signify a statement 
@@ -323,5 +370,8 @@ $("#search_button").click(function () {
             } // End of if($('.true_image')>0)
             
             
+            // Enable search button and text box after lime results loaded 
+            $('#search_button').prop("disabled", false);
+            $("#myquery").prop("disabled", false); 
             
         }) // End of searchbutton click function call 
