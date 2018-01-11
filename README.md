@@ -116,3 +116,8 @@ Once the retrieved images have been displayed on the webpage, we request the ser
 **NOTE: Calculating LIME results for each (query, images) tuple requires ~3 hours as each phrase has to be run against every image retrieved. Hence, in the interest of time (and the limitations of having 1/0 GPUs) we pre-cache the LIME results for some sample queries. These sample queries can be accessed via clicking on the drop-down menu which appears when the user clicks on the search box.** While LIME results are available only for a limited set of queries, the search and retrieval sans lime works for all queries, provided the input tokes are present in our dictionary. 
 
 Apologies to web designers, we just cannot write good html/css.
+
+## Cats vs Dogs
+Searching for the internet's two favourite pets.
+### cat sitting on a tv
+<img src="http://www.giphy.com/gifs/26gN0UeRCuq9iPOGA"/>
