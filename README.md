@@ -119,5 +119,7 @@ Apologies to web designers, we just cannot write good html/css.
 
 ## Cats vs Dogs
 Searching for the internet's two favourite pets.
-### cat sitting on a tv
-<a href="https://imgur.com/bLsYxMr"><img src="https://i.imgur.com/bLsYxMr.gif" title="source: imgur.com" /></a>
+
+<a href="https://imgur.com/bLsYxMr"><img src="https://i.imgur.com/bLsYxMr.gif" title="source: imgur.com" width="60%" /></a>
+
+<a href="https://imgur.com/kBBHc8X"><img src="https://i.imgur.com/kBBHc8X.gif" title="source: imgur.com" width="60%" /></a>
