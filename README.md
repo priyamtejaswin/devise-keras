@@ -120,4 +120,4 @@ Apologies to web designers, we just cannot write good html/css.
 ## Cats vs Dogs
 Searching for the internet's two favourite pets.
 ### cat sitting on a tv
-[Imgur](https://i.imgur.com/bLsYxMr.gifv)
+![Imgur](https://i.imgur.com/bLsYxMr.gifv)
