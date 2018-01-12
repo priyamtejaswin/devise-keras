@@ -3,6 +3,13 @@
 
 **LIVE WEB DEMO AT:** http://35.193.106.36:5050/  . This will forward to a GCP instance endpoint. If you're having issues accessing it from your internal work or office network, please raise an issue or contact [Priyam](mailto:priyamtejaswin@gmail.com), [Akshay](mailto:chawla.akshay1234@gmail.com).
 
+## Cats vs Dogs
+Before anything else...
+
+<a href="https://imgur.com/bLsYxMr"><img src="https://i.imgur.com/bLsYxMr.gif" title="source: imgur.com" width="60%" /></a>
+
+<a href="https://imgur.com/kBBHc8X"><img src="https://i.imgur.com/kBBHc8X.gif" title="source: imgur.com" width="60%" /></a>
+
 ## Introduction
 This project extends the original [Google DeViSE](https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/41473.pdf) paper to create a functioning image search engine with a focus on interpreting search results. We have extended the original paper in the following ways. First, we added an RNN to process variable length queries as opposed to single words. Next, to understand how the network responds to different parts of the query(like noun phrases) and the image, we leverage [Ribeiro et.al's LIME](https://arxiv.org/pdf/1602.04938v1.pdf) for model-agnostic interpretability. It has been tested on subsets of the [UIUC-PASCAL dataset](http://vision.cs.uiuc.edu/pascal-sentences/) and the final network has been trained on the [MSCOCO 2014 dataset](http://cocodataset.org/#home).
 
@@ -116,10 +123,3 @@ Once the retrieved images have been displayed on the webpage, we request the ser
 **NOTE: Calculating LIME results for each (query, images) tuple requires ~3 hours as each phrase has to be run against every image retrieved. Hence, in the interest of time (and the limitations of having 1/0 GPUs) we pre-cache the LIME results for some sample queries. These sample queries can be accessed via clicking on the drop-down menu which appears when the user clicks on the search box.** While LIME results are available only for a limited set of queries, the search and retrieval sans lime works for all queries, provided the input tokes are present in our dictionary. 
 
 Apologies to web designers, we just cannot write good html/css.
-
-## Cats vs Dogs
-Searching for the internet's two favourite pets.
-
-<a href="https://imgur.com/bLsYxMr"><img src="https://i.imgur.com/bLsYxMr.gif" title="source: imgur.com" width="60%" /></a>
-
-<a href="https://imgur.com/kBBHc8X"><img src="https://i.imgur.com/kBBHc8X.gif" title="source: imgur.com" width="60%" /></a>
