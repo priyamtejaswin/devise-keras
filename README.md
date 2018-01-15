@@ -72,7 +72,9 @@ devise-keras/
 	5. cache.h5: https://www.dropbox.com/s/xoza70y5zyh5d99/cache.h5?dl=0
 
 2. Clone this repository to your local system. 
-3. Run the server using: 
+3. Extract epoch_9_cache. You will get all LIME images for epoch_9 in all_images_epoch_9.tar.gz.
+4. Copy the tar to /devise-keras/static/overlays_cache/ and untar.
+5. Run the server using: 
 
 ```
 python server_lime_contours.py \
