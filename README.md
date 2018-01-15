@@ -68,7 +68,7 @@ devise-keras/
 	1. vgg16 pre-trained weights: https://github.com/fchollet/deep-learning-models/releases/download/v0.1/vgg16_weights_th_dim_ordering_th_kernels.h5
 	2. word index mappings: https://www.dropbox.com/s/h9m7ju42sckehy5/DICT_word_index.VAL.pkl?dl=0
 	3. Pre-trained DeVISE weights: https://www.dropbox.com/s/7lsubnf9fna7kun/epoch_13.hdf5?dl=0
-	4. MS COCO captions: http://cocodataset.org/#download
+	4. MS COCO captions: http://images.cocodataset.org/annotations/annotations_trainval2014.zip
 	5. cache.h5: https://www.dropbox.com/s/xoza70y5zyh5d99/cache.h5?dl=0
 
 2. Clone this repository to your local system. 
