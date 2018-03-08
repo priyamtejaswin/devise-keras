@@ -1,7 +1,7 @@
 # Interpretable Image Search
 *- by Priyam Tejaswin and Akshay Chawla*
 
-**LIVE WEB DEMO AT:** http://35.229.99.174:5050/  . This will forward to a GCP instance endpoint. If you're having issues accessing it from your internal work or office network, please raise an issue or contact [Priyam](mailto:priyamtejaswin@gmail.com), [Akshay](mailto:chawla.akshay1234@gmail.com).
+**LIVE WEB DEMO AT:** http://35.227.74.37:5050/  . This will forward to a GCP instance endpoint. If you're having issues accessing it from your internal work or office network, please raise an issue or contact [Priyam](mailto:priyamtejaswin@gmail.com), [Akshay](mailto:chawla.akshay1234@gmail.com).
 
 ## Cats vs Dogs
 Before anything else...
