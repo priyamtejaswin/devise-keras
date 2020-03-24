@@ -1,6 +1,6 @@
 backports.shutil-get-terminal-size==1.0.0
 backports.weakref==1.0rc1
-bleach==1.5.0
+bleach==3.1.2
 boto==2.38.0
 certifi==2017.7.27.1
 chardet==3.0.4
