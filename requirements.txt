@@ -69,7 +69,7 @@ thinc==6.5.2
 toolz==0.8.2
 tqdm==4.15.0
 traitlets==4.3.2
-ujson==1.35
+ujson==5.2.0
 urllib3==1.22
 wcwidth==0.1.7
 webencodings==0.5.1
